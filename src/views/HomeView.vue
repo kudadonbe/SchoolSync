@@ -1,12 +1,24 @@
 <script setup lang="ts">
+import NoticeBoard from '@/components/NoticeBoard.vue';
+import PublicHero from '@/components/PublicHero.vue';
+import SchEvents from '@/components/SchEvents.vue';
+import SchStats from '@/components/SchStats.vue';
 import PublicLayout from '@/layouts/PublicLayout.vue';
 </script>
 
 <template>
   <PublicLayout>
-    <div class="text-center">
-      <h1 class="text-4xl font-bold">Welcome to Makunudhoo School</h1>
-      <p class="text-lg text-gray-600 mt-2">Our goal is to provide quality education to students.</p>
+    <div>
+      <PublicHero />
+    </div>
+    <div>
+      <NoticeBoard />
+    </div>
+    <div>
+      <SchEvents />
+    </div>
+    <div>
+      <SchStats />
     </div>
   </PublicLayout>
 </template>

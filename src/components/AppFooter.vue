@@ -3,13 +3,13 @@
 </script>
 
 <template>
-  <footer class="bg-primary text-white p-4 text-center">
+  <footer class="bg-green-800 text-green-300 p-4 text-center">
     <div class="container mx-auto flex flex-col items-center">
       <!-- Contact Info -->
       <div class="text-center text-sm opacity-75">
-        <p>📍 Makunudhoo School, Maldives</p>
-        <p>📧 6520529@gmail.com</p>
-        <p>📞 +960-6520529</p>
+        <p>Makunudhoo School, Maldives</p>
+        <p>6520529@gmail.com</p>
+        <p>+960-6520529</p>
       </div>
 
       <!-- Copyright -->

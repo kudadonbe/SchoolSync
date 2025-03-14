@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
+import { useAuthStore } from '@/stores/authStore'
+
 import HomeView from '@/views/HomeView.vue'
 import NoticeBoardView from '@/views/NoticeBoardView.vue'
 import LoginView from '@/views/LoginView.vue'
@@ -16,17 +18,29 @@ const routes: RouteRecordRaw[] = [
   { path: '/login', name: 'login', component: LoginView },
 
   // Admin Routes (No authentication for now)
-  { path: '/admin/dashboard', name: 'admin-dashboard', component: AdminDashboardView },
-  { path: '/admin/stock', name: 'admin-stock', component: StockManagementView },
+  {
+    path: '/admin/dashboard',
+    name: 'admin-dashboard',
+    component: AdminDashboardView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/stock',
+    name: 'admin-stock',
+    component: StockManagementView,
+    meta: { requiresAuth: true },
+  },
   {
     path: '/admin/users',
     name: 'admin-users',
     component: () => import('@/views/admin/UsersManagementView.vue'),
+    meta: { requiresAuth: true },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
     component: () => import('@/views/admin/SettingsView.vue'),
+    meta: { requiresAuth: true },
   },
 
   // 404 Page
@@ -40,6 +54,17 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+// Global Navigation Guard for Admin Routes
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/404') // Redirect to 404 if trying to access a protected page while unauthenticated
+  } else {
+    next()
+  }
 })
 
 export default router

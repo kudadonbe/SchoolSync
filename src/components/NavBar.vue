@@ -19,6 +19,7 @@ const authStore = useAuthStore()  // Initialize auth store
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
+  { name: 'Admin', href: '/admin/dashboard' },
 ]
 
 

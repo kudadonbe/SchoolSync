@@ -1,0 +1,161 @@
+<template>
+  <div class="bg-white p-6 shadow-md rounded-lg mt-6">
+    <!-- Attendance Sheet Heading -->
+    <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-green-700">Attendance Sheet</h2>
+
+      <!-- Date Range Selection -->
+      <div class="flex gap-4 mt-2 md:mt-0">
+        <div>
+          <label class="text-xl font-semibold text-green-700">From: </label>
+          <input type="date" v-model="startDate" class="p-2 ext-xl font-semibold text-green-500">
+        </div>
+        <div>
+          <label class="text-xl font-semibold text-green-700">To: </label>
+          <input type="date" v-model="endDate" class="p-2 ext-xl font-semibold text-green-500">
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full border border-gray-200">
+        <thead class="bg-green-600 text-white">
+          <tr>
+            <th class="p-3 text-left">Date</th>
+            <th class="p-3 text-left">Day</th>
+            <th class="p-3 text-left">First Check-In</th>
+            <th class="p-3 text-left">Break In & Out</th>
+            <th class="p-3 text-left">Last Check-Out</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- ✅ Using filteredRecords in v-for -->
+          <tr v-for="(record, index) in filteredRecords" :key="index" class="border-b border-gray-200">
+            <td class="p-3">{{ record.date }}</td>
+            <td class="p-3" :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">{{ record.day }}</td>
+            <td class="p-3" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckIn }">
+              {{ record.firstCheckIn || '--' }}
+            </td>
+            <td class="p-3" :class="{
+              'bg-gray-100 text-gray-600': record.breaks.length > 0,
+              'bg-red-200 text-red-700 font-bold': record.missingBreakPair
+            }">
+              <span v-if="record.breaks.length > 0">
+                {{ record.breaks.join(", ") }}
+              </span>
+              <span v-else>--</span>
+            </td>
+            <td class="p-3" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckOut }">
+              {{ record.lastCheckOut || '--' }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, defineProps } from "vue";
+import { attendanceRecords } from "@/data/testData"; // ✅ Import test data
+
+// ✅ Define Props to Accept `selectedUserId`
+const props = defineProps<{ selectedUserId: string }>();
+
+// ✅ Define Processed Attendance Interface
+interface ProcessedAttendance {
+  date: string;
+  day: string;
+  firstCheckIn: string;
+  lastCheckOut: string;
+  breaks: string[];
+  missingCheckIn: boolean;
+  missingBreakPair: boolean;
+  missingCheckOut: boolean;
+  isWeekend: boolean;
+}
+
+// ✅ Date range filters
+const startDate = ref("2025-02-16");
+const endDate = ref("2025-03-15");
+
+// ✅ Compute Attendance for Selected User with Date Filtering
+const filteredRecords = computed((): ProcessedAttendance[] => {
+  const recordsMap = new Map<string, ProcessedAttendance>();
+
+  // Filter records for the selected user within the date range
+  const userRecords = attendanceRecords.filter(record =>
+    record.user_id === props.selectedUserId &&
+    record.date >= startDate.value &&
+    record.date <= endDate.value
+  );
+
+  // Populate records
+  userRecords.forEach(record => {
+    if (!recordsMap.has(record.date)) {
+      recordsMap.set(record.date, {
+        date: record.date,
+        day: new Date(record.date).toLocaleString('en-us', { weekday: 'long' }),
+        firstCheckIn: "",
+        lastCheckOut: "",
+        breaks: [],
+        missingCheckIn: false,
+        missingBreakPair: false,
+        missingCheckOut: false,
+        isWeekend: false
+      });
+    }
+    const dayRecord = recordsMap.get(record.date)!;
+
+    if (record.status === "CHECK IN") dayRecord.firstCheckIn = record.time;
+    if (record.status === "CHECK OUT") dayRecord.lastCheckOut = record.time;
+    if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
+      dayRecord.breaks.push(`${record.time} (${record.status})`);
+    }
+  });
+
+  // ✅ Generate all calendar days within the selected range
+  const daysArray: ProcessedAttendance[] = [];
+  const currentDate = new Date(startDate.value); // ✅ Use `const` since it's not reassigned
+  const end = new Date(endDate.value);
+
+  while (currentDate <= end) {
+    const dateStr = currentDate.toISOString().split("T")[0];
+    const dayName = currentDate.toLocaleString('en-us', { weekday: 'long' });
+    const isWeekend = dayName === "Friday" || dayName === "Saturday";
+
+    const record = recordsMap.get(dateStr) || {
+      date: dateStr,
+      day: dayName,
+      firstCheckIn: "",
+      lastCheckOut: "",
+      breaks: [],
+      missingCheckIn: !isWeekend,
+      missingBreakPair: false,
+      missingCheckOut: !isWeekend,
+      isWeekend
+    };
+
+    // Ensure missing attendance is flagged correctly
+    record.missingCheckIn = !record.firstCheckIn && !isWeekend;
+    record.missingCheckOut = !record.lastCheckOut && !isWeekend;
+
+    // 🔹 **Break Validation**
+    let breakOutCount = 0;
+    let breakInCount = 0;
+    record.breaks.forEach(b => {
+      if (b.includes("BREAK OUT")) breakOutCount++;
+      if (b.includes("BREAK IN")) breakInCount++;
+    });
+
+    // 🔴 **Flag if `BREAK OUT` or `BREAK IN` is missing its pair**
+    record.missingBreakPair = breakOutCount !== breakInCount;
+
+    daysArray.push(record);
+    currentDate.setDate(currentDate.getDate() + 1); // ✅ Allow loop to iterate
+  }
+
+  return daysArray;
+});
+</script>

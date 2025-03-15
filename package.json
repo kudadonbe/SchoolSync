@@ -8,6 +8,8 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
+    "build:docs": "vite build --outDir docs",
+    "deploy": "npm run build:docs && git add docs && git commit -m 'Deploy to GitHub Pages' && git push",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"

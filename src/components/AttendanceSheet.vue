@@ -2,51 +2,52 @@
   <div class="bg-white p-6 shadow-md rounded-lg mt-6">
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-green-700">Attendance Sheet</h2>
+      <h2 class="text-xl font-semibold text-green-700">ATTENDANCE</h2>
 
       <!-- Date Range Selection -->
       <div class="flex gap-4 mt-2 md:mt-0">
         <div>
-          <label class="text-xl font-semibold text-green-700">From: </label>
-          <input type="date" v-model="startDate" class="p-2 ext-xl font-semibold text-green-500">
+          <label class="text-xl font-semibold text-green-700">FROM: </label>
+          <input type="date" v-model="startDate" class="p-2 text-xl font-semibold text-green-500">
         </div>
         <div>
-          <label class="text-xl font-semibold text-green-700">To: </label>
-          <input type="date" v-model="endDate" class="p-2 ext-xl font-semibold text-green-500">
+          <label class="text-xl font-semibold text-green-700">TO: </label>
+          <input type="date" v-model="endDate" class="p-2 text-xl font-semibold text-green-500">
         </div>
       </div>
     </div>
 
     <!-- Attendance Table -->
     <div class="overflow-x-auto">
-      <table class="w-full border border-gray-200">
+      <table class="w-full table-fixed border border-gray-200">
         <thead class="bg-green-600 text-white">
           <tr>
-            <th class="p-3 text-left">Date</th>
-            <th class="p-3 text-left">Day</th>
-            <th class="p-3 text-left">First Check-In</th>
-            <th class="p-3 text-left">Break In & Out</th>
-            <th class="p-3 text-left">Last Check-Out</th>
+            <th class="p-3 text-center w-1/8">DATE</th>
+            <th class="p-3 text-center w-1/8">DAY</th>
+            <th class="p-3 text-center w-1/8">IN</th>
+            <th class="p-3 text-left w-auto">BREAKS</th>
+            <th class="p-3 text-center w-1/8">OUT</th>
           </tr>
         </thead>
         <tbody>
-          <!-- ✅ Using filteredRecords in v-for -->
           <tr v-for="(record, index) in filteredRecords" :key="index" class="border-b border-gray-200">
-            <td class="p-3">{{ record.date }}</td>
-            <td class="p-3" :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">{{ record.day }}</td>
-            <td class="p-3" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckIn }">
+            <td class="p-3 text-center">{{ record.date }}</td>
+            <td class="p-3 text-center" :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">
+              {{ record.day }}
+            </td>
+            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckIn }">
               {{ record.firstCheckIn || '--' }}
             </td>
-            <td class="p-3" :class="{
+            <td class="p-3 text-left" :class="{
               'bg-gray-100 text-gray-600': record.breaks.length > 0,
-              'bg-red-200 text-red-700 font-bold': record.missingBreakPair
+              'bg-red-200 text-red-700 font-bold': record.missingBreakPair // 🔹 Fix applied here
             }">
               <span v-if="record.breaks.length > 0">
                 {{ record.breaks.join(", ") }}
               </span>
               <span v-else>--</span>
             </td>
-            <td class="p-3" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckOut }">
+            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckOut }">
               {{ record.lastCheckOut || '--' }}
             </td>
           </tr>
@@ -96,7 +97,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, {
         date: record.date,
-        day: new Date(record.date).toLocaleString('en-us', { weekday: 'long' }),
+        day: new Date(record.date).toLocaleString('en-us', { weekday: 'short' }), // 🔹 **Short Day Name**
         firstCheckIn: "",
         lastCheckOut: "",
         breaks: [],
@@ -117,13 +118,13 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
   // ✅ Generate all calendar days within the selected range
   const daysArray: ProcessedAttendance[] = [];
-  const currentDate = new Date(startDate.value); // ✅ Use `const` since it's not reassigned
+  const currentDate = new Date(startDate.value);
   const end = new Date(endDate.value);
 
   while (currentDate <= end) {
     const dateStr = currentDate.toISOString().split("T")[0];
-    const dayName = currentDate.toLocaleString('en-us', { weekday: 'long' });
-    const isWeekend = dayName === "Friday" || dayName === "Saturday";
+    const dayName = currentDate.toLocaleString('en-us', { weekday: 'short' }); // 🔹 **Short Day Name**
+    const isWeekend = dayName === "Fri" || dayName === "Sat";
 
     const record = recordsMap.get(dateStr) || {
       date: dateStr,
@@ -153,7 +154,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     record.missingBreakPair = breakOutCount !== breakInCount;
 
     daysArray.push(record);
-    currentDate.setDate(currentDate.getDate() + 1); // ✅ Allow loop to iterate
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
   return daysArray;

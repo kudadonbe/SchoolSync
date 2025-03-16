@@ -38,7 +38,6 @@ export const staffList: Staff[] = [
     position: 'Senior Teacher - Social Studies',
     join_date: null,
   },
-  { user_id: '103', name: 'Unknown', department: 'Unknown', position: 'Unknown', join_date: null },
   {
     user_id: '104',
     name: 'Mohamed Ihsan',
@@ -186,7 +185,6 @@ export const staffList: Staff[] = [
     position: 'Teacher - Health & Physical Education',
     join_date: null,
   },
-  { user_id: '125', name: 'Unknown', department: 'Unknown', position: 'Unknown', join_date: null },
   {
     user_id: '126',
     name: 'Nafiz Ibrahim',

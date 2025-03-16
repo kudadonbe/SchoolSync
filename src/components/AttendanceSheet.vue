@@ -35,19 +35,16 @@
             <td class="p-3 text-center" :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">
               {{ record.day }}
             </td>
-            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckIn }">
+            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckIn }">
               {{ record.firstCheckIn || '--' }}
             </td>
-            <td class="p-3 text-left" :class="{
-              'bg-gray-100 text-gray-600': record.breaks.length > 0,
-              'bg-red-200 text-red-700 font-bold': record.missingBreakPair // 🔹 Fix applied here
-            }">
-              <span v-if="record.breaks.length > 0">
-                {{ record.breaks.join(", ") }}
+            <td class="p-3 text-left">
+              <span v-for="(b, i) in record.breaks" :key="i" class="inline-block px-1"
+                :class="{ 'bg-red-100 text-red-700': b.missing }">
+                {{ b.time }} {{ b.type }}
               </span>
-              <span v-else>--</span>
             </td>
-            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700 font-bold': record.missingCheckOut }">
+            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckOut }">
               {{ record.lastCheckOut || '--' }}
             </td>
           </tr>
@@ -70,9 +67,8 @@ interface ProcessedAttendance {
   day: string;
   firstCheckIn: string;
   lastCheckOut: string;
-  breaks: string[];
+  breaks: { time: string; type: string; missing: boolean }[];
   missingCheckIn: boolean;
-  missingBreakPair: boolean;
   missingCheckOut: boolean;
   isWeekend: boolean;
 }
@@ -97,12 +93,11 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, {
         date: record.date,
-        day: new Date(record.date).toLocaleString('en-us', { weekday: 'short' }), // 🔹 **Short Day Name**
+        day: new Date(record.date).toLocaleString('en-us', { weekday: 'short' }), // 🔹 Short Day Name
         firstCheckIn: "",
         lastCheckOut: "",
         breaks: [],
         missingCheckIn: false,
-        missingBreakPair: false,
         missingCheckOut: false,
         isWeekend: false
       });
@@ -111,8 +106,13 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
     if (record.status === "CHECK IN") dayRecord.firstCheckIn = record.time;
     if (record.status === "CHECK OUT") dayRecord.lastCheckOut = record.time;
+
     if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
-      dayRecord.breaks.push(`${record.time} (${record.status})`);
+      dayRecord.breaks.push({
+        time: record.time,
+        type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
+        missing: false // ✅ Default to false, will check later
+      });
     }
   });
 
@@ -123,7 +123,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
   while (currentDate <= end) {
     const dateStr = currentDate.toISOString().split("T")[0];
-    const dayName = currentDate.toLocaleString('en-us', { weekday: 'short' }); // 🔹 **Short Day Name**
+    const dayName = currentDate.toLocaleString('en-us', { weekday: 'short' });
     const isWeekend = dayName === "Fri" || dayName === "Sat";
 
     const record = recordsMap.get(dateStr) || {
@@ -133,7 +133,6 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
       lastCheckOut: "",
       breaks: [],
       missingCheckIn: !isWeekend,
-      missingBreakPair: false,
       missingCheckOut: !isWeekend,
       isWeekend
     };
@@ -142,16 +141,19 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     record.missingCheckIn = !record.firstCheckIn && !isWeekend;
     record.missingCheckOut = !record.lastCheckOut && !isWeekend;
 
-    // 🔹 **Break Validation**
+    // ✅ Break Validation - Highlight only missing pairs
     let breakOutCount = 0;
     let breakInCount = 0;
+
     record.breaks.forEach(b => {
-      if (b.includes("BREAK OUT")) breakOutCount++;
-      if (b.includes("BREAK IN")) breakInCount++;
+      if (b.type === "(OUT)") breakOutCount++;
+      if (b.type === "(IN)") breakInCount++;
     });
 
-    // 🔴 **Flag if `BREAK OUT` or `BREAK IN` is missing its pair**
-    record.missingBreakPair = breakOutCount !== breakInCount;
+    // If mismatched, mark the last unmatched as missing
+    if (breakOutCount !== breakInCount) {
+      record.breaks[record.breaks.length - 1].missing = true;
+    }
 
     daysArray.push(record);
     currentDate.setDate(currentDate.getDate() + 1);

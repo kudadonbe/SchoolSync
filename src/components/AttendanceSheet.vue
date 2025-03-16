@@ -1,50 +1,51 @@
 <template>
-  <div class="bg-white p-6 shadow-md rounded-lg mt-6">
+  <div class="bg-white p-4 md:p-6 shadow-md rounded-lg mt-6">
     <!-- Attendance Sheet Heading -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-4">
-      <h2 class="text-xl font-semibold text-green-700">ATTENDANCE</h2>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
+      <h2 class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
 
       <!-- Date Range Selection -->
-      <div class="flex gap-4 mt-2 md:mt-0">
+      <div class="flex gap-2 md:gap-4 mt-2 md:mt-0">
         <div>
-          <label class="text-xl font-semibold text-green-700">FROM: </label>
-          <input type="date" v-model="startDate" class="p-2 text-xl font-semibold text-green-500">
+          <label class="text-[10px] md:text-lg font-semibold text-green-700">FROM: </label>
+          <input type="date" v-model="startDate" class="p-1 md:p-2 text-[10px] md:text-lg font-semibold text-green-500">
         </div>
         <div>
-          <label class="text-xl font-semibold text-green-700">TO: </label>
-          <input type="date" v-model="endDate" class="p-2 text-xl font-semibold text-green-500">
+          <label class="text-[10px] md:text-lg font-semibold text-green-700">TO: </label>
+          <input type="date" v-model="endDate" class="p-1 md:p-2 text-[10px] md:text-lg font-semibold text-green-500">
         </div>
       </div>
     </div>
 
-    <!-- Attendance Table -->
+    <!-- Responsive Table Wrapper -->
     <div class="overflow-x-auto">
-      <table class="w-full table-fixed border border-gray-200">
-        <thead class="bg-green-600 text-white">
+      <table class="w-full table-auto border border-gray-200 text-[10px] md:text-sm">
+        <thead class="bg-green-600 text-white text-[10px] md:text-sm">
           <tr>
-            <th class="p-3 text-center w-1/8">DATE</th>
-            <th class="p-3 text-center w-1/8">DAY</th>
-            <th class="p-3 text-center w-1/8">IN</th>
-            <th class="p-3 text-left w-auto">BREAKS</th>
-            <th class="p-3 text-center w-1/8">OUT</th>
+            <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8">DATE</th>
+            <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8 hidden md:table-cell">DAY</th> <!-- Hidden on Mobile -->
+            <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">IN</th> <!-- Reduced Width -->
+            <th class="p-2 md:p-3 text-left w-1/4 md:w-auto">BREAKS</th> <!-- Adjusted Width -->
+            <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">OUT</th> <!-- Reduced Width -->
           </tr>
         </thead>
         <tbody>
           <tr v-for="(record, index) in filteredRecords" :key="index" class="border-b border-gray-200">
-            <td class="p-3 text-center">{{ record.date }}</td>
-            <td class="p-3 text-center" :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">
+            <td class="p-1 md:p-3 text-center">{{ record.date }}</td>
+            <td class="p-1 md:p-3 text-center hidden md:table-cell"
+              :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">
               {{ record.day }}
-            </td>
-            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckIn }">
+            </td> <!-- Hidden on Mobile -->
+            <td class="p-1 md:p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckIn }">
               {{ record.firstCheckIn || '--' }}
             </td>
-            <td class="p-3 text-left">
+            <td class="p-1 md:p-3 text-left whitespace-normal">
               <span v-for="(b, i) in record.breaks" :key="i" class="inline-block px-1"
                 :class="{ 'bg-red-100 text-red-700': b.missing }">
                 {{ b.time }} {{ b.type }}
               </span>
             </td>
-            <td class="p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckOut }">
+            <td class="p-1 md:p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckOut }">
               {{ record.lastCheckOut || '--' }}
             </td>
           </tr>
@@ -110,7 +111,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
       dayRecord.breaks.push({
         time: record.time,
-        type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
+        type: record.status === "BREAK IN" ? "(OUT)" : "(IN)",
         missing: false // ✅ Default to false, will check later
       });
     }

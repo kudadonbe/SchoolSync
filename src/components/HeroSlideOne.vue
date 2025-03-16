@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const title = 'Quran Tournment'
 const description = 'Congratulations to the winners of the Quran Tournment!'
-const image = "/images/home.jpg"
+const image = "/SchoolSync/images/home.jpg"
 </script>
 
 <template>

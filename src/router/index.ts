@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
 import { useAuthStore } from '@/stores/authStore'
@@ -52,7 +52,10 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history:
+    import.meta.env.MODE === 'production'
+      ? createWebHashHistory(import.meta.env.BASE_URL) // GitHub Pages (Hash Mode)
+      : createWebHistory(import.meta.env.BASE_URL), // Local Dev (Clean URLs)
   routes,
 })
 

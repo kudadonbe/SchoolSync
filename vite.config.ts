@@ -13,5 +13,5 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
-  base: '/SchoolSync/',
+  base: process.env.NODE_ENV === 'production' ? '/SchoolSync/' : '/', // 👈 Fix this
 })

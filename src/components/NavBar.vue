@@ -1,5 +1,5 @@
 <script setup lang="ts">
-
+import { computed } from 'vue';
 import { RouterLink, useRoute } from 'vue-router'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, XMarkIcon, UserIcon } from '@heroicons/vue/24/outline'
@@ -16,11 +16,19 @@ const route = useRoute();
 const authStore = useAuthStore()  // Initialize auth store
 
 
-const navigation = [
+
+const baseNavigation = [
   { name: 'Home', href: '/' },
   { name: 'About', href: '/about' },
-  { name: 'Admin', href: '/admin/dashboard' },
 ]
+
+
+// Conditionally add the "Admin" link
+const navigation = computed(() => {
+  return authStore.isAuthenticated
+    ? [...baseNavigation, { name: 'Admin', href: '/admin' }]
+    : baseNavigation
+})
 
 
 </script>

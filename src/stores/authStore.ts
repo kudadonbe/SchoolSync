@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('user')
 
     if (route.meta.requiresAuth) {
-      router.push('/404')
+      router.push('/')
     }
   }
 

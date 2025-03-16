@@ -1,13 +1,14 @@
 <script setup lang="ts">
 const title = 'Quran Tournment'
 const description = 'Congratulations to the winners of the Quran Tournment!'
-const image = "/SchoolSync/images/home.jpg"
+
+const getPublicImage = (fileName: string) => `${import.meta.env.BASE_URL}images/${fileName}`
 </script>
 
 <template>
   <div class="relative w-full h-[500px] overflow-hidden rounded-lg">
     <!-- Background Image -->
-    <img :src="image" class="w-full h-full object-cover rounded-lg" />
+    <img :src="getPublicImage('home.jpg')" class="w-full h-full object-cover rounded-lg" />
 
     <!-- Soft Emerald Gradient Overlay -->
     <div

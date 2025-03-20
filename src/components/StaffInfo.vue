@@ -4,15 +4,25 @@
 
     <!-- Search Staff -->
     <div class="relative">
-      <input v-model="searchQuery" type="text" placeholder="Search staff by name..."
-        class="w-full p-2 border border-gray-300 rounded-md mb-3" />
+      <input
+        v-model="searchQuery"
+        type="text"
+        placeholder="Search staff by name..."
+        class="w-full p-2 border border-gray-300 rounded-md mb-3"
+      />
 
       <!-- Filtered Staff List (Floating Dropdown) -->
-      <div v-if="searchQuery && filteredStaff.length > 0"
-        class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto z-50">
+      <div
+        v-if="searchQuery && filteredStaff.length > 0"
+        class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto z-50"
+      >
         <ul>
-          <li v-for="user in filteredStaff" :key="user.user_id" @click="selectUser(user.user_id)"
-            class="p-2 hover:bg-green-100 cursor-pointer">
+          <li
+            v-for="user in filteredStaff"
+            :key="user.user_id"
+            @click="selectUser(user.user_id)"
+            class="p-2 hover:bg-green-100 cursor-pointer"
+          >
             {{ user.name }}
           </li>
         </ul>
@@ -46,7 +56,7 @@
           </tr>
           <tr>
             <td class="p-3 font-semibold">Join Date:</td>
-            <td class="p-3">{{ selectedUser.join_date }}</td>
+            <td class="p-3">{{ selectedUser.join_date || "N/A" }}</td>
           </tr>
         </tbody>
       </table>
@@ -56,7 +66,12 @@
 
 <script setup lang="ts">
 import { ref, computed, defineEmits, defineProps } from "vue";
-import { staffList } from "@/data/mockData"; // ✅ Import staff data
+import { useMockDataStore } from "@/stores/mockDataStore"; // ✅ Use Pinia store
+import type { Staff } from "@/stores/mockDataStore"; // ✅ Import Staff type
+
+// ✅ Get state from Pinia store
+const mockDataStore = useMockDataStore();
+const { staffList } = mockDataStore;
 
 // ✅ Props to accept selectedUserId from parent
 const props = defineProps<{ selectedUserId: string }>();
@@ -71,7 +86,7 @@ const selectedUserId = ref(props.selectedUserId);
 const searchQuery = ref("");
 
 // ✅ Filter staff list based on search query
-const filteredStaff = computed(() => {
+const filteredStaff = computed((): Staff[] => {
   if (!searchQuery.value) return [];
   return staffList.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
@@ -79,7 +94,7 @@ const filteredStaff = computed(() => {
 });
 
 // ✅ Find selected user's details
-const selectedUser = computed(() => {
+const selectedUser = computed((): Staff | undefined => {
   return staffList.find((user) => user.user_id === selectedUserId.value);
 });
 

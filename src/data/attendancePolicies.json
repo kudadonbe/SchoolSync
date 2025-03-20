@@ -1,0 +1,9 @@
+{
+    "late_fine_per_minute": 0,
+    "late_grace_period": 0,
+    "max_break_minutes": 45,
+    "duplicate_punch_threshold": 60,
+    "missing_punch_policy": "flag",
+    "apply_fine_for_excess_break": true
+  }
+  

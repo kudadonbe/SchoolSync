@@ -23,10 +23,10 @@
         <thead class="bg-green-600 text-white text-[10px] md:text-sm">
           <tr>
             <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8">DATE</th>
-            <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8 hidden md:table-cell">DAY</th> <!-- Hidden on Mobile -->
-            <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">IN</th> <!-- Reduced Width -->
-            <th class="p-2 md:p-3 text-left w-1/4 md:w-auto">BREAKS</th> <!-- Adjusted Width -->
-            <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">OUT</th> <!-- Reduced Width -->
+            <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8 hidden md:table-cell">DAY</th>
+            <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">IN</th>
+            <th class="p-2 md:p-3 text-left w-1/4 md:w-auto">BREAKS</th>
+            <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">OUT</th>
           </tr>
         </thead>
         <tbody>
@@ -35,7 +35,7 @@
             <td class="p-1 md:p-3 text-center hidden md:table-cell"
               :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">
               {{ record.day }}
-            </td> <!-- Hidden on Mobile -->
+            </td>
             <td class="p-1 md:p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckIn }">
               {{ record.firstCheckIn || '--' }}
             </td>
@@ -57,7 +57,11 @@
 
 <script setup lang="ts">
 import { ref, computed, defineProps } from "vue";
-import { attendanceRecords } from "@/data/mockData"; // ✅ Import test data
+import { useMockDataStore } from "@/stores/mockDataStore"; // ✅ Pinia store
+
+// ✅ Get data from Pinia store
+const mockDataStore = useMockDataStore();
+const { attendanceRecords } = mockDataStore;
 
 // ✅ Define Props to Accept `selectedUserId`
 const props = defineProps<{ selectedUserId: string }>();
@@ -94,7 +98,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, {
         date: record.date,
-        day: new Date(record.date).toLocaleString('en-us', { weekday: 'short' }), // 🔹 Short Day Name
+        day: new Date(record.date).toLocaleString('en-us', { weekday: 'short' }),
         firstCheckIn: "",
         lastCheckOut: "",
         breaks: [],
@@ -112,7 +116,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
       dayRecord.breaks.push({
         time: record.time,
         type: record.status === "BREAK IN" ? "(OUT)" : "(IN)",
-        missing: false // ✅ Default to false, will check later
+        missing: false
       });
     }
   });

@@ -1,8 +1,11 @@
 <script setup lang="ts">
+
+
 import AttendanceSummary from "@/components/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
 import AttendanceSheet from "@/components/AttendanceSheet.vue";
 import { ref } from "vue";
+
 
 
 // ✅ Track the selected user across components
@@ -12,6 +15,7 @@ const selectedUserId = ref("153"); // Default to the first user
 const updateUser = (userId: string) => {
   selectedUserId.value = userId;
 };
+
 </script>
 
 <template>
@@ -34,6 +38,7 @@ const updateUser = (userId: string) => {
     <!-- Full width: Attendance Sheet -->
     <div class="mt-6">
       <AttendanceSheet :selectedUserId="selectedUserId" />
+
     </div>
   </div>
 </template>

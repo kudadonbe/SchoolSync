@@ -1,26 +1,27 @@
-// ✅ Define Staff Interface
-export interface Staff {
-  user_id: string
-  name: string
-  department: string
-  position: string
-  join_date: string | null
-}
+  // ✅ Define Staff Interface
+  export interface Staff {
+    user_id: string
+    name: string
+    department: string
+    position: string
+    join_date: string | null
+  }
 
-// ✅ Define Attendance Record Interface
-export interface AttendanceRecord {
-  user_id: string
-  date: string
-  time: string
-  status: 'CHECK IN' | 'CHECK OUT' | 'BREAK IN' | 'BREAK OUT' | 'UNKNOWN'
-}
+  // ✅ Define Attendance Record Interface
+  export interface AttendanceRecord {
+    user_id: string
+    date: string
+    time: string
+    status: 'CHECK IN' | 'CHECK OUT' | 'BREAK IN' | 'BREAK OUT' | 'UNKNOWN'
+  }
 
-// ✅ Define Interface for Attendance Summary Records
-export interface AttendanceSummaryRecord {
-  user_id: string
-  date: string
-  status: 'PRESENT' | 'ABSENT' | 'SICK_PHONE' | 'SICK_MC' | 'FRL' | 'ANNUAL_LEAVE' | 'HAJJU_UMRA'
-}
+  // ✅ Define Interface for Attendance Summary Records
+  export interface AttendanceSummaryRecord {
+    user_id: string
+    date: string
+    status: 'PRESENT' | 'ABSENT' | 'SICK_PHONE' | 'SICK_MC' | 'FRL' | 'ANNUAL_LEAVE' | 'HAJJU_UMRA'
+  }
+
 
 // ✅ Sample Staff Data
 export const staffList: Staff[] = [

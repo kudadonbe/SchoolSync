@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineEmits, defineProps } from "vue";
-import { staffList } from "@/data/testData"; // ✅ Import staff data
+import { staffList } from "@/data/mockData"; // ✅ Import staff data
 
 // ✅ Props to accept selectedUserId from parent
 const props = defineProps<{ selectedUserId: string }>();

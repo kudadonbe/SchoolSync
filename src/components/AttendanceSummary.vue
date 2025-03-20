@@ -54,8 +54,8 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from "vue";
-import { attendanceSummaryRecords } from "@/data/testData"; // ✅ Import test data
-import type { AttendanceSummaryRecord } from "@/data/testData"; // ✅ Use `import type` for type-only import
+import { attendanceSummaryRecords } from "@/data/mockData"; // ✅ Import test data
+import type { AttendanceSummaryRecord } from "@/data/mockData"; // ✅ Use `import type` for type-only import
 
 // ✅ Define Props to Accept `selectedUserId`
 const props = defineProps<{ selectedUserId: string }>();

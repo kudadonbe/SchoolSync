@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import { ref, computed, defineProps } from "vue";
-import { attendanceRecords } from "@/data/testData"; // ✅ Import test data
+import { attendanceRecords } from "@/data/mockData"; // ✅ Import test data
 
 // ✅ Define Props to Accept `selectedUserId`
 const props = defineProps<{ selectedUserId: string }>();

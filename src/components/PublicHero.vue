@@ -37,9 +37,9 @@ const currentSlide = computed(() => slides[currentIndex.value].component)
 
     <!-- Navigation Buttons -->
     <button @click="prevSlide"
-      class="absolute left-5 text-white text-2xl bg-black/50 px-2 py-1 rounded">&#10094;</button>
+      class="absolute left-5 text-green-900 text-2xl bg-green-200/50 px-2 py-1 rounded">&#10094;</button>
     <button @click="nextSlide"
-      class="absolute right-5 text-white text-2xl bg-black/50 px-2 py-1 rounded">&#10095;</button>
+      class="absolute right-5 text-green-900 text-2xl bg-green-200/50 px-2 py-1 rounded">&#10095;</button>
   </div>
 
 

@@ -12,9 +12,9 @@ const getPublicImage = (fileName: string) => `${import.meta.env.BASE_URL}images/
 
     <!-- Soft Emerald Gradient Overlay -->
     <div
-      class="absolute inset-0 bg-gradient-to-b from-emerald-100/50 to-emerald-50/40 flex flex-col justify-end p-8 rounded-lg">
-      <h1 class="text-3xl font-bold text-emerald-900">{{ title }}</h1>
-      <p class="text-lg mt-2 text-emerald-800">{{ description }}</p>
+      class="absolute inset-0 flex flex-col justify-end p-8 rounded-lg">
+        <h1 class="text-3xl font-bold text-emerald-600">{{ title }}</h1>
+        <p class="text-lg mt-2 text-emerald-600">{{ description }}</p>
     </div>
   </div>
 </template>

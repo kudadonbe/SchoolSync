@@ -25,6 +25,7 @@
             <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8">DATE</th>
             <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8 hidden md:table-cell">DAY</th>
             <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">IN</th>
+            <th class="p-2 md:p-3 text-center w-1/6 md:w-1/8"></th>
             <th class="p-2 md:p-3 text-left w-1/4 md:w-auto">BREAKS</th>
             <th class="p-2 md:p-3 text-center w-1/12 md:w-1/8">OUT</th>
           </tr>
@@ -32,12 +33,15 @@
         <tbody>
           <tr v-for="(record, index) in filteredRecords" :key="index" class="border-b border-gray-200">
             <td class="p-1 md:p-3 text-center">{{ record.date }}</td>
-            <td class="p-1 md:p-3 text-center hidden md:table-cell"
+            <td class="p-1 md:p-3 text-left hidden md:table-cell"
               :class="{ 'bg-gray-100 text-gray-600': record.isWeekend }">
               {{ record.day }}
             </td>
             <td class="p-1 md:p-3 text-center" :class="{ 'bg-red-200 text-red-700': record.missingCheckIn }">
               {{ record.firstCheckIn || '--' }}
+            </td>
+            <td class="p-1 md:p-3 text-center">
+              late
             </td>
             <td class="p-1 md:p-3 text-left whitespace-normal">
               <span v-for="(b, i) in record.breaks" :key="i" class="inline-block px-1"
@@ -56,8 +60,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineProps } from "vue";
-import { useMockDataStore } from "@/stores/mockDataStore"; // ✅ Pinia store
+import { ref, computed } from "vue";
+// import { useMockDataStore } from "@/stores/mockDataStore"; // ✅ Pinia store
+import { useMockDataStore } from "@/stores/dataStore"; // ✅ Pinia store
 
 // ✅ Get data from Pinia store
 const mockDataStore = useMockDataStore();
@@ -98,7 +103,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, {
         date: record.date,
-        day: new Date(record.date).toLocaleString('en-us', { weekday: 'short' }),
+        day: new Date(record.date).toLocaleString('en-us', { weekday: 'long' }),
         firstCheckIn: "",
         lastCheckOut: "",
         breaks: [],
@@ -115,7 +120,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
       dayRecord.breaks.push({
         time: record.time,
-        type: record.status === "BREAK IN" ? "(OUT)" : "(IN)",
+        type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
         missing: false
       });
     }
@@ -128,8 +133,8 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
   while (currentDate <= end) {
     const dateStr = currentDate.toISOString().split("T")[0];
-    const dayName = currentDate.toLocaleString('en-us', { weekday: 'short' });
-    const isWeekend = dayName === "Fri" || dayName === "Sat";
+    const dayName = currentDate.toLocaleString('en-us', { weekday: 'long' });
+    const isWeekend = dayName === "Friday" || dayName === "Saturday";
 
     const record = recordsMap.get(dateStr) || {
       date: dateStr,

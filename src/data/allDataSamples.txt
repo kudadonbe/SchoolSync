@@ -1,0 +1,87 @@
+{
+  // Attendance policy rules grouped into categories
+  "attendancePolicies": {
+    "late": {
+      "fine_per_minute": 0,               // Amount fined per minute of lateness
+      "grace_period_minutes": 0           // Allowed grace period before counting as late
+    },
+    "break": {
+      "max_minutes": 45,                  // Max allowed break duration in minutes
+      "apply_fine_for_excess": true       // Whether to penalize for excessive break
+    },
+    "punch": {
+      "duplicate_threshold_minutes": 60,  // Ignore punches within this threshold (in minutes)
+      "missing_punch_policy": "flag"      // What to do if IN/OUT punch is missing
+    }
+  },
+
+  // Raw punch records from iClock or device
+  "attendanceRecords": [
+    {
+      "user_id": "1",                     // ID of the staff
+      "date": "2025-03-21",              // Date of punch
+      "time": "08:12:00",                // Time of punch (24hr format)
+      "punch_status": 0,                 // 0 = IN, 1 = OUT, 2 = Break OUT, 3 = Break IN
+      "log_status": 1                    // Custom status, if any (e.g., synced, flagged, etc.)
+    }
+  ],
+
+  // Summary of attendance per day per staff
+  "attendanceSummaryRecords": [
+    {
+      "user_id": "1",
+      "date": "2025-03-21",
+      "status": "PRESENT"                // Enum: PRESENT, ABSENT, SICK_FROM, UMRA, etc.
+    },
+    {
+      "user_id": "1",
+      "date": "2025-03-20",
+      "status": "ABSENT"
+    }
+  ],
+
+  // Daily schedule assignment for various duty groups
+  "dutyRoster": {
+    "dutyTimes": {
+      "EarlyDuty": "06:45",              // Time for Labors + selected Admin staff
+      "AcademicDuty": "07:00",           // Time for Academic staff
+      "DefaultSchedule": "08:00"         // Default fallback time
+    },
+    "dailyOverrides": {
+      "2025-03-21": {
+        "EarlyDuty": ["1", "2"]          // Staff IDs that have EarlyDuty on this date
+      }
+    }
+  },
+
+  // List of all staff members in the system
+  "staffList": [
+    {
+      "user_id": "1",
+      "name": "Hussain Shareef",
+      "department": "Admin",
+      "position": "Administrative Officer",
+      "join_date": "2023-01-15",
+      "leave_count_date": null,
+      "staff_type": "Admin"             // Enum: Admin, Academic, Labor, Unknown
+    },
+    {
+      "user_id": "2",
+      "name": "Azeema Hussain",
+      "department": "Academic",
+      "position": "Teacher - English",
+      "join_date": "2022-08-10",
+      "leave_count_date": null,
+      "staff_type": "Academic"
+    },
+    {
+      "user_id": "3",
+      "name": "Naseema Ibrahim",
+      "department": "Labours",
+      "position": "Labour",
+      "join_date": "2021-04-01",
+      "leave_count_date": null,
+      "staff_type": "Labor"
+    }
+  ]
+}

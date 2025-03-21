@@ -4,25 +4,15 @@
 
     <!-- Search Staff -->
     <div class="relative">
-      <input
-        v-model="searchQuery"
-        type="text"
-        placeholder="Search staff by name..."
-        class="w-full p-2 border border-gray-300 rounded-md mb-3"
-      />
+      <input v-model="searchQuery" type="text" placeholder="Search staff by name..."
+        class="w-full p-2 border border-gray-300 rounded-md mb-3" />
 
       <!-- Filtered Staff List (Floating Dropdown) -->
-      <div
-        v-if="searchQuery && filteredStaff.length > 0"
-        class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto z-50"
-      >
+      <div v-if="searchQuery && filteredStaff.length > 0"
+        class="absolute w-full bg-white border border-gray-300 rounded-md shadow-lg mt-1 max-h-60 overflow-y-auto z-50">
         <ul>
-          <li
-            v-for="user in filteredStaff"
-            :key="user.user_id"
-            @click="selectUser(user.user_id)"
-            class="p-2 hover:bg-green-100 cursor-pointer"
-          >
+          <li v-for="user in filteredStaff" :key="user.user_id" @click="selectUser(user.user_id)"
+            class="p-2 hover:bg-green-100 cursor-pointer">
             {{ user.name }}
           </li>
         </ul>
@@ -58,6 +48,14 @@
             <td class="p-3 font-semibold">Join Date:</td>
             <td class="p-3">{{ selectedUser.join_date || "N/A" }}</td>
           </tr>
+          <tr>
+            <td class="p-3 font-semibold">Leave Count Date:</td>
+            <td class="p-3">{{ selectedUser.leave_count_date || "N/A" }}</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-semibold">Type:</td>
+            <td class="p-3">{{ selectedUser.staff_type || "N/A" }}</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -65,9 +63,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineEmits, defineProps } from "vue";
-import { useMockDataStore } from "@/stores/mockDataStore"; // ✅ Use Pinia store
-import type { Staff } from "@/stores/mockDataStore"; // ✅ Import Staff type
+import { ref, computed } from "vue";
+import { useMockDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
+import type { Staff } from "@/types"; // ✅ Import Staff type
 
 // ✅ Get state from Pinia store
 const mockDataStore = useMockDataStore();

@@ -1,10 +1,10 @@
 [
-    { "user_id": "153", "date": "2025-02-01", "status": "PRESENT" },
-    { "user_id": "153", "date": "2025-02-02", "status": "ABSENT" },
-    { "user_id": "153", "date": "2025-03-03", "status": "SICK_FROM" },
-    { "user_id": "153", "date": "2025-03-04", "status": "SICK_MC" },
-    { "user_id": "153", "date": "2025-03-05", "status": "FRL" },
-    { "user_id": "153", "date": "2025-03-06", "status": "ANNUAL_LEAVE" },
-    { "user_id": "153", "date": "2025-03-07", "status": "HAJJU" },
-    { "user_id": "153", "date": "2025-03-07", "status": "UMRA" }
-  ]
+  { "user_id": "153", "date": "2025-02-01", "status": "PRESENT" },
+  { "user_id": "153", "date": "2025-02-02", "status": "ABSENT" },
+  { "user_id": "153", "date": "2025-03-03", "status": "SICK_FORM" },
+  { "user_id": "153", "date": "2025-03-04", "status": "SICK_MC" },
+  { "user_id": "153", "date": "2025-03-05", "status": "FRL" },
+  { "user_id": "153", "date": "2025-03-06", "status": "ANNUAL_LEAVE" },
+  { "user_id": "153", "date": "2025-03-07", "status": "HAJJU" },
+  { "user_id": "153", "date": "2025-03-07", "status": "UMRA" }
+]

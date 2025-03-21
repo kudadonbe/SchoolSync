@@ -1,9 +1,26 @@
 {
-    "late_fine_per_minute": 0,
-    "late_grace_period": 0,
-    "max_break_minutes": 45,
-    "duplicate_punch_threshold": 60,
-    "missing_punch_policy": "flag",
-    "apply_fine_for_excess_break": true
+  "late": {
+    "fine_per_minute": 0,
+    "grace_period_minutes": 0
+  },
+  "break": {
+    "max_minutes": 45,
+    "apply_fine_for_excess": true
+  },
+  "punch": {
+    "duplicate_threshold_minutes": 60,
+    "missing_punch_policy": "flag"
+  },
+  "leave_limits": {
+    "sl_form": 15,
+    "sl_mc": 30,
+    "frl": 10,
+    "annual_leave": 30,
+    "hajju_leave": 40,
+    "umra_leave": 40,
+    "nopay_leave": null,
+    "special_leave": null,
+    "absents": null,
+    "days_attended": null
   }
-  
+}

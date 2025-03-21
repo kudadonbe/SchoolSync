@@ -59,3 +59,17 @@ export type AttendanceSummary = {
   specialLeave: number
   absents: number
 }
+
+// ✅ Define Processed Attendance Interface
+export interface ProcessedAttendance {
+  date: string
+  day: string
+  firstCheckIn: string
+  lastCheckOut: string
+  breaks: { time: string; type: string; missing: boolean }[]
+  missingCheckIn: boolean
+  missingCheckOut: boolean
+  isWeekend: boolean
+  lateMinutes: number
+  isHoliday: boolean
+}

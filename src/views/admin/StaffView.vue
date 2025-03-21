@@ -9,7 +9,7 @@ import { ref } from "vue";
 
 
 // ✅ Track the selected user across components
-const selectedUserId = ref("153"); // Default to the first user
+const selectedUserId = ref("101"); // Default to the first user
 
 // ✅ Update selected user when changed in StaffInfo
 const updateUser = (userId: string) => {

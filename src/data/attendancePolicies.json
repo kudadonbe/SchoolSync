@@ -8,7 +8,7 @@
     "apply_fine_for_excess": true
   },
   "punch": {
-    "duplicate_threshold_minutes": 60,
+    "duplicate_threshold_minutes": 3,
     "missing_punch_policy": "flag"
   },
   "leave_limits": {

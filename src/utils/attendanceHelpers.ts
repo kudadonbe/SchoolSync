@@ -1,4 +1,12 @@
-import type { DutyRoster, Staff, Holidays, SpecialDuty, DailyOverride } from '@/types'
+import type {
+  DutyRoster,
+  Staff,
+  Holidays,
+  SpecialDuty,
+  DailyOverride,
+  DisplayAttendanceRecord,
+  DisplayAttendanceStatus,
+} from '@/types'
 
 /**
  * Get scheduled in time for a user on a specific date.
@@ -41,6 +49,22 @@ export function getScheduledInTime(
 }
 
 /**
+ * Calculates scheduled out time by adding 6 hours to scheduled in time.
+ * @param scheduledInTime - string in "HH:mm" format
+ * @returns string in "HH:mm" format
+ */
+export function getScheduledOutTime(scheduledInTime: string): string {
+  const [h, m] = scheduledInTime.split(':').map(Number)
+  const inMinutes = h * 60 + m
+  const outMinutes = inMinutes + 6 * 60 // add 6 hours
+
+  const outH = Math.floor(outMinutes / 60) % 24
+  const outM = outMinutes % 60
+
+  return `${String(outH).padStart(2, '0')}:${String(outM).padStart(2, '0')}`
+}
+
+/**
  * Calculate late minutes after scheduled in + grace period.
  */
 export function calculateLateMinutes(scheduled: string, actual: string, grace: number): number {
@@ -56,8 +80,7 @@ export function calculateLateMinutes(scheduled: string, actual: string, grace: n
  * Checks if punch time is within ±30 min of EarlyDuty (06:45)
  */
 function isNearEarlyDutyTime(time: string): boolean {
-  const [h, m] = time.split(':').map(Number)
-  const total = h * 60 + m
+  const total = toMinutes(time)
   return total >= 375 && total <= 435 // Between 06:15 and 07:15
 }
 
@@ -100,4 +123,53 @@ export function getDailyOverrideForDate(
 ): DailyOverride | null {
   const override = dailyOverrides.find((override) => override.date === dateStr)
   return override || null
+}
+
+export function toMinutes(time: string): number {
+  const [h, m] = time.split(':').map(Number)
+  return h * 60 + m
+}
+
+/**
+ * Sorts punch records by date and time (ascending).
+ */
+export function sortPunchRecords(records: DisplayAttendanceRecord[]): DisplayAttendanceRecord[] {
+  return [...records].sort((a, b) => {
+    if (a.date === b.date) {
+      return a.time.localeCompare(b.time)
+    }
+    return a.date.localeCompare(b.date)
+  })
+}
+
+/**
+ * Normalize punch status based on punch time compared to scheduled in/out.
+ * Used to correct biometric mislogs like BREAK IN instead of CHECK OUT.
+ */
+export function normalizePunchStatus(
+  punchTime: string,
+  scheduledIn: string,
+  scheduledOut: string,
+  originalStatus: DisplayAttendanceStatus,
+  grace = 15, // Minutes after IN and before OUT
+  earlyWindow = 60, // Minutes before scheduled IN
+  lateWindow = 60, // Minutes after scheduled OUT
+): DisplayAttendanceStatus {
+  const time = toMinutes(punchTime)
+  const inMin = toMinutes(scheduledIn)
+  const outMin = toMinutes(scheduledOut)
+
+  // ✅ CHECK IN: between earlyWindow before and grace after scheduledIn
+  if (time >= inMin - earlyWindow && time <= inMin + grace) {
+    return 'CHECK IN'
+  }
+
+  // ✅ CHECK OUT: between grace before and lateWindow after scheduledOut
+  if (time >= outMin - grace && time <= outMin + lateWindow) {
+    return 'CHECK OUT'
+  }
+
+  // ✅ Everything else → Assume break
+  // return (time - inMin) % 2 === 0 ? 'BREAK OUT' : 'BREAK IN'
+  return originalStatus
 }

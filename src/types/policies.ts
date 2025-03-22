@@ -20,9 +20,9 @@ export interface AttendancePolicyGrouped {
     annual_leave: number
     hajju_leave: number
     umra_leave: number
-    nopay_leave: number
-    special_leave: number
-    days_attended: number
-    absents: number
+    nopay_leave: number | null
+    special_leave: number | null
+    absents: number | null
+    days_attended: number | null
   }
 }

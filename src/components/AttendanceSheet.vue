@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useMockDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, calculateLateMinutes, isHoliday } from "@/utils/attendanceHelpers";
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords } from "@/utils/attendanceHelpers";
 import type { ProcessedAttendance } from "@/types"
 
 // ✅ Get data from Pinia store
@@ -84,19 +84,29 @@ const props = defineProps<{ selectedUserId: string }>();
 const startDate = ref("2025-01-01");
 const endDate = ref("2025-03-31");
 
+const threshold = attendancePolicies.punch.duplicate_threshold_minutes;
+
+
 // ✅ Compute Attendance for Selected User with Date Filtering
 const filteredRecords = computed((): ProcessedAttendance[] => {
   const recordsMap = new Map<string, ProcessedAttendance>();
 
   // Filter records for the selected user within the date range
-  const userRecords = attendanceRecords.filter(record =>
-    record.user_id === props.selectedUserId &&
-    record.date >= startDate.value &&
-    record.date <= endDate.value
+  const userRecords = sortPunchRecords(
+    attendanceRecords.filter(record =>
+      record.user_id === props.selectedUserId &&
+      record.date >= startDate.value &&
+      record.date <= endDate.value
+    )
   );
+
+  // this for debugging
+  // const totalPunches = userRecords.length;
+  // let normalizedCount = 0;
 
   // Populate records
   userRecords.forEach(record => {
+
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, {
         date: record.date,
@@ -108,31 +118,68 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
         missingCheckOut: false,
         isWeekend: false,
         lateMinutes: 0,
-        isHoliday: false
+        isHoliday: false,
+        lastBreakTimes: {
+          "BREAK IN": null,
+          "BREAK OUT": null
+        }
       });
     }
     const dayRecord = recordsMap.get(record.date)!;
 
-    if (record.status === "CHECK IN") dayRecord.firstCheckIn = record.time;
+    const scheduledInTime = getScheduledInTime(record.user_id, record.date, dayRecord.firstCheckIn, dutyRoster, staffList);
+    const scheduledOutTime = getScheduledOutTime(scheduledInTime);
+
+
+    // for debugging
+    // const originalStatus = record.status;
+
+
+    record.status = normalizePunchStatus(record.time, scheduledInTime, scheduledOutTime, record.status);
+
+    // for debugging
+    // if (record.status !== originalStatus) {
+    //   normalizedCount++;
+    //   console.log(`🔁 Normalized ${originalStatus} → ${record.status} on ${record.date} at ${record.time}`);
+    // }
+    // abouve for debudding
+
+
+
+    if (record.status === "CHECK IN" && !dayRecord.firstCheckIn) dayRecord.firstCheckIn = record.time;
     if (
       dayRecord.firstCheckIn &&
       !dayRecord.isWeekend &&
       !isHoliday(record.date, dutyRoster.publicHolidays, dutyRoster.specialHolidays)
     ) {
-      const scheduledInTime = getScheduledInTime(record.user_id, record.date, dayRecord.firstCheckIn, dutyRoster, staffList);
       dayRecord.lateMinutes = calculateLateMinutes(scheduledInTime, dayRecord.firstCheckIn, attendancePolicies.late.grace_period_minutes);
     }
 
     if (record.status === "CHECK OUT") dayRecord.lastCheckOut = record.time;
 
     if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
-      dayRecord.breaks.push({
-        time: record.time,
-        type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
-        missing: false
-      });
+
+      const lastTime = dayRecord.lastBreakTimes[record.status];
+      const currentMin = toMinutes(record.time);
+      const lastMin = lastTime ? toMinutes(lastTime) : -Infinity;
+
+      if (currentMin - lastMin >= threshold) {
+        dayRecord.lastBreakTimes[record.status] = record.time
+        dayRecord.breaks.push({
+          time: record.time,
+          type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
+          missing: false
+        });
+
+      }
+
     }
+
   });
+
+
+  // console.log(`📊 Total punches processed: ${totalPunches}`);
+  // console.log(`🔁 Total normalized punches: ${normalizedCount}`);
 
   // ✅ Generate all calendar days within the selected range
   const daysArray: ProcessedAttendance[] = [];
@@ -155,7 +202,11 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
       missingCheckOut: !isWeekend,
       isWeekend,
       lateMinutes: 0,
-      isHoliday: false
+      isHoliday: false,
+      lastBreakTimes: {
+        "BREAK IN": null,
+        "BREAK OUT": null
+      }
 
 
     };

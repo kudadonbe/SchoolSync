@@ -72,4 +72,13 @@ export interface ProcessedAttendance {
   isWeekend: boolean
   lateMinutes: number
   isHoliday: boolean
+  lastBreakTimes: {
+    'BREAK IN': string | null
+    'BREAK OUT': string | null
+  }
+}
+
+export interface Punch {
+  type: string
+  time: string
 }

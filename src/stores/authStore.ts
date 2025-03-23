@@ -33,7 +33,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await loginWithGoogle()
       // No need to set isAuthenticated/user here again — it's handled in onAuthStateChanged
-      router.push('/admin')
+      router.push('/')
     } catch (error) {
       alert('Login failed')
       console.error(error)

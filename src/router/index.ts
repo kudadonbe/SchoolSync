@@ -65,7 +65,7 @@ router.beforeEach((to, from, next) => {
   const isLoggedIn = auth.currentUser || authStore.isAuthenticated
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    next('/404') // Redirect to 404 if trying to access a protected page while unauthenticated
+    next('/') // Redirect to 404 if trying to access a protected page while unauthenticated
   } else {
     next()
   }

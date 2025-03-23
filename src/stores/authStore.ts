@@ -5,10 +5,15 @@ import { auth } from '@/firebase'
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
 import { syncUserToFirestore } from '@/services/authHelpers'
 import type { User } from '@/types'
+import { useRouter, useRoute } from 'vue-router'
 
 export const useAuthStore = defineStore('auth', () => {
   const currentUser = ref<User | null>(null)
   const loading = ref(true)
+
+  const router = useRouter()
+  const route = useRoute()
+
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider()
     const result = await signInWithPopup(auth, provider)
@@ -20,6 +25,11 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     await auth.signOut()
     currentUser.value = null
+
+    // 🚨 Redirect if current route was protected
+    if (route.meta.requiresAuth) {
+      router.push('/')
+    }
   }
 
   function initAuthListener() {

@@ -1,4 +1,7 @@
 // /types/User.ts
+
+import type { FieldValue } from 'firebase/firestore'
+
 export type UserRole =
   | 'public'
   | 'parent'
@@ -16,7 +19,7 @@ export interface User {
   displayName: string
   photoURL: string
   role: UserRole
-  createdAt: Date
-  lastLoginAt: Date
+  createdAt: Date | FieldValue
+  lastLoginAt: Date | FieldValue
   isActive: boolean
 }

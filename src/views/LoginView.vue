@@ -24,6 +24,21 @@
 <script setup lang="ts">
 import PublicLayout from '@/layouts/PublicLayout.vue'
 import { useAuthStore } from '@/stores/authStore'
+import { watch } from 'vue'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const authStore = useAuthStore()
+
+// Watch for changes in currentUser and redirect
+watch(
+  () => authStore.currentUser, // this is the value we're watching
+  (user) => {
+    if (user) {
+      const redirect = router.currentRoute.value.query.redirect || '/'
+      router.push(redirect as string)
+    }
+  },
+  { immediate: true }
+)
 </script>

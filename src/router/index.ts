@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
-
+import { auth } from '@/firebase'
 import { useAuthStore } from '@/stores/authStore'
 
 import HomeView from '@/views/HomeView.vue'
@@ -62,8 +62,9 @@ const router = createRouter({
 // Global Navigation Guard for Admin Routes
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
+  const isLoggedIn = auth.currentUser || authStore.isAuthenticated
 
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  if (to.meta.requiresAuth && !isLoggedIn) {
     next('/404') // Redirect to 404 if trying to access a protected page while unauthenticated
   } else {
     next()

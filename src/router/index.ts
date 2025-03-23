@@ -81,14 +81,13 @@ router.beforeEach(async (to, from, next) => {
   const allowedRoles = to.meta.roles as string[] | undefined
   const userRole = authStore.currentUser?.role
 
-  // const isLoggedIn = auth.currentUser || authStore.isAuthenticated
   const isLoggedIn = !!authStore.currentUser
 
   if (to.meta.requiresAuth && !isLoggedIn) {
     next({ path: '/login', query: { redirect: to.fullPath } })
   } else if (allowedRoles && !allowedRoles.includes(userRole ?? '')) {
-    // 🚫 User is logged in, but not allowed to access the route
-    next('/') // or redirect to a custom "unauthorized" page if you prefer
+    // ✅ Redirect if role is not allowed (including 'public')
+    next({ path: '/' })
   } else {
     next()
   }

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { watch } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
-import { auth } from '@/firebase'
 import { useAuthStore } from '@/stores/authStore'
 
 import HomeView from '@/views/HomeView.vue'
@@ -22,25 +22,25 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     name: 'admin-dashboard',
     component: AdminDashboardView,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['admin', 'administrator', 'principal'] },
   },
   {
     path: '/admin/stock',
     name: 'admin-stock',
     component: StockManagementView,
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal'] },
   },
   {
     path: '/admin/users',
     name: 'admin-users',
     component: () => import('@/views/admin/UsersManagementView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal'] },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
     component: () => import('@/views/admin/SettingsView.vue'),
-    meta: { requiresAuth: true },
+    meta: { requiresAuth: true, roles: ['administrator'] },
   },
 
   // 404 Page
@@ -60,12 +60,35 @@ const router = createRouter({
 })
 
 // Global Navigation Guard for Admin Routes
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  const isLoggedIn = auth.currentUser || authStore.isAuthenticated
+
+  // Wait until Firebase auth state is resolved
+  if (authStore.loading) {
+    await new Promise((resolve) => {
+      const stop = watch(
+        () => authStore.loading,
+        (val) => {
+          if (!val) {
+            stop()
+            resolve(true)
+          }
+        },
+      )
+    })
+  }
+
+  const allowedRoles = to.meta.roles as string[] | undefined
+  const userRole = authStore.currentUser?.role
+
+  // const isLoggedIn = auth.currentUser || authStore.isAuthenticated
+  const isLoggedIn = !!authStore.currentUser
 
   if (to.meta.requiresAuth && !isLoggedIn) {
-    next('/') // Redirect to 404 if trying to access a protected page while unauthenticated
+    next({ path: '/login', query: { redirect: to.fullPath } })
+  } else if (allowedRoles && !allowedRoles.includes(userRole ?? '')) {
+    // 🚫 User is logged in, but not allowed to access the route
+    next('/') // or redirect to a custom "unauthorized" page if you prefer
   } else {
     next()
   }

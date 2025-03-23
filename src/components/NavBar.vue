@@ -6,7 +6,6 @@ import { Bars3Icon, XMarkIcon, UserIcon } from '@heroicons/vue/24/outline'
 
 
 import { useAuthStore } from "@/stores/authStore";
-import { auth } from '@/firebase'
 
 import logo from '@/assets/logo.png';
 
@@ -16,9 +15,11 @@ const logoUrl = logo;
 const route = useRoute();
 const authStore = useAuthStore()  // Initialize auth store
 
-const userName = computed(() => auth.currentUser?.displayName ?? authStore.user ?? 'User')
-const userPhoto = computed(() => auth.currentUser?.photoURL ?? null)
-const userEmail = computed(() => auth.currentUser?.email ?? '')
+const userName = computed(() => authStore.currentUser?.displayName ?? authStore.user ?? 'User')
+const userPhoto = computed(() => authStore.currentUser?.photoURL ?? null)
+const userEmail = computed(() => authStore.currentUser?.email ?? '')
+
+const userRole = computed(() => authStore.currentUser?.role ?? 'public')
 
 const imageFailed = ref(false)
 
@@ -36,11 +37,18 @@ const baseNavigation = [
 
 // Conditionally add the "Admin" link
 const navigation = computed(() => {
-  return authStore.isAuthenticated
-    ? [...baseNavigation, { name: 'Admin', href: '/admin' }]
-    : baseNavigation
-})
+  const base = [...baseNavigation]
 
+  if (authStore.isAuthenticated) {
+    if (['administrator', 'principal', 'admin-staff'].includes(userRole.value)) {
+      base.push({ name: 'Admin', href: '/admin' })
+    }
+    if (['teacher', 'leading-teacher'].includes(userRole.value)) {
+      base.push({ name: 'Dashboard', href: '/dashboard' })
+    }
+  }
+  return base
+})
 
 </script>
 

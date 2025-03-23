@@ -1,58 +1,47 @@
 // src/stores/authStore.ts
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
-
-import { onAuthStateChanged } from 'firebase/auth'
+import { ref, computed } from 'vue'
 import { auth } from '@/firebase'
+import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from 'firebase/auth'
+import { syncUserToFirestore } from '@/services/authHelpers'
+import type { User } from '@/types'
 
 export const useAuthStore = defineStore('auth', () => {
-  const router = useRouter()
-  const { loginWithGoogle, logout } = useAuth()
-
-  const isAuthenticated = ref(false)
-  const user = ref<string | null>(null)
-
-  // Firebase session check on page reload
-  onAuthStateChanged(auth, (firebaseUser) => {
-    if (firebaseUser) {
-      isAuthenticated.value = true
-      user.value = firebaseUser.displayName ?? null
-      localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('user', user.value || '')
-    } else {
-      isAuthenticated.value = false
-      user.value = null
-      localStorage.removeItem('isAuthenticated')
-      localStorage.removeItem('user')
-    }
-  })
-
-  const login = async () => {
-    try {
-      await loginWithGoogle()
-      // No need to set isAuthenticated/user here again — it's handled in onAuthStateChanged
-      router.push('/')
-    } catch (error) {
-      alert('Login failed')
-      console.error(error)
-    }
+  const currentUser = ref<User | null>(null)
+  const loading = ref(true)
+  async function loginWithGoogle() {
+    const provider = new GoogleAuthProvider()
+    const result = await signInWithPopup(auth, provider)
+    const firebaseUser = result.user
+    const user = await syncUserToFirestore(firebaseUser)
+    currentUser.value = user
   }
 
-  const logoutUser = async () => {
-    await logout()
-    isAuthenticated.value = false
-    user.value = null
-    localStorage.removeItem('isAuthenticated')
-    localStorage.removeItem('user')
-    router.push('/')
+  async function logout() {
+    await auth.signOut()
+    currentUser.value = null
   }
+
+  function initAuthListener() {
+    onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const user = await syncUserToFirestore(firebaseUser)
+        currentUser.value = user
+      } else {
+        currentUser.value = null
+      }
+      loading.value = false
+    })
+  }
+
+  const isAuthenticated = computed(() => !!currentUser.value)
 
   return {
+    currentUser,
+    loading,
+    loginWithGoogle,
+    logout,
+    initAuthListener,
     isAuthenticated,
-    user,
-    loginWithGoogle: login,
-    logout: logoutUser,
   }
 })

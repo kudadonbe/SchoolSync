@@ -12,13 +12,13 @@ import { getAnalytics, isSupported } from 'firebase/analytics'
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyC-tMXohOBrLVPgW_9MC03SI4nfNdEOOOE',
-  authDomain: 'schoolsync-4277c.firebaseapp.com',
-  projectId: 'schoolsync-4277c',
-  storageBucket: 'schoolsync-4277c.firebasestorage.app',
-  messagingSenderId: '433332532268',
-  appId: '1:433332532268:web:38ad5c74fca768968a0d89',
-  measurementId: 'G-TYTZ5M7C2C',
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 const app = initializeApp(firebaseConfig)

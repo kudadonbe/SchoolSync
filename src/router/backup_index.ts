@@ -53,9 +53,9 @@ const routes: RouteRecordRaw[] = [
 
 const router = createRouter({
   history:
-    import.meta.env.VITE_DEPLOY_TARGET === 'ghpages'
+    import.meta.env.MODE === 'production'
       ? createWebHashHistory(import.meta.env.BASE_URL) // GitHub Pages (Hash Mode)
-      : createWebHistory(import.meta.env.BASE_URL), // Local Dev & firebase/hosting  (Clean URLs)
+      : createWebHistory(import.meta.env.BASE_URL), // Local Dev (Clean URLs)
   routes,
 })
 

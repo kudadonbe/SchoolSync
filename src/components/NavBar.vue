@@ -15,7 +15,7 @@ const logoUrl = logo;
 const route = useRoute();
 const authStore = useAuthStore()  // Initialize auth store
 
-const userName = computed(() => authStore.currentUser?.displayName ?? authStore.user ?? 'User')
+const userName = computed(() => authStore.currentUser?.displayName ?? 'User')
 const userPhoto = computed(() => authStore.currentUser?.photoURL ?? null)
 const userEmail = computed(() => authStore.currentUser?.email ?? '')
 

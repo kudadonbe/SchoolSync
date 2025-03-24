@@ -77,7 +77,7 @@ const leaveLimits = computed(() => {
 
   for (const key in result) {
     const snakeKey = camelToSnake(key) as keyof typeof attendancePolicies.leave_limits;
-    result[key as keyof AttendanceSummary] = attendancePolicies.leave_limits[snakeKey];
+    result[key as keyof AttendanceSummary] = attendancePolicies.leave_limits[snakeKey] ?? 0;
   }
 
 

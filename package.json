@@ -8,11 +8,7 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "build:dist": "vite build",
-    "build:docs": "vite build --mode ghpages --outDir docs",
-    "build:all": "run-p type-check build:dist build:docs",
-    "deploy:firebase": "npm run build:dist && firebase deploy --only hosting",
-    "ghpages": "npm run build:docs && git add docs && git commit -m 'Deploy to GitHub Pages' && git push",
+    "deploy:firebase": "npm run build-only && firebase deploy --only hosting",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"

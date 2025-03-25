@@ -32,5 +32,3 @@ coverage
 # env
 .env
 .env.ghpages
-
-ghpages

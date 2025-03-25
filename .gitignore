@@ -7,28 +7,43 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# System files
 .DS_Store
-# dist
-dist-ssr
-coverage
-*.local
 
-/cypress/videos/
-/cypress/screenshots/
+# Build output
+dist/
+dist-ssr/
+docs/           # remove this if you're not using GitHub Pages
+coverage/
+*.tsbuildinfo
 
-# Editor directories and files
+# Firebase local hosting cache (if removed from hosting)
+.firebase/
+.firebaserc
+firebase.json
+
+# Environment files
+.env
+.env.*
+!.env.example    # keep the example version
+
+# Cypress (if used)
+cypress/videos/
+cypress/screenshots/
+
+# VSCode & IDEs
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-*.tsbuildinfo
-
-# env
-.env
-.env.ghpages
+# Backups or temp files
+backup_*.ts
+*.local

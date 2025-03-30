@@ -1,3 +1,8 @@
+/**
+ * ✅ File: src/utils/attendanceHelpers.ts
+ * 🧠 Description: General time, scheduling, and attendance formatting utilities used across SchoolSync.
+ */
+
 import type {
   DutyRoster,
   Staff,
@@ -8,9 +13,11 @@ import type {
   DisplayAttendanceStatus,
 } from '@/types'
 
+import type { UploadedAttendanceRecord } from '@/services/db/types'
+
 /**
- * Get scheduled in time for a user on a specific date.
- * Falls back to type-based schedule or early punch detection.
+ * ⏱ Get the scheduled in-time for a user on a specific date.
+ * Uses special duties, overrides, early punch detection, or type-based default schedules.
  */
 export function getScheduledInTime(
   userId: string,
@@ -24,39 +31,34 @@ export function getScheduledInTime(
   const staff = staffList.find((s) => s.user_id === userId)
   const type = staff?.staff_type
 
-  // Apply Special Duty if found
   if (specialDuty) {
     return specialDuty.time
   }
 
-  // If listed in EarlyDuty overrides
   if (dailyOverride?.EarlyDuty?.includes(userId)) {
     return dutyRoster.dutyTimes.find((duty) => duty.type === 'EarlyDuty')?.time || ''
   }
 
-  // Fallback: If early punch detected (±30min around 06:45)
   if ((type === 'Admin' || type === 'Labor') && isNearEarlyDutyTime(firstPunchIn)) {
     return dutyRoster.dutyTimes.find((duty) => duty.type === 'EarlyDuty')?.time || ''
   }
 
-  // Academic schedule
   if (type === 'Academic') {
     return dutyRoster.dutyTimes.find((duty) => duty.type === 'AcademicDuty')?.time || ''
   }
 
-  // Default for all others
   return dutyRoster.dutyTimes.find((duty) => duty.type === 'DefaultSchedule')?.time || ''
 }
 
 /**
- * Calculates scheduled out time by adding 6 hours to scheduled in time.
- * @param scheduledInTime - string in "HH:mm" format
- * @returns string in "HH:mm" format
+ * ⌛ Calculates scheduled out-time by adding 6 hours to scheduled in-time.
+ * @param scheduledInTime - Expected format: "HH:mm"
+ * @returns Out-time string in "HH:mm"
  */
 export function getScheduledOutTime(scheduledInTime: string): string {
   const [h, m] = scheduledInTime.split(':').map(Number)
   const inMinutes = h * 60 + m
-  const outMinutes = inMinutes + 6 * 60 // add 6 hours
+  const outMinutes = inMinutes + 6 * 60
 
   const outH = Math.floor(outMinutes / 60) % 24
   const outM = outMinutes % 60
@@ -65,7 +67,7 @@ export function getScheduledOutTime(scheduledInTime: string): string {
 }
 
 /**
- * Calculate late minutes after scheduled in + grace period.
+ * 🕒 Calculate the number of late minutes after scheduled time + grace period.
  */
 export function calculateLateMinutes(scheduled: string, actual: string, grace: number): number {
   const [sh, sm] = scheduled.split(':').map(Number)
@@ -77,13 +79,16 @@ export function calculateLateMinutes(scheduled: string, actual: string, grace: n
 }
 
 /**
- * Checks if punch time is within ±30 min of EarlyDuty (06:45)
+ * 📌 Check if a punch time is within ±30 minutes of EarlyDuty time (06:45).
  */
 function isNearEarlyDutyTime(time: string): boolean {
   const total = toMinutes(time)
   return total >= 375 && total <= 435 // Between 06:15 and 07:15
 }
 
+/**
+ * 📆 Check if a given date is within the range of a special duty period.
+ */
 export function isWithinSpecialDuty(
   dateStr: string,
   specialDuty: { from: string; to: string },
@@ -94,6 +99,9 @@ export function isWithinSpecialDuty(
   return current >= start && current <= end
 }
 
+/**
+ * 📅 Get a special duty object if the date matches any of the defined ranges.
+ */
 export function getSpecialDutyForDate(
   dateStr: string,
   specialDuties: SpecialDuty[],
@@ -107,6 +115,9 @@ export function getSpecialDutyForDate(
   return specialDuty || null
 }
 
+/**
+ * 🎌 Check if a date is a public or special holiday.
+ */
 export function isHoliday(
   date: string,
   publicHolidays: Holidays[],
@@ -117,21 +128,26 @@ export function isHoliday(
   return isPublicHoliday || isSpecialHoliday
 }
 
+/**
+ * ⚙️ Get the daily override for a specific date (if any).
+ */
 export function getDailyOverrideForDate(
   dateStr: string,
   dailyOverrides: DailyOverride[],
 ): DailyOverride | null {
-  const override = dailyOverrides.find((override) => override.date === dateStr)
-  return override || null
+  return dailyOverrides.find((override) => override.date === dateStr) || null
 }
 
+/**
+ * 🔢 Convert time string ("HH:mm") into total minutes.
+ */
 export function toMinutes(time: string): number {
   const [h, m] = time.split(':').map(Number)
   return h * 60 + m
 }
 
 /**
- * Sorts punch records by date and time (ascending).
+ * 🔽 Sorts punch records by date and time in ascending order.
  */
 export function sortPunchRecords(records: DisplayAttendanceRecord[]): DisplayAttendanceRecord[] {
   return [...records].sort((a, b) => {
@@ -143,33 +159,57 @@ export function sortPunchRecords(records: DisplayAttendanceRecord[]): DisplayAtt
 }
 
 /**
- * Normalize punch status based on punch time compared to scheduled in/out.
- * Used to correct biometric mislogs like BREAK IN instead of CHECK OUT.
+ * 🔁 Normalize punch status based on punch time and schedule.
+ * Used to fix biometric mislogs like BREAK IN instead of CHECK OUT.
  */
 export function normalizePunchStatus(
   punchTime: string,
   scheduledIn: string,
   scheduledOut: string,
   originalStatus: DisplayAttendanceStatus,
-  grace = 15, // Minutes after IN and before OUT
-  earlyWindow = 60, // Minutes before scheduled IN
-  lateWindow = 60, // Minutes after scheduled OUT
+  grace = 15,
+  earlyWindow = 60,
+  lateWindow = 60,
 ): DisplayAttendanceStatus {
   const time = toMinutes(punchTime)
   const inMin = toMinutes(scheduledIn)
   const outMin = toMinutes(scheduledOut)
 
-  // ✅ CHECK IN: between earlyWindow before and grace after scheduledIn
   if (time >= inMin - earlyWindow && time <= inMin + grace) {
     return 'CHECK IN'
   }
 
-  // ✅ CHECK OUT: between grace before and lateWindow after scheduledOut
   if (time >= outMin - grace && time <= outMin + lateWindow) {
     return 'CHECK OUT'
   }
 
-  // ✅ Everything else → Assume break
-  // return (time - inMin) % 2 === 0 ? 'BREAK OUT' : 'BREAK IN'
   return originalStatus
+}
+
+/**
+ * 🗂 Format a date string or Date object to "YYYY-MM" format.
+ * Used to key records by period.
+ */
+export function getPeriodKeyFromDate(dateInput: string | Date): string {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
+  return date.toISOString().slice(0, 7) // Returns "YYYY-MM"
+}
+
+/**
+ * 📊 Groups attendance records into a Map of period → record list.
+ */
+export function groupAttendanceByPeriod(
+  records: UploadedAttendanceRecord[],
+): Map<string, UploadedAttendanceRecord[]> {
+  const grouped = new Map<string, UploadedAttendanceRecord[]>()
+
+  for (const record of records) {
+    const key = getPeriodKeyFromDate(new Date(record.timestamp))
+    if (!grouped.has(key)) {
+      grouped.set(key, [])
+    }
+    grouped.get(key)!.push(record)
+  }
+
+  return grouped
 }

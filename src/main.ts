@@ -1,12 +1,15 @@
 import './assets/main.css' // ✅ OK: Static CSS import
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
 import App from './App.vue' // ✅ OK
 import router from './router' // ✅ SPA router
 
 const app = createApp(App)
 const pinia = createPinia()
+
+pinia.use(piniaPluginPersistedstate)
 
 app.use(pinia)
 app.use(router)

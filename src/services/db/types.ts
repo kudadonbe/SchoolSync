@@ -54,4 +54,10 @@ export interface AttendanceService {
    * Get a single attendance record by document ID.
    */
   getAttendanceById(docId: string): Promise<UploadedAttendanceRecord | null>
+
+  watchAttendanceByPeriod?: (
+    periodKey: string,
+    onUpdate: (logs: UploadedAttendanceRecord[]) => void,
+    options?: { staffId?: string },
+  ) => () => void
 }

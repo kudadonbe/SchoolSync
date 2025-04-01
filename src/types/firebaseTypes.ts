@@ -20,7 +20,7 @@ export interface FirestoreLikeTimestamp {
 }
 
 export interface UserActivityMetadata {
-  method?: 'google' | 'email' | 'anonymous'
+  method?: string
   page?: string
   description?: string
   [key: string]: string | undefined // Optional: allow simple text values only

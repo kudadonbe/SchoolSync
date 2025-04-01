@@ -7,8 +7,8 @@ export async function logUserActivity(
   uid: string,
   action: string,
   metadata: UserActivityMetadata = {},
-  displayName?: string,
-  email?: string,
+  displayName?: string | null,
+  email?: string | null,
 ) {
   const logRef = collection(db, 'userActivityLogs')
   await addDoc(logRef, {

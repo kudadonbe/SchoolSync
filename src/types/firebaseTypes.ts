@@ -18,3 +18,10 @@ export interface FirestoreLikeTimestamp {
   seconds: number
   nanoseconds: number
 }
+
+export interface UserActivityMetadata {
+  method?: 'google' | 'email' | 'anonymous'
+  page?: string
+  description?: string
+  [key: string]: string | undefined // Optional: allow simple text values only
+}

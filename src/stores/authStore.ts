@@ -8,6 +8,7 @@ import type { User } from '@/types'
 import { useRouter, useRoute } from 'vue-router'
 
 export const useAuthStore = defineStore('auth', () => {
+  let authListenerInitialized = false // ✅ Guard flag
   const currentUser = ref<User | null>(null)
   const loading = ref(true)
 
@@ -16,10 +17,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function loginWithGoogle() {
     const provider = new GoogleAuthProvider()
-    const result = await signInWithPopup(auth, provider)
-    const firebaseUser = result.user
-    const user = await syncUserToFirestore(firebaseUser)
-    currentUser.value = user
+    // const result = await signInWithPopup(auth, provider)
+    await signInWithPopup(auth, provider)
+
+    // const firebaseUser = result.user
+    // const user = await syncUserToFirestore(firebaseUser)
+    // currentUser.value = user
   }
 
   async function logout() {
@@ -33,8 +36,14 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function initAuthListener() {
+    console.log('[authStore] initAuthListener called')
+
+    if (authListenerInitialized) return
+    authListenerInitialized = true
+
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        console.log('[authStore] Firebase user detected')
         const user = await syncUserToFirestore(firebaseUser)
         currentUser.value = user
       } else {

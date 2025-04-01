@@ -19,7 +19,7 @@ import {
   QuerySnapshot,
 } from 'firebase/firestore'
 
-import type { AttendanceService, UploadedAttendanceRecord, AttendanceQuery } from './types'
+import type { AttendanceService, StaffAttendanceLog, AttendanceQuery } from './types'
 
 const COLLECTION_NAME = 'staffAttendanceLogs'
 
@@ -30,7 +30,7 @@ const COLLECTION_NAME = 'staffAttendanceLogs'
  */
 function watchAttendanceByPeriod(
   periodKey: string,
-  onUpdate: (logs: UploadedAttendanceRecord[]) => void,
+  onUpdate: (logs: StaffAttendanceLog[]) => void,
   options?: { staffId?: string },
 ): () => void {
   const from = new Date(`${periodKey}-01`)
@@ -49,7 +49,7 @@ function watchAttendanceByPeriod(
     const updatedLogs = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    })) as UploadedAttendanceRecord[]
+    })) as StaffAttendanceLog[]
 
     onUpdate(updatedLogs)
   })
@@ -61,38 +61,40 @@ const firestoreService: AttendanceService = {
   /**
    * ⚠️ Expensive. Fetch all logs. Avoid using in production.
    */
-  async getAllAttendance(): Promise<UploadedAttendanceRecord[]> {
+  async getAllAttendance(): Promise<StaffAttendanceLog[]> {
     const snapshot = await getDocs(collection(db, COLLECTION_NAME))
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as UploadedAttendanceRecord[]
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as StaffAttendanceLog[]
   },
 
   /**
    * 🔍 Filter logs by optional staffId and/or date range.
    * Result should be cached in Pinia/localStorage to reduce Firestore reads.
    */
-  async getAttendanceByQuery(queryParams: AttendanceQuery): Promise<UploadedAttendanceRecord[]> {
+  async getAttendanceByQuery(queryParams: AttendanceQuery): Promise<StaffAttendanceLog[]> {
     const conditions = []
+    const from = new Date(queryParams.from)
+    const to = new Date(queryParams.to)
 
     if (queryParams.staffId) {
       conditions.push(where('staffId', '==', queryParams.staffId))
     }
     if (queryParams.from) {
-      conditions.push(where('timestamp', '>=', queryParams.from))
+      conditions.push(where('timestamp', '>=', from))
     }
     if (queryParams.to) {
-      conditions.push(where('timestamp', '<=', queryParams.to))
+      conditions.push(where('timestamp', '<=', to))
     }
 
     const q = query(collection(db, COLLECTION_NAME), ...conditions)
     const snapshot = await getDocs(q)
 
-    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as UploadedAttendanceRecord[]
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as StaffAttendanceLog[]
   },
 
   /**
    * ➕ Add a new attendance log (admin/manual usage).
    */
-  async addAttendance(record: UploadedAttendanceRecord): Promise<void> {
+  async addAttendance(record: StaffAttendanceLog): Promise<void> {
     const data = { ...record }
     delete data.id
 
@@ -109,7 +111,7 @@ const firestoreService: AttendanceService = {
   /**
    * 📥 Bulk insert multiple attendance logs.
    */
-  async addMultipleAttendance(records: UploadedAttendanceRecord[]): Promise<void> {
+  async addMultipleAttendance(records: StaffAttendanceLog[]): Promise<void> {
     const tasks = records.map((record) => {
       const data = { ...record }
       delete data.id
@@ -130,7 +132,7 @@ const firestoreService: AttendanceService = {
   /**
    * ✏️ Update a single attendance log by ID (admin correction use case).
    */
-  async updateAttendance(record: UploadedAttendanceRecord): Promise<void> {
+  async updateAttendance(record: StaffAttendanceLog): Promise<void> {
     if (!record.id) throw new Error('Missing document ID for update.')
 
     const data = { ...record }
@@ -149,7 +151,7 @@ const firestoreService: AttendanceService = {
   /**
    * 📄 Fetch a single attendance log by Firestore document ID.
    */
-  async getAttendanceById(docId: string): Promise<UploadedAttendanceRecord | null> {
+  async getAttendanceById(docId: string): Promise<StaffAttendanceLog | null> {
     const ref = doc(db, COLLECTION_NAME, docId)
     const snapshot = await getDoc(ref)
 
@@ -158,7 +160,7 @@ const firestoreService: AttendanceService = {
     return {
       id: snapshot.id,
       ...snapshot.data(),
-    } as UploadedAttendanceRecord
+    } as StaffAttendanceLog
   },
 
   /**

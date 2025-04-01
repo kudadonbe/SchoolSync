@@ -3,13 +3,17 @@
 
 import AttendanceSummary from "@/components/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
-import AttendanceSheet from "@/components/AttendanceSheet.vue";
+// import AttendanceSheet from "@/components/AttendanceSheet.vue";
+import AttendanceSheetLive from "@/components/AttendanceSheetLive.vue";
 import { ref } from "vue";
+// import TestFirestoreRecord from "@/components/TestFirestoreRecord.vue";
+// import TestAttendanceRecord from "@/components/TestAttendanceRecord.vue";
+
 
 
 
 // ✅ Track the selected user across components
-const selectedUserId = ref("101"); // Default to the first user
+const selectedUserId = ref("105"); // Default to the first user
 
 // ✅ Update selected user when changed in StaffInfo
 const updateUser = (userId: string) => {
@@ -37,8 +41,10 @@ const updateUser = (userId: string) => {
 
     <!-- Full width: Attendance Sheet -->
     <div class="mt-6">
-      <AttendanceSheet :selectedUserId="selectedUserId" />
-
+      <!-- <AttendanceSheet :selectedUserId="selectedUserId" /> -->
+      <AttendanceSheetLive :selectedUserId="selectedUserId" />
+      <!-- <TestFirestoreRecord /> -->
+      <!-- <TestAttendanceRecord /> -->
     </div>
   </div>
 </template>

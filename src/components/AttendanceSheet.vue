@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useMockDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords } from "@/utils/attendanceHelpers";
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, getCurrentMonthRange } from "@/utils/attendanceHelpers";
 import type { ProcessedAttendance } from "@/types"
 
 // ✅ Get data from Pinia store
@@ -79,10 +79,10 @@ const { attendanceRecords, staffList, dutyRoster, attendancePolicies } = mockDat
 const props = defineProps<{ selectedUserId: string }>();
 
 
-
+const { from, to } = getCurrentMonthRange()
 // ✅ Date range filters
-const startDate = ref("2025-01-01");
-const endDate = ref("2025-03-31");
+const startDate = ref(from);
+const endDate = ref(to);
 
 const threshold = attendancePolicies.punch.duplicate_threshold_minutes;
 
@@ -90,7 +90,6 @@ const threshold = attendancePolicies.punch.duplicate_threshold_minutes;
 // ✅ Compute Attendance for Selected User with Date Filtering
 const filteredRecords = computed((): ProcessedAttendance[] => {
   const recordsMap = new Map<string, ProcessedAttendance>();
-
   // Filter records for the selected user within the date range
   const userRecords = sortPunchRecords(
     attendanceRecords.filter(record =>
@@ -177,7 +176,6 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
   });
 
-
   // console.log(`📊 Total punches processed: ${totalPunches}`);
   // console.log(`🔁 Total normalized punches: ${normalizedCount}`);
 
@@ -185,7 +183,6 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
   const daysArray: ProcessedAttendance[] = [];
   const currentDate = new Date(startDate.value);
   const end = new Date(endDate.value);
-
   while (currentDate <= end) {
     const dateStr = currentDate.toISOString().split("T")[0];
     const dayName = currentDate.toLocaleString('en-us', { weekday: 'long' });

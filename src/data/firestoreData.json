@@ -1,0 +1,366 @@
+[
+  {
+    "id": "b07438282487235c243f95e572e649aa",
+    "staffId": "101",
+    "workCode": 0,
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742903031,
+      "nanoseconds": 370000000
+    },
+    "timestamp": {
+      "seconds": 1740992285,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "45cec6af0e23a655c48d2e524bb32ec1",
+    "workCode": 1,
+    "status": 1,
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903031,
+      "nanoseconds": 805000000
+    },
+    "timestamp": {
+      "seconds": 1741007068,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "aa19a112d0e98c8ca280f46821396729",
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903034,
+      "nanoseconds": 502000000
+    },
+    "timestamp": {
+      "seconds": 1741078729,
+      "nanoseconds": 0
+    },
+    "workCode": 0,
+    "status": 1
+  },
+  {
+    "id": "cc9224b0c6dac3ecd53b2eb13b77d715",
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742904303,
+      "nanoseconds": 980000000
+    },
+    "timestamp": {
+      "seconds": 1741093950,
+      "nanoseconds": 0
+    },
+    "staffId": "101",
+    "workCode": 1
+  },
+  {
+    "id": "4f9fc64029b41e80492fc628b42997d2",
+    "timestamp": {
+      "seconds": 1741165148,
+      "nanoseconds": 0
+    },
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903037,
+      "nanoseconds": 488000000
+    },
+    "workCode": 0,
+    "status": 1
+  },
+  {
+    "id": "b9797f589e6468d02df8ce5120b45ba3",
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742903038,
+      "nanoseconds": 915000000
+    },
+    "workCode": 1,
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1741182167,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "e2acb17bc41acf85abc55e7eda2993dc",
+    "staffId": "101",
+    "workCode": 0,
+    "uploadedAt": {
+      "seconds": 1742903040,
+      "nanoseconds": 329000000
+    },
+    "timestamp": {
+      "seconds": 1741251530,
+      "nanoseconds": 0
+    },
+    "status": 1
+  },
+  {
+    "id": "a06f2f9a79b48752d6e4c238722cbb9b",
+    "uploadedAt": {
+      "seconds": 1742903041,
+      "nanoseconds": 748000000
+    },
+    "workCode": 1,
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1741267420,
+      "nanoseconds": 0
+    },
+    "status": 1
+  },
+  {
+    "id": "9663e3b3ab2b86d240031d91e1f60917",
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903046,
+      "nanoseconds": 110000000
+    },
+    "status": 1,
+    "workCode": 0,
+    "timestamp": {
+      "seconds": 1741597163,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "10a43c667103a114a0da931f8ec7b1d1",
+    "staffId": "101",
+    "workCode": 0,
+    "uploadedAt": {
+      "seconds": 1742903046,
+      "nanoseconds": 252000000
+    },
+    "status": 1,
+    "timestamp": {
+      "seconds": 1741597164,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "01aad38f4c1794aa74134e52ce74d19c",
+    "timestamp": {
+      "seconds": 1741612450,
+      "nanoseconds": 0
+    },
+    "staffId": "101",
+    "workCode": 1,
+    "uploadedAt": {
+      "seconds": 1742903047,
+      "nanoseconds": 83000000
+    },
+    "status": 1
+  },
+  {
+    "id": "5537f030f645b841dfcb1b1ab7761167",
+    "workCode": 0,
+    "staffId": "101",
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742903049,
+      "nanoseconds": 61000000
+    },
+    "timestamp": {
+      "seconds": 1741683541,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "6115385ac7ac77394e27344bbb3c08f1",
+    "status": 1,
+    "timestamp": {
+      "seconds": 1741699082,
+      "nanoseconds": 0
+    },
+    "uploadedAt": {
+      "seconds": 1742903050,
+      "nanoseconds": 759000000
+    },
+    "staffId": "101",
+    "workCode": 1
+  },
+  {
+    "id": "eeae0cc31c9f68329ec717cf39c3f1e8",
+    "status": 1,
+    "workCode": 0,
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903052,
+      "nanoseconds": 432000000
+    },
+    "timestamp": {
+      "seconds": 1741769958,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "2d5c7d21895db896e5a52b5448c88b14",
+    "workCode": 0,
+    "staffId": "101",
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742903055,
+      "nanoseconds": 88000000
+    },
+    "timestamp": {
+      "seconds": 1741856114,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "41c9060529dd01fe20d81e1c93517f07",
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1742115527,
+      "nanoseconds": 0
+    },
+    "uploadedAt": {
+      "seconds": 1742903058,
+      "nanoseconds": 64000000
+    },
+    "workCode": 0,
+    "status": 1
+  },
+  {
+    "id": "c60322db9a571726c310745a4eb8960a",
+    "workCode": 0,
+    "uploadedAt": {
+      "seconds": 1742903058,
+      "nanoseconds": 204000000
+    },
+    "timestamp": {
+      "seconds": 1742115528,
+      "nanoseconds": 0
+    },
+    "status": 1,
+    "staffId": "101"
+  },
+  {
+    "id": "6787b6c90a20eb94a3d8afea1d4d5760",
+    "timestamp": {
+      "seconds": 1742138177,
+      "nanoseconds": 0
+    },
+    "status": 1,
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903059,
+      "nanoseconds": 268000000
+    },
+    "workCode": 1
+  },
+  {
+    "id": "1558a537c19d426fb8fa235f770403f4",
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742903060,
+      "nanoseconds": 549000000
+    },
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1742201909,
+      "nanoseconds": 0
+    },
+    "workCode": 0
+  },
+  {
+    "id": "0c5c4d87e607e45d015c9e3b70dbf505",
+    "status": 1,
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903061,
+      "nanoseconds": 536000000
+    },
+    "workCode": 1,
+    "timestamp": {
+      "seconds": 1742217174,
+      "nanoseconds": 0
+    }
+  },
+  {
+    "id": "5c1983575d096ceca8d879c5b0e66563",
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1742288355,
+      "nanoseconds": 0
+    },
+    "workCode": 0,
+    "status": 1,
+    "uploadedAt": {
+      "seconds": 1742903063,
+      "nanoseconds": 103000000
+    }
+  },
+  {
+    "id": "250cf81f9126aef8cda1becdce37622a",
+    "workCode": 1,
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1742303057,
+      "nanoseconds": 0
+    },
+    "uploadedAt": {
+      "seconds": 1742903063,
+      "nanoseconds": 531000000
+    },
+    "status": 1
+  },
+  {
+    "id": "8552fe71bd2efbb71ea42f9ee064fc50",
+    "workCode": 0,
+    "timestamp": {
+      "seconds": 1742374638,
+      "nanoseconds": 0
+    },
+    "uploadedAt": {
+      "seconds": 1742903065,
+      "nanoseconds": 371000000
+    },
+    "staffId": "101",
+    "status": 1
+  },
+  {
+    "id": "fb0f62a865ef7bab2fa569819b2b9311",
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903066,
+      "nanoseconds": 776000000
+    },
+    "timestamp": {
+      "seconds": 1742390804,
+      "nanoseconds": 0
+    },
+    "status": 1,
+    "workCode": 1
+  },
+  {
+    "id": "9f983fb77a9812ee1e3b92cd19348a1f",
+    "status": 1,
+    "timestamp": {
+      "seconds": 1742390833,
+      "nanoseconds": 0
+    },
+    "staffId": "101",
+    "uploadedAt": {
+      "seconds": 1742903066,
+      "nanoseconds": 919000000
+    },
+    "workCode": 1
+  },
+  {
+    "id": "31c3168374c09515b7b40a4c3e39873b",
+    "workCode": 0,
+    "uploadedAt": {
+      "seconds": 1742903067,
+      "nanoseconds": 763000000
+    },
+    "staffId": "101",
+    "timestamp": {
+      "seconds": 1742724041,
+      "nanoseconds": 0
+    },
+    "status": 1
+  }
+]

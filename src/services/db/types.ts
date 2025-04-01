@@ -1,5 +1,30 @@
+import type { Timestamp } from 'firebase/firestore'
+
 /**
- * Represents a single attendance log stored in Firestore.
+ * Optional query filters when retrieving attendance logs.
+ */
+export interface AttendanceQuery {
+  staffId: string // Filter by staff ID
+  from: string // Start date (inclusive, ISO format)
+  to: string // End date (inclusive, ISO format)
+}
+
+/**
+ * 📄 Firestore Record: staffAttendanceLogs
+ * Represents a single log entry downloaded from Firestore.
+ */
+export interface StaffAttendanceLog {
+  id?: string // Firestore document ID (MD5 hash of staffId + timestamp)
+  staffId: string // Unique staff identifier
+  status: number // 0 = IN, 1 = OUT, 2 = BREAK OUT, 3 = BREAK IN
+  workCode: number // Work code from iClock
+
+  timestamp: Timestamp | FirestoreLikeTimestamp // Punch time
+  uploadedAt: Timestamp | FirestoreLikeTimestamp // Upload time
+}
+
+/**
+ * Represents a single attendance log Uploaded to Firestore by iclock-sync.
  * Uploaded via Python iClock script or updated manually.
  */
 export interface UploadedAttendanceRecord {
@@ -12,15 +37,6 @@ export interface UploadedAttendanceRecord {
 }
 
 /**
- * Optional query filters when retrieving attendance logs.
- */
-export interface AttendanceQuery {
-  staffId?: string // Filter by staff ID
-  from?: string // Start date (inclusive, ISO format)
-  to?: string // End date (inclusive, ISO format)
-}
-
-/**
  * Interface to abstract attendance database logic.
  * Implemented by Firestore or other backends (MySQL, etc.).
  */
@@ -28,36 +44,55 @@ export interface AttendanceService {
   /**
    * Get all attendance records from the DB.
    */
-  getAllAttendance(): Promise<UploadedAttendanceRecord[]>
+  getAllAttendance(): Promise<StaffAttendanceLog[]>
 
   /**
    * Filter records by staffId or date range.
    */
-  getAttendanceByQuery(query: AttendanceQuery): Promise<UploadedAttendanceRecord[]>
+  getAttendanceByQuery(query: AttendanceQuery): Promise<StaffAttendanceLog[]>
 
   /**
    * Add a new attendance record (used in admin/manual cases).
    */
-  addAttendance(record: UploadedAttendanceRecord): Promise<void>
+  addAttendance(record: StaffAttendanceLog): Promise<void>
 
   /**
    * Add multiple attendance records (bulk insert).
    */
-  addMultipleAttendance(records: UploadedAttendanceRecord[]): Promise<void>
+  addMultipleAttendance(records: StaffAttendanceLog[]): Promise<void>
 
   /**
    * Update an existing record by ID (used for corrections).
    */
-  updateAttendance(record: UploadedAttendanceRecord): Promise<void>
+  updateAttendance(record: StaffAttendanceLog): Promise<void>
 
   /**
    * Get a single attendance record by document ID.
    */
-  getAttendanceById(docId: string): Promise<UploadedAttendanceRecord | null>
+  getAttendanceById(docId: string): Promise<StaffAttendanceLog | null>
 
   watchAttendanceByPeriod?: (
     periodKey: string,
-    onUpdate: (logs: UploadedAttendanceRecord[]) => void,
+    onUpdate: (logs: StaffAttendanceLog[]) => void,
     options?: { staffId?: string },
   ) => () => void
+}
+
+export interface FirestoreLikeTimestamp {
+  seconds: number
+  nanoseconds: number
+}
+
+/**
+ * 📄 Firestore Record: staffAttendanceLogs
+ * Represents a single log entry uploaded from iClock to Firestore.
+ */
+export interface StaffAttendanceLog {
+  id?: string // Firestore document ID (MD5 hash of staffId + timestamp)
+  staffId: string // Unique staff identifier
+  status: number // 0 = IN, 1 = OUT, 2 = BREAK OUT, 3 = BREAK IN
+  workCode: number // Work code from iClock
+
+  timestamp: Timestamp | FirestoreLikeTimestamp // Punch time
+  uploadedAt: Timestamp | FirestoreLikeTimestamp // Upload time
 }

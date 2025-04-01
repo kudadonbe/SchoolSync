@@ -13,7 +13,8 @@ import type {
   DisplayAttendanceStatus,
 } from '@/types'
 
-import type { UploadedAttendanceRecord } from '@/services/db/types'
+import type { StaffAttendanceLog } from '@/services/db/types'
+import { formatDateLocal } from '@/utils/stringHelpers'
 
 /**
  * ⏱ Get the scheduled in-time for a user on a specific date.
@@ -192,19 +193,19 @@ export function normalizePunchStatus(
  */
 export function getPeriodKeyFromDate(dateInput: string | Date): string {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput
-  return date.toISOString().slice(0, 7) // Returns "YYYY-MM"
+  return formatDateLocal(date).slice(0, 7) // Returns "YYYY-MM"
 }
 
 /**
  * 📊 Groups attendance records into a Map of period → record list.
  */
 export function groupAttendanceByPeriod(
-  records: UploadedAttendanceRecord[],
-): Map<string, UploadedAttendanceRecord[]> {
-  const grouped = new Map<string, UploadedAttendanceRecord[]>()
+  records: StaffAttendanceLog[],
+): Map<string, StaffAttendanceLog[]> {
+  const grouped = new Map<string, StaffAttendanceLog[]>()
 
   for (const record of records) {
-    const key = getPeriodKeyFromDate(new Date(record.timestamp))
+    const key = getPeriodKeyFromDate(new Date(record.timestamp.seconds))
     if (!grouped.has(key)) {
       grouped.set(key, [])
     }
@@ -212,4 +213,48 @@ export function groupAttendanceByPeriod(
   }
 
   return grouped
+}
+
+export function getCurrentAttendancePeriod(): { from: string; to: string } {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = today.getMonth() // JS months are 0-based
+
+  const from = new Date(`${year}-${month.toString().padStart(2, '0')}-16`)
+  const to = new Date(from)
+  to.setMonth(to.getMonth() + 1)
+  to.setDate(15)
+
+  return {
+    from: formatDateLocal(from),
+    to: formatDateLocal(to),
+  }
+}
+
+export function getCurrentMonthRange(): { from: string; to: string } {
+  const now = new Date()
+
+  const start = new Date(now.getFullYear(), now.getMonth(), 1)
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+
+  return {
+    from: formatDateLocal(start),
+    to: formatDateLocal(end),
+  }
+}
+
+export function getPeriodKeysInRange(start: string, end: string): string[] {
+  const result: string[] = []
+  const current = new Date(start)
+  const endDate = new Date(end)
+
+  current.setDate(1)
+  endDate.setDate(1)
+
+  while (current <= endDate) {
+    result.push(getPeriodKeyFromDate(current))
+    current.setMonth(current.getMonth() + 1)
+  }
+
+  return result
 }

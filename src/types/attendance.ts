@@ -77,8 +77,3 @@ export interface ProcessedAttendance {
     'BREAK OUT': string | null
   }
 }
-
-export interface Punch {
-  type: string
-  time: string
-}

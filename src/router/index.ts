@@ -9,7 +9,6 @@ import LoginView from '@/views/LoginView.vue'
 
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 import StockManagementView from '@/views/admin/StockManagementView.vue'
-import SettingsView from '@/views/admin/SettingsView.vue'
 
 const routes: RouteRecordRaw[] = [
   // Public Routes

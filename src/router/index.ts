@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { watch } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
@@ -52,10 +52,7 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history:
-    import.meta.env.VITE_DEPLOY_TARGET === 'ghpages'
-      ? createWebHashHistory(import.meta.env.BASE_URL) // GitHub Pages (Hash Mode)
-      : createWebHistory(import.meta.env.BASE_URL), // Local Dev & firebase/hosting  (Clean URLs)
+  history: createWebHistory(import.meta.env.BASE_URL), // Clean URLs
   routes,
 })
 

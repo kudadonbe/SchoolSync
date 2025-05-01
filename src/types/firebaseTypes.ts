@@ -8,10 +8,9 @@ export interface StaffAttendanceLog {
   id?: string // Firestore document ID (MD5 hash of staffId + timestamp)
   staffId: string // Unique staff identifier
   status: number // 0 = IN, 1 = OUT, 2 = BREAK OUT, 3 = BREAK IN
-  workCode: number // Work code from iClock
-
   timestamp: Timestamp | FirestoreLikeTimestamp // Punch time
   uploadedAt: Timestamp | FirestoreLikeTimestamp // Upload time
+  workCode: number // Work code from iClock
 }
 
 export interface FirestoreLikeTimestamp {

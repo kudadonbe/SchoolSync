@@ -63,14 +63,17 @@
       </table>
     </div>
   </div>
+  <div class="flex justify-center mt-4">
+    <button @click="test" class="bg-green-600 text-white px-4 py-2 rounded-md text-[10px] md:text-lg">Test</button>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useMockDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords } from "@/utils/attendanceHelpers";
-import type { ProcessedAttendance } from "@/types"
-
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils/attendanceHelpers";
+import type { ProcessedAttendance, StaffAttendanceLog } from "@/types"
+import { fetchAttendanceForUser } from "@/services/firebaseServices.ts";
 // ✅ Get data from Pinia store
 const mockDataStore = useMockDataStore();
 const { attendanceRecords, staffList, dutyRoster, attendancePolicies } = mockDataStore;
@@ -81,14 +84,15 @@ const props = defineProps<{ selectedUserId: string }>();
 
 
 // ✅ Date range filters
-const startDate = ref("2025-01-01");
-const endDate = ref("2025-03-31");
+const startDate = ref("2025-03-03");
+const endDate = ref("2025-03-03");
 
 const threshold = attendancePolicies.punch.duplicate_threshold_minutes;
 
 
 // ✅ Compute Attendance for Selected User with Date Filtering
 const filteredRecords = computed((): ProcessedAttendance[] => {
+
   const recordsMap = new Map<string, ProcessedAttendance>();
 
   // Filter records for the selected user within the date range
@@ -108,22 +112,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
   userRecords.forEach(record => {
 
     if (!recordsMap.has(record.date)) {
-      recordsMap.set(record.date, {
-        date: record.date,
-        day: new Date(record.date).toLocaleString('en-us', { weekday: 'long' }),
-        firstCheckIn: "",
-        lastCheckOut: "",
-        breaks: [],
-        missingCheckIn: false,
-        missingCheckOut: false,
-        isWeekend: false,
-        lateMinutes: 0,
-        isHoliday: false,
-        lastBreakTimes: {
-          "BREAK IN": null,
-          "BREAK OUT": null
-        }
-      });
+      recordsMap.set(record.date, newAttendanceRecord(record.date));
     }
     const dayRecord = recordsMap.get(record.date)!;
 
@@ -192,24 +181,7 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
     const isWeekend = dayName === "Friday" || dayName === "Saturday";
     const isHolidayDate = isHoliday(dateStr, dutyRoster.publicHolidays, dutyRoster.specialHolidays);
 
-    const record = recordsMap.get(dateStr) || {
-      date: dateStr,
-      day: dayName,
-      firstCheckIn: "",
-      lastCheckOut: "",
-      breaks: [],
-      missingCheckIn: !isWeekend,
-      missingCheckOut: !isWeekend,
-      isWeekend,
-      lateMinutes: 0,
-      isHoliday: false,
-      lastBreakTimes: {
-        "BREAK IN": null,
-        "BREAK OUT": null
-      }
-
-
-    };
+    const record = recordsMap.get(dateStr) || newAttendanceRecord(dateStr);
 
     // Ensure missing attendance is flagged correctly
     record.missingCheckIn = !record.firstCheckIn && !isWeekend;
@@ -236,4 +208,13 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
   return daysArray;
 });
+
+const test = async () => {
+  const res = await fetchAttendanceForUser(props.selectedUserId, startDate.value, endDate.value);
+  const data: StaffAttendanceLog[] = res;
+  console.log(data);
+
+}
+
+
 </script>

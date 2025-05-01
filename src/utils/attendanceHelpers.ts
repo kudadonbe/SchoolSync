@@ -6,6 +6,7 @@ import type {
   DailyOverride,
   DisplayAttendanceRecord,
   DisplayAttendanceStatus,
+  ProcessedAttendance,
 } from '@/types'
 
 /**
@@ -172,4 +173,24 @@ export function normalizePunchStatus(
   // ✅ Everything else → Assume break
   // return (time - inMin) % 2 === 0 ? 'BREAK OUT' : 'BREAK IN'
   return originalStatus
+}
+
+export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
+  const newRecord: ProcessedAttendance = {
+    date: dateStr,
+    day: new Date(dateStr).toLocaleString('en-us', { weekday: 'long' }),
+    firstCheckIn: '',
+    lastCheckOut: '',
+    breaks: [],
+    missingCheckIn: false,
+    missingCheckOut: false,
+    isWeekend: false,
+    lateMinutes: 0,
+    isHoliday: false,
+    lastBreakTimes: {
+      'BREAK IN': null,
+      'BREAK OUT': null,
+    },
+  }
+  return newRecord
 }

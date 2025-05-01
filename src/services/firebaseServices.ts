@@ -31,7 +31,7 @@ export async function fetchAttendanceForUser(
       ...doc.data(),
     } as StaffAttendanceLog)
   })
-  console.log('fetching attendance for user:', staffId, 'from', startDate, 'to', endDate)
+  console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
 
   return records
 }

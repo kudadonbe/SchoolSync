@@ -13,6 +13,7 @@ dist
 dist-ssr
 coverage
 *.local
+.firebase/
 
 /cypress/videos/
 /cypress/screenshots/
@@ -32,4 +33,3 @@ coverage
 # env
 .env
 .env.ghpages
-.firebase/

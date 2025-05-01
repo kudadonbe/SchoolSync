@@ -63,9 +63,6 @@
       </table>
     </div>
   </div>
-  <div class="flex justify-center mt-4">
-    <button @click="test" class="bg-green-600 text-white px-4 py-2 rounded-md text-[10px] md:text-lg">Test</button>
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -73,9 +70,8 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord, convertToAttendanceRecords } from "@/utils/attendanceHelpers";
-import type { ProcessedAttendance, StaffAttendanceLog } from "@/types"
-import { fetchAttendanceForUser } from "@/services/firebaseServices.ts";
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils/attendanceHelpers";
+import type { ProcessedAttendance, } from "@/types"
 // ✅ Get data from Pinia store
 
 const dataStore = useDataStore()
@@ -197,6 +193,8 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     record.missingCheckIn = !record.firstCheckIn && !isWeekend;
     record.missingCheckOut = !record.lastCheckOut && !isWeekend;
     record.isHoliday = isHolidayDate
+    record.day = dayName;
+    record.isWeekend = isWeekend;
 
     // ✅ Break Validation - Highlight only missing pairs
     let breakOutCount = 0;
@@ -218,14 +216,5 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
 
   return daysArray;
 });
-
-const test = async () => {
-  const res = await fetchAttendanceForUser(props.selectedUserId, startDate.value, endDate.value);
-  const logs: StaffAttendanceLog[] = res;
-  // console.log(logs);
-  const dispRecords = convertToAttendanceRecords(logs);
-  console.log(dispRecords);
-}
-
 
 </script>

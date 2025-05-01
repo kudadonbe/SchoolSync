@@ -3,7 +3,8 @@
 
 import AttendanceSummary from "@/components/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
-import AttendanceSheet from "@/components/AttendanceSheet.vue";
+// import AttendanceSheet from "@/components/AttendanceSheet.vue";
+import StaffAttendance from "@/components/StaffAttendance.vue";
 import { ref } from "vue";
 
 
@@ -37,7 +38,8 @@ const updateUser = (userId: string) => {
 
     <!-- Full width: Attendance Sheet -->
     <div class="mt-6">
-      <AttendanceSheet :selectedUserId="selectedUserId" />
+      <!-- <AttendanceSheet :selectedUserId="selectedUserId" /> -->
+      <StaffAttendance :selectedUserId="selectedUserId" />
 
     </div>
   </div>

@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useMockDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils/attendanceHelpers";
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord, convertToDisplayRecords } from "@/utils/attendanceHelpers";
 import type { ProcessedAttendance, StaffAttendanceLog } from "@/types"
 import { fetchAttendanceForUser } from "@/services/firebaseServices.ts";
 // ✅ Get data from Pinia store
@@ -211,8 +211,10 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
 const test = async () => {
   const res = await fetchAttendanceForUser(props.selectedUserId, startDate.value, endDate.value);
-  const data: StaffAttendanceLog[] = res;
-  console.log(data);
+  const logs: StaffAttendanceLog[] = res;
+  console.log(logs);
+  const dispRecords = convertToDisplayRecords(logs);
+  console.log(dispRecords);
 
 }
 

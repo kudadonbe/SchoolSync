@@ -7,7 +7,11 @@ import type {
   DisplayAttendanceRecord,
   DisplayAttendanceStatus,
   ProcessedAttendance,
+  StaffAttendanceLog,
+  UnixTimestamp,
 } from '@/types'
+
+import type { Timestamp } from 'firebase/firestore'
 
 /**
  * Get scheduled in time for a user on a specific date.
@@ -193,4 +197,64 @@ export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
     },
   }
   return newRecord
+}
+
+/**
+ * Converts raw Firestore attendance logs to display-friendly format.
+ *
+ * @param logs - Raw logs from Firestore
+ * @returns Formatted logs for UI
+ */
+export function convertToDisplayRecords(logs: StaffAttendanceLog[]): DisplayAttendanceRecord[] {
+  const statusMap: Record<number, DisplayAttendanceStatus> = {
+    0: 'CHECK IN',
+    1: 'CHECK OUT',
+    2: 'BREAK OUT',
+    3: 'BREAK IN',
+  }
+
+  return logs.map((log) => {
+    const dateObj = toDateSafe(log.timestamp)
+    // console.log('DEBUG:', dateObj, '→', dateObj.toISOString(), '→', formatTimeLocal(dateObj))
+    return {
+      user_id: log.staffId,
+      date: formatDateUTC(dateObj),
+      time: formatTimeUTC(dateObj),
+      status: statusMap[log.workCode] ?? 'UNKNOWN',
+    }
+  })
+}
+
+/**
+ * Safely converts a Firestore Timestamp or plain Unix timestamp object to JavaScript Date.
+ *
+ * @param input - Timestamp (with .toDate()) or raw object { seconds }
+ * @returns JavaScript Date object
+ */
+export function toDateSafe(input: UnixTimestamp | Timestamp): Date {
+  if (typeof input === 'object' && 'toDate' in input && typeof input.toDate === 'function') {
+    return input.toDate()
+  }
+
+  if (typeof input === 'object' && 'seconds' in input && typeof input.seconds === 'number') {
+    return new Date(input.seconds * 1000)
+  }
+  throw new Error('Invalid timestamp format')
+}
+
+/**
+ * Format a Date object into "HH:mm:ss" in **UTC**
+ */
+export function formatTimeUTC(date: Date): string {
+  const hours = String(date.getUTCHours()).padStart(2, '0')
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
+export function formatDateUTC(date: Date): string {
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }

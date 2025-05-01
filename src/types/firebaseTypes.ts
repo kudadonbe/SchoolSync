@@ -7,13 +7,13 @@ import type { Timestamp } from 'firebase/firestore'
 export interface StaffAttendanceLog {
   id?: string // Firestore document ID (MD5 hash of staffId + timestamp)
   staffId: string // Unique staff identifier
-  status: number // 0 = IN, 1 = OUT, 2 = BREAK OUT, 3 = BREAK IN
-  timestamp: Timestamp | FirestoreLikeTimestamp // Punch time
-  uploadedAt: Timestamp | FirestoreLikeTimestamp // Upload time
-  workCode: number // Work code from iClock
+  status: number // Work code from iClock
+  timestamp: Timestamp | UnixTimestamp // Punch time
+  uploadedAt: Timestamp | UnixTimestamp // Upload time
+  workCode: number // 0 = IN, 1 = OUT, 2 = BREAK OUT, 3 = BREAK IN.
 }
 
-export interface FirestoreLikeTimestamp {
+export interface UnixTimestamp {
   seconds: number
   nanoseconds: number
 }

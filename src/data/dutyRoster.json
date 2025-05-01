@@ -18,7 +18,8 @@
     { "name": "Eidul Fitru 1", "date": "2025-03-31" },
     { "name": "Eidul Fitru 2", "date": "2025-04-01" },
     { "name": "Eidul Fitru 3", "date": "2025-04-02" },
-    { "name": "Independence Day", "date": "2025-07-26" }
+    { "name": "Independence Day", "date": "2025-07-26" },
+    { "name": "May Day", "date": "2025-05-01" }
   ],
   "specialHolidays": [
     { "name": "School Anniversary", "date": "2025-01-01" },

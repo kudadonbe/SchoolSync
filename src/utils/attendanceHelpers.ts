@@ -9,6 +9,8 @@ import type {
   ProcessedAttendance,
   StaffAttendanceLog,
   UnixTimestamp,
+  AttendanceRecord,
+  PunchStatus,
 } from '@/types'
 
 import type { Timestamp } from 'firebase/firestore'
@@ -197,6 +199,22 @@ export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
     },
   }
   return newRecord
+}
+
+export function convertToAttendanceRecords(logs: StaffAttendanceLog[]): AttendanceRecord[] {
+  return logs.map((log) => {
+    const dateObj = toDateSafe(log.timestamp)
+    const dateStr = formatDateUTC(dateObj)
+    const timeStr = formatTimeUTC(dateObj)
+
+    return {
+      user_id: log.staffId,
+      date: dateStr,
+      time: timeStr,
+      punch_status: log.workCode as PunchStatus,
+      log_status: log.status ?? 0,
+    }
+  })
 }
 
 /**

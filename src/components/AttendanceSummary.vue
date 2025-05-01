@@ -27,12 +27,12 @@
 </template>
 <script setup lang="ts">
 import { computed } from "vue";
-import { useMockDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
+import { useDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
 import type { AttendanceSummary } from "@/types"; // ✅ Import AttendanceSummary type
 import { camelToSnake } from "@/utils/stringHelpers"
 
 // ✅ Get state from Pinia store
-const mockDataStore = useMockDataStore();
+const mockDataStore = useDataStore();
 
 // ✅ Define Props to Accept `selectedUserId`
 const props = defineProps<{ selectedUserId: string }>();

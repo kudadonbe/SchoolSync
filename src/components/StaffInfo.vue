@@ -64,11 +64,11 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useMockDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
+import { useDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
 import type { Staff } from "@/types"; // ✅ Import Staff type
 
 // ✅ Get state from Pinia store
-const mockDataStore = useMockDataStore();
+const mockDataStore = useDataStore();
 const { staffList } = mockDataStore;
 
 // ✅ Props to accept selectedUserId from parent

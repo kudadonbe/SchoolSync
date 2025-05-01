@@ -78,6 +78,7 @@ import { fetchAttendanceForUser } from "@/services/firebaseServices.ts";
 const mockDataStore = useMockDataStore();
 const { attendanceRecords, staffList, dutyRoster, attendancePolicies } = mockDataStore;
 
+
 // ✅ Define Props to Accept `selectedUserId`
 const props = defineProps<{ selectedUserId: string }>();
 
@@ -89,6 +90,7 @@ const endDate = ref("2025-03-03");
 
 const threshold = attendancePolicies.punch.duplicate_threshold_minutes;
 
+const formatedFireBaseData: StaffAttendanceLog[] = [];
 
 // ✅ Compute Attendance for Selected User with Date Filtering
 const filteredRecords = computed((): ProcessedAttendance[] => {
@@ -97,7 +99,9 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 
   // Filter records for the selected user within the date range
   const userRecords = sortPunchRecords(
-    attendanceRecords.filter(record =>
+
+    // attendanceRecords.filter(record =>
+    formatedFireBaseData.filter(record =>
       record.user_id === props.selectedUserId &&
       record.date >= startDate.value &&
       record.date <= endDate.value
@@ -212,9 +216,11 @@ const filteredRecords = computed((): ProcessedAttendance[] => {
 const test = async () => {
   const res = await fetchAttendanceForUser(props.selectedUserId, startDate.value, endDate.value);
   const logs: StaffAttendanceLog[] = res;
-  console.log(logs);
+  // console.log(logs);
   const dispRecords = convertToDisplayRecords(logs);
   console.log(dispRecords);
+  formatedFireBaseData.push(...dispRecords);
+  console.log(formatedFireBaseData);
 
 }
 

@@ -197,7 +197,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
 
 
 // style class
-const btnMouseOver = 'text-[3px] md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-2 py-1 transition-colors duration-200 ease-in-out'
+const btnMouseOver = 'text-sm md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-4 py-2 transition-colors duration-200 ease-in-out'
 
 </script>
 

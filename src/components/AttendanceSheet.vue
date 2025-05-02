@@ -3,7 +3,7 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils/attendanceHelpers";
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils";
 import type { ProcessedAttendance, } from "@/types"
 // ✅ Get data from Pinia store
 
@@ -156,8 +156,11 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
   <div class="bg-white p-4 md:p-6 shadow-md rounded-lg mt-6">
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
-      <h2 class="text-[10px] md:text-lg font-semibold text-green-700">STAFF ATTENDANCE</h2>
-
+      <h2 class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
+      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Today</button>
+      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Current Month</button>
+      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Current Year</button>
+      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Payble Period</button>
       <!-- Date Range Selection -->
       <div class="flex gap-2 md:gap-4 mt-2 md:mt-0">
         <div>

@@ -30,6 +30,11 @@ const startDate = ref(formatDateLocal(today));
 const endDate = ref(formatDateLocal(today));
 
 
+const setToday = () => {
+  startDate.value = formatDateLocal(today);
+  endDate.value = formatDateLocal(today);
+}
+
 const setCurrentWeek = () => {
   const { start, end } = getCurrentWeek()
   startDate.value = formatDateLocal(start);
@@ -201,6 +206,7 @@ const btnMouseOver = 'text-[3px] md:text-lg font-semibold text-gray-200 hover:te
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
       <h2 class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
+      <button @click="setToday" :class="btnMouseOver">Today</button>
       <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
       <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
       <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>

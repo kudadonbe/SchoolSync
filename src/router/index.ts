@@ -27,7 +27,7 @@ const routes: RouteRecordRaw[] = [
     component: AdminDashboardView,
     meta: {
       requiresAuth: true,
-      roles: ['developer', 'administrator'],
+      roles: ['developer', 'administrator', 'administrative_officer'],
     },
   },
   {

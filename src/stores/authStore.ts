@@ -52,11 +52,11 @@ export const useAuthStore = defineStore('auth', () => {
         currentUser.value.displayName,
         currentUser.value.email,
       )
-      console.log(`[authStore] User Logged Out:
-        Name: ${currentUser.value.displayName},
-        Email: ${currentUser.value.email},
-        UID: ${currentUser.value.uid},
-        Time: ${new Date().toLocaleString()}`)
+      // console.log(`[authStore] User Logged Out:
+      //   Name: ${currentUser.value.displayName},
+      //   Email: ${currentUser.value.email},
+      //   UID: ${currentUser.value.uid},
+      //   Time: ${new Date().toLocaleString()}`)
     }
 
     // Sign out the user from Firebase Auth
@@ -75,7 +75,7 @@ export const useAuthStore = defineStore('auth', () => {
   // ========== Initialize Auth Listener ==========
   // This function listens for authentication state changes (login/logout)
   function initAuthListener() {
-    console.log('[authStore] initAuthListener called')
+    // console.log('[authStore] initAuthListener called')
 
     if (authListenerInitialized) return // Prevent re-initializing the listener
     authListenerInitialized = true
@@ -83,7 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Listen for auth state changes using Firebase's onAuthStateChanged
     onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        console.log('[authStore] Firebase user detected')
+        // console.log('[authStore] Firebase user detected')
 
         // Sync user data to Firestore and store it in the app's state
         const user = await syncUserToFirestore(firebaseUser)
@@ -99,11 +99,11 @@ export const useAuthStore = defineStore('auth', () => {
             firebaseUser.email,
           )
           localStorage.setItem('hasLoggedIn', 'true') // Mark as logged in for this session
-          console.log(`[authStore] User Logged In:
-            Name: ${firebaseUser.displayName},
-            Email: ${firebaseUser.email},
-            UID: ${firebaseUser.uid},
-            Time: ${new Date().toLocaleString()}`)
+          // console.log(`[authStore] User Logged In:
+          //   Name: ${firebaseUser.displayName},
+          //   Email: ${firebaseUser.email},
+          //   UID: ${firebaseUser.uid},
+          //   Time: ${new Date().toLocaleString()}`)
         }
       } else {
         currentUser.value = null // Reset currentUser when user logs out

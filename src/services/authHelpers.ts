@@ -18,8 +18,8 @@ import type { User as FirebaseUser } from 'firebase/auth'
  */
 
 export async function syncUserToFirestore(firebaseUser: FirebaseUser): Promise<User> {
-  console.log(`[syncUserToFirestore] Called for: ${firebaseUser.displayName},
-    Time: ${new Date().toLocaleString()}`)
+  // console.log(`[syncUserToFirestore] Called for: ${firebaseUser.displayName},
+  //   Time: ${new Date().toLocaleString()}`)
 
   // ========== Firestore Document Reference ==========
   const userRef = doc(db, 'user', firebaseUser.uid) // Reference to the user's document in Firestore

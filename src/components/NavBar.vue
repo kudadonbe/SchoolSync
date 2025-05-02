@@ -41,12 +41,12 @@ const navigation = computed(() => {
   const base = [...baseNavigation]
 
   if (authStore.isAuthenticated) {
-    if (['developer', 'administrator'].includes(userRole.value)) {
-      base.push({ name: 'Admin Dashboard', href: '/admin' })
-    }
-    if (['developer', 'leading_teacher', 'principal'].includes(userRole.value)) {
-      base.push({ name: 'Dashboard', href: '/dashboard' })
-    }
+    // if (['developer', 'administrator'].includes(userRole.value)) {
+    //   base.push({ name: 'Admin Dashboard', href: '/admin' })
+    // }
+    // if (['developer', 'leading_teacher', 'principal'].includes(userRole.value)) {
+    //   base.push({ name: 'Dashboard', href: '/dashboard' })
+    // }
     if (!['public', 'parent', 'student'].includes(userRole.value)) {
       base.push({ name: 'Satff Attendance', href: '/attendance' })
     }
@@ -54,7 +54,7 @@ const navigation = computed(() => {
   return base
 })
 
-console.log(navigation.value);
+// console.log(navigation.value);
 
 
 </script>

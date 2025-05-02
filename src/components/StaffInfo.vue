@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore'
 const authStore = useAuthStore()
 
 const staffRole = computed(() => authStore.currentUser?.role ?? null)
-console.log("staffRole:", staffRole.value);
+// console.log("staffRole:", staffRole.value);
 const showSearch = computed(() => {
   return staffRole.value === "administrator" || staffRole.value === "leading_teacher" || staffRole.value === "principal" || staffRole.value === "developer"
 })

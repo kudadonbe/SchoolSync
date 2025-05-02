@@ -1,3 +1,4 @@
+// File: src/router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
 import { watch } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
@@ -8,7 +9,9 @@ import NoticeBoardView from '@/views/NoticeBoardView.vue'
 import LoginView from '@/views/LoginView.vue'
 
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
+
 import StockManagementView from '@/views/admin/StockManagementView.vue'
+import AttendanceView from '@/views/admin/AttendanceView.vue'
 
 const routes: RouteRecordRaw[] = [
   // Public Routes
@@ -20,39 +23,62 @@ const routes: RouteRecordRaw[] = [
   // Admin Routes (No authentication for now)
   {
     path: '/admin',
-    name: 'admin',
-    component: AdminDashboardView,
-    meta: {
-      requiresAuth: true,
-      roles: ['admin_staff', 'administrator', 'principal', 'leading_teacher', 'developer'],
-    },
-  },
-  {
-    path: '/dashboard',
     name: 'admin-dashboard',
     component: AdminDashboardView,
     meta: {
       requiresAuth: true,
-      roles: ['admin_staff', 'administrator', 'principal', 'leading_teacher', 'developer'],
+      roles: ['developer', 'administrator'],
+    },
+  },
+  {
+    path: '/dashboard',
+    name: 'academic-dashboard',
+    component: AdminDashboardView,
+    meta: {
+      requiresAuth: true,
+      roles: ['developer', 'administrator', 'principal', 'leading_teacher'],
     },
   },
   {
     path: '/admin/stock',
     name: 'admin-stock',
     component: StockManagementView,
-    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal', 'developer'] },
+    meta: {
+      requiresAuth: true,
+      roles: ['administrative_officer', 'administrator', 'principal', 'developer'],
+    },
   },
   {
     path: '/admin/users',
     name: 'admin-users',
     component: () => import('@/views/admin/UsersManagementView.vue'),
-    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal', 'developer'] },
+    meta: {
+      requiresAuth: true,
+      roles: ['administrator', 'principal', 'developer'],
+    },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
     component: () => import('@/views/admin/SettingsView.vue'),
     meta: { requiresAuth: true, roles: ['administrator', 'developer'] },
+  },
+  {
+    path: '/attendance',
+    name: 'staff-attendance',
+    component: AttendanceView,
+    meta: {
+      requiresAuth: true,
+      roles: [
+        'developer',
+        'principal',
+        'administrator',
+        'administrative_officer',
+        'leading_teacher',
+        'teacher',
+        'labor',
+      ],
+    },
   },
 
   // 404 Page

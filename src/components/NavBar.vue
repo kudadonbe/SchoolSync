@@ -32,7 +32,7 @@ const handleImageError = () => {
 
 const baseNavigation = [
   { name: 'Home', href: '/' },
-  { name: 'About', href: '/about' },
+  // { name: 'About', href: '/about' },
 ]
 
 
@@ -41,15 +41,21 @@ const navigation = computed(() => {
   const base = [...baseNavigation]
 
   if (authStore.isAuthenticated) {
-    if (['administrator', 'admin_staff'].includes(userRole.value)) {
+    if (['developer', 'administrator'].includes(userRole.value)) {
       base.push({ name: 'Admin Dashboard', href: '/admin' })
     }
-    if (['teacher', 'leading_teacher', 'principal'].includes(userRole.value)) {
+    if (['developer', 'leading_teacher', 'principal'].includes(userRole.value)) {
       base.push({ name: 'Dashboard', href: '/dashboard' })
+    }
+    if (!['public', 'parent', 'student'].includes(userRole.value)) {
+      base.push({ name: 'Satff Attendance', href: '/attendance' })
     }
   }
   return base
 })
+
+console.log(navigation.value);
+
 
 </script>
 

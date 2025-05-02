@@ -9,7 +9,10 @@ import { useAuthStore } from '@/stores/authStore'
 const authStore = useAuthStore()
 
 const staffRole = computed(() => authStore.currentUser?.role ?? null)
-console.log("staffRole", staffRole.value);
+console.log("staffRole:", staffRole.value);
+const showSearch = computed(() => {
+  return staffRole.value === "administrator" || staffRole.value === "leading_teacher" || staffRole.value === "principal" || staffRole.value === "developer"
+})
 
 
 // ✅ Get state from Pinia store
@@ -54,8 +57,10 @@ const selectUser = (userId: string) => {
 
     <!-- Search Staff -->
     <div class="relative">
-      <input v-model="searchQuery" type="text" placeholder="Search staff by name..."
-        class="w-full p-2 border border-gray-300 rounded-md mb-3" />
+      <div v-if="showSearch" class="mb-3">
+        <input v-model="searchQuery" type="text" placeholder="Search staff by name..."
+          class="w-full p-2 border border-gray-300 rounded-md mb-3" />
+      </div>
 
       <!-- Filtered Staff List (Floating Dropdown) -->
       <div v-if="searchQuery && filteredStaff.length > 0"
@@ -111,5 +116,3 @@ const selectUser = (userId: string) => {
     </div>
   </div>
 </template>
-
-

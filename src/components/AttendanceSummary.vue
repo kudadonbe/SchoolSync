@@ -22,7 +22,7 @@
       </table>
     </div>
 
-    <p v-else class="text-gray-500">No attendance records found for the selected staff.</p>
+    <p v-else class="text-gray-500">Please update records.</p>
   </div>
 </template>
 <script setup lang="ts">

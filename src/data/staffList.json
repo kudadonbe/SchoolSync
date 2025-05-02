@@ -18,15 +18,6 @@
     "staff_type": "Academic"
   },
   {
-    "user_id": "103",
-    "name": "Unknown",
-    "department": "Unknown",
-    "position": "Unknown",
-    "join_date": null,
-    "leave_count_date": null,
-    "staff_type": "Unknown"
-  },
-  {
     "user_id": "104",
     "name": "Mohamed Ihsan",
     "department": "Academic",
@@ -280,7 +271,7 @@
   },
   {
     "user_id": "132",
-    "name": "Nahida mohamed",
+    "name": "Nahida Mohamed",
     "department": "Academic",
     "position": "Teacher - Primary",
     "join_date": null,

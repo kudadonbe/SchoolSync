@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// src/views/admin/StaffView.vue
 import { computed, ref } from 'vue';
 import { RouterLink, useRoute } from 'vue-router'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
@@ -40,10 +41,10 @@ const navigation = computed(() => {
   const base = [...baseNavigation]
 
   if (authStore.isAuthenticated) {
-    if (['administrator', 'principal', 'admin-staff'].includes(userRole.value)) {
+    if (['administrator', 'principal', 'admin_staff'].includes(userRole.value)) {
       base.push({ name: 'Admin', href: '/admin' })
     }
-    if (['teacher', 'leading-teacher'].includes(userRole.value)) {
+    if (['teacher', 'leading_teacher'].includes(userRole.value)) {
       base.push({ name: 'Dashboard', href: '/dashboard' })
     }
   }

@@ -1,8 +1,162 @@
+<script setup lang="ts">
+// src/components/StaffAttendance.vue
+import { ref, computed, watch, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useDataStore } from "@/stores/dataStore"; // ✅ Pinia store
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils/attendanceHelpers";
+import type { ProcessedAttendance, } from "@/types"
+// ✅ Get data from Pinia store
+
+const dataStore = useDataStore()
+
+const { staffList, dutyRoster, attendancePolicies } = storeToRefs(dataStore);
+
+
+const props = defineProps<{ selectedUserId: string }>();
+
+
+
+// ✅ Date range filters
+const startDate = ref("2025-04-16");
+const endDate = ref("2025-05-15");
+
+
+const attendanceRecords = computed(() =>
+  dataStore.getAttendance(props.selectedUserId, startDate.value, endDate.value)
+);
+
+const load = async () => {
+  await dataStore.loadAttendance(props.selectedUserId, startDate.value, endDate.value);
+}
+
+onMounted(load)
+watch([() => props.selectedUserId, startDate, endDate], load);
+
+const threshold = attendancePolicies.value.punch.duplicate_threshold_minutes;
+
+
+// ✅ Compute Attendance for Selected User with Date Filtering
+const filteredRecords = computed<ProcessedAttendance[]>(() => {
+
+  const recordsMap = new Map<string, ProcessedAttendance>();
+
+  // Filter records for the selected user within the date range
+  const userRecords = sortPunchRecords(attendanceRecords.value);
+
+  // this for debugging
+  // const totalPunches = userRecords.length;
+  // let normalizedCount = 0;
+
+  // Populate records
+  userRecords.forEach(record => {
+
+    if (!recordsMap.has(record.date)) {
+      recordsMap.set(record.date, newAttendanceRecord(record.date));
+    }
+    const dayRecord = recordsMap.get(record.date)!;
+
+    const scheduledInTime = getScheduledInTime(record.user_id, record.date, dayRecord.firstCheckIn, dutyRoster.value, staffList.value);
+    const scheduledOutTime = getScheduledOutTime(scheduledInTime);
+
+
+    // for debugging
+    // const originalStatus = record.status;
+
+
+    record.status = normalizePunchStatus(record.time, scheduledInTime, scheduledOutTime, record.status);
+
+    // for debugging
+    // if (record.status !== originalStatus) {
+    //   normalizedCount++;
+    //   console.log(`🔁 Normalized ${originalStatus} → ${record.status} on ${record.date} at ${record.time}`);
+    // }
+    // abouve for debudding
+
+
+
+    if (record.status === "CHECK IN" && !dayRecord.firstCheckIn) dayRecord.firstCheckIn = record.time;
+    if (
+      dayRecord.firstCheckIn &&
+      !dayRecord.isWeekend &&
+      !isHoliday(record.date, dutyRoster.value.publicHolidays, dutyRoster.value.specialHolidays)
+    ) {
+      dayRecord.lateMinutes = calculateLateMinutes(scheduledInTime, dayRecord.firstCheckIn, attendancePolicies.value.late.grace_period_minutes);
+    }
+
+    if (record.status === "CHECK OUT") dayRecord.lastCheckOut = record.time;
+
+    if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
+
+      const lastTime = dayRecord.lastBreakTimes[record.status];
+      const currentMin = toMinutes(record.time);
+      const lastMin = lastTime ? toMinutes(lastTime) : -Infinity;
+
+      if (currentMin - lastMin >= threshold) {
+        dayRecord.lastBreakTimes[record.status] = record.time
+        dayRecord.breaks.push({
+          time: record.time,
+          type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
+          missing: false
+        });
+
+      }
+
+    }
+
+  });
+
+
+  // console.log(`📊 Total punches processed: ${totalPunches}`);
+  // console.log(`🔁 Total normalized punches: ${normalizedCount}`);
+
+  // ✅ Generate all calendar days within the selected range
+  const daysArray: ProcessedAttendance[] = [];
+  const currentDate = new Date(startDate.value);
+  const end = new Date(endDate.value);
+
+  while (currentDate <= end) {
+    const dateStr = currentDate.toISOString().split("T")[0];
+    const dayName = currentDate.toLocaleString('en-us', { weekday: 'long' });
+    const isWeekend = dayName === "Friday" || dayName === "Saturday";
+    const isHolidayDate = isHoliday(dateStr, dutyRoster.value.publicHolidays, dutyRoster.value.specialHolidays);
+
+    const record = recordsMap.get(dateStr) || newAttendanceRecord(dateStr);
+
+    // Ensure missing attendance is flagged correctly
+    record.missingCheckIn = !record.firstCheckIn && !isWeekend;
+    record.missingCheckOut = !record.lastCheckOut && !isWeekend;
+    record.isHoliday = isHolidayDate
+    record.day = dayName;
+    record.isWeekend = isWeekend;
+
+    // ✅ Break Validation - Highlight only missing pairs
+    let breakOutCount = 0;
+    let breakInCount = 0;
+
+    record.breaks.forEach(b => {
+      if (b.type === "(OUT)") breakOutCount++;
+      if (b.type === "(IN)") breakInCount++;
+    });
+
+    // If mismatched, mark the last unmatched as missing
+    if (breakOutCount !== breakInCount) {
+      record.breaks[record.breaks.length - 1].missing = true;
+    }
+
+    daysArray.push(record);
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return daysArray;
+});
+
+</script>
+
 <template>
   <div class="bg-white p-4 md:p-6 shadow-md rounded-lg mt-6">
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
-      <h2 class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
+      <h2 class="text-[10px] md:text-lg font-semibold text-green-700">STAFF ATTENDANCE</h2>
 
       <!-- Date Range Selection -->
       <div class="flex gap-2 md:gap-4 mt-2 md:mt-0">
@@ -64,176 +218,3 @@
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed } from "vue";
-import { useMockDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords } from "@/utils/attendanceHelpers";
-import type { ProcessedAttendance } from "@/types"
-
-// ✅ Get data from Pinia store
-const mockDataStore = useMockDataStore();
-const { attendanceRecords, staffList, dutyRoster, attendancePolicies } = mockDataStore;
-
-// ✅ Define Props to Accept `selectedUserId`
-const props = defineProps<{ selectedUserId: string }>();
-
-
-
-// ✅ Date range filters
-const startDate = ref("2025-01-01");
-const endDate = ref("2025-03-31");
-
-const threshold = attendancePolicies.punch.duplicate_threshold_minutes;
-
-
-// ✅ Compute Attendance for Selected User with Date Filtering
-const filteredRecords = computed((): ProcessedAttendance[] => {
-  const recordsMap = new Map<string, ProcessedAttendance>();
-
-  // Filter records for the selected user within the date range
-  const userRecords = sortPunchRecords(
-    attendanceRecords.filter(record =>
-      record.user_id === props.selectedUserId &&
-      record.date >= startDate.value &&
-      record.date <= endDate.value
-    )
-  );
-
-  // this for debugging
-  // const totalPunches = userRecords.length;
-  // let normalizedCount = 0;
-
-  // Populate records
-  userRecords.forEach(record => {
-
-    if (!recordsMap.has(record.date)) {
-      recordsMap.set(record.date, {
-        date: record.date,
-        day: new Date(record.date).toLocaleString('en-us', { weekday: 'long' }),
-        firstCheckIn: "",
-        lastCheckOut: "",
-        breaks: [],
-        missingCheckIn: false,
-        missingCheckOut: false,
-        isWeekend: false,
-        lateMinutes: 0,
-        isHoliday: false,
-        lastBreakTimes: {
-          "BREAK IN": null,
-          "BREAK OUT": null
-        }
-      });
-    }
-    const dayRecord = recordsMap.get(record.date)!;
-
-    const scheduledInTime = getScheduledInTime(record.user_id, record.date, dayRecord.firstCheckIn, dutyRoster, staffList);
-    const scheduledOutTime = getScheduledOutTime(scheduledInTime);
-
-
-    // for debugging
-    // const originalStatus = record.status;
-
-
-    record.status = normalizePunchStatus(record.time, scheduledInTime, scheduledOutTime, record.status);
-
-    // for debugging
-    // if (record.status !== originalStatus) {
-    //   normalizedCount++;
-    //   console.log(`🔁 Normalized ${originalStatus} → ${record.status} on ${record.date} at ${record.time}`);
-    // }
-    // abouve for debudding
-
-
-
-    if (record.status === "CHECK IN" && !dayRecord.firstCheckIn) dayRecord.firstCheckIn = record.time;
-    if (
-      dayRecord.firstCheckIn &&
-      !dayRecord.isWeekend &&
-      !isHoliday(record.date, dutyRoster.publicHolidays, dutyRoster.specialHolidays)
-    ) {
-      dayRecord.lateMinutes = calculateLateMinutes(scheduledInTime, dayRecord.firstCheckIn, attendancePolicies.late.grace_period_minutes);
-    }
-
-    if (record.status === "CHECK OUT") dayRecord.lastCheckOut = record.time;
-
-    if (record.status === "BREAK IN" || record.status === "BREAK OUT") {
-
-      const lastTime = dayRecord.lastBreakTimes[record.status];
-      const currentMin = toMinutes(record.time);
-      const lastMin = lastTime ? toMinutes(lastTime) : -Infinity;
-
-      if (currentMin - lastMin >= threshold) {
-        dayRecord.lastBreakTimes[record.status] = record.time
-        dayRecord.breaks.push({
-          time: record.time,
-          type: record.status === "BREAK IN" ? "(IN)" : "(OUT)",
-          missing: false
-        });
-
-      }
-
-    }
-
-  });
-
-
-  // console.log(`📊 Total punches processed: ${totalPunches}`);
-  // console.log(`🔁 Total normalized punches: ${normalizedCount}`);
-
-  // ✅ Generate all calendar days within the selected range
-  const daysArray: ProcessedAttendance[] = [];
-  const currentDate = new Date(startDate.value);
-  const end = new Date(endDate.value);
-
-  while (currentDate <= end) {
-    const dateStr = currentDate.toISOString().split("T")[0];
-    const dayName = currentDate.toLocaleString('en-us', { weekday: 'long' });
-    const isWeekend = dayName === "Friday" || dayName === "Saturday";
-    const isHolidayDate = isHoliday(dateStr, dutyRoster.publicHolidays, dutyRoster.specialHolidays);
-
-    const record = recordsMap.get(dateStr) || {
-      date: dateStr,
-      day: dayName,
-      firstCheckIn: "",
-      lastCheckOut: "",
-      breaks: [],
-      missingCheckIn: !isWeekend,
-      missingCheckOut: !isWeekend,
-      isWeekend,
-      lateMinutes: 0,
-      isHoliday: false,
-      lastBreakTimes: {
-        "BREAK IN": null,
-        "BREAK OUT": null
-      }
-
-
-    };
-
-    // Ensure missing attendance is flagged correctly
-    record.missingCheckIn = !record.firstCheckIn && !isWeekend;
-    record.missingCheckOut = !record.lastCheckOut && !isWeekend;
-    record.isHoliday = isHolidayDate
-
-    // ✅ Break Validation - Highlight only missing pairs
-    let breakOutCount = 0;
-    let breakInCount = 0;
-
-    record.breaks.forEach(b => {
-      if (b.type === "(OUT)") breakOutCount++;
-      if (b.type === "(IN)") breakInCount++;
-    });
-
-    // If mismatched, mark the last unmatched as missing
-    if (breakOutCount !== breakInCount) {
-      record.breaks[record.breaks.length - 1].missing = true;
-    }
-
-    daysArray.push(record);
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return daysArray;
-});
-</script>

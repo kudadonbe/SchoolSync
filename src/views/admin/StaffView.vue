@@ -1,12 +1,19 @@
 <script setup lang="ts">
-
+// src/views/admin/StaffView.vue
 
 import AttendanceSummary from "@/components/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
-// import AttendanceSheet from "@/components/AttendanceSheet.vue";
-import StaffAttendance from "@/components/StaffAttendance.vue";
+import AttendanceSheet from "@/components/AttendanceSheet.vue";
 import { ref } from "vue";
 
+import { useDataStore } from "@/stores/dataStore"; // ✅ Pinia store
+import { storeToRefs } from "pinia";
+
+
+const dataStore = useDataStore()
+const { staffList } = storeToRefs(dataStore);
+
+console.log("staffList", staffList.value);
 
 
 // ✅ Track the selected user across components
@@ -39,7 +46,7 @@ const updateUser = (userId: string) => {
     <!-- Full width: Attendance Sheet -->
     <div class="mt-6">
       <!-- <AttendanceSheet :selectedUserId="selectedUserId" /> -->
-      <StaffAttendance :selectedUserId="selectedUserId" />
+      <AttendanceSheet :selectedUserId="selectedUserId" />
 
     </div>
   </div>

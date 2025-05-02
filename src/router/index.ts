@@ -22,25 +22,37 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     name: 'admin-dashboard',
     component: AdminDashboardView,
-    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal'] },
+    meta: {
+      requiresAuth: true,
+      roles: ['admin_staff', 'administrator', 'principal', 'leading_teacher', 'developer'],
+    },
+  },
+  {
+    path: '/dashboard',
+    name: 'admin-dashboard',
+    component: AdminDashboardView,
+    meta: {
+      requiresAuth: true,
+      roles: ['admin_staff', 'administrator', 'principal', 'leading_teacher', 'developer'],
+    },
   },
   {
     path: '/admin/stock',
     name: 'admin-stock',
     component: StockManagementView,
-    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal'] },
+    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal', 'developer'] },
   },
   {
     path: '/admin/users',
     name: 'admin-users',
     component: () => import('@/views/admin/UsersManagementView.vue'),
-    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal'] },
+    meta: { requiresAuth: true, roles: ['admin_staff', 'administrator', 'principal', 'developer'] },
   },
   {
     path: '/admin/settings',
     name: 'admin-settings',
     component: () => import('@/views/admin/SettingsView.vue'),
-    meta: { requiresAuth: true, roles: ['administrator'] },
+    meta: { requiresAuth: true, roles: ['administrator', 'developer'] },
   },
 
   // 404 Page

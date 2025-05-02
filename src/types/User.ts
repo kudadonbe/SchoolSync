@@ -12,6 +12,7 @@ export type UserRole =
   | 'administrator'
   | 'admin_staff'
   | 'principal'
+  | 'developer'
 
 export interface User {
   uid: string
@@ -22,4 +23,7 @@ export interface User {
   createdAt: Date | FieldValue
   lastLoginAt: Date | FieldValue
   isActive: boolean
+  staffId?: string
+  studentId?: string
+  parentId?: string
 }

@@ -194,7 +194,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
               {{ record.day }}
             </td>
             <td class="p-1 md:p-3 text-center"
-              :class="{ 'bg-red-200 text-red-700': record.missingCheckIn, 'bg-gray-100': record.isWeekend || record.isHoliday }">
+              :class="{ 'bg-red-200 text-red-700': record.missingCheckIn, 'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday }">
               {{ record.firstCheckIn || '--' }}
             </td>
             <td class="p-1 md:p-3 text-center text-red-700"
@@ -209,7 +209,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
               </span>
             </td>
             <td class="p-1 md:p-3 text-center"
-              :class="{ 'bg-red-200 text-red-700': record.missingCheckOut, 'bg-gray-100': record.isWeekend || record.isHoliday }">
+              :class="{ 'bg-red-200 text-red-700': record.missingCheckOut, 'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday }">
               {{ record.lastCheckOut || '--' }}
             </td>
           </tr>

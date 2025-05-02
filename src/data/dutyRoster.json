@@ -35,15 +35,15 @@
   "dailyOverrides": [
     {
       "date": "2025-01-05",
-      "EarlyDuty": ["153", "138"]
+      "EarlyDuty": ["", ""]
     },
     {
       "date": "2025-01-06",
-      "EarlyDuty": ["153", "138"]
+      "EarlyDuty": ["", ""]
     },
     {
-      "date": "2025-02-27",
-      "EarlyDuty": ["153", "138"]
+      "date": "2025-03-27",
+      "EarlyDuty": ["153", ""]
     }
   ]
 }

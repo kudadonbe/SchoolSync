@@ -4,23 +4,19 @@
 import AttendanceSummary from "@/components/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
 import AttendanceSheet from "@/components/AttendanceSheet.vue";
-import { ref } from "vue";
-
-import { useDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { storeToRefs } from "pinia";
+import { ref, computed } from "vue";
 
 
-const dataStore = useDataStore()
-const { staffList } = storeToRefs(dataStore);
+import { useAuthStore } from '@/stores/authStore'
 
-// 1️⃣ Grab the staffId right off the logged-in user
-// const myStaffId = computed(() => authStore.currentUser?.staffId ?? null);
+const authStore = useAuthStore()
 
-// console.log("staffList", staffList.value);
+const staffId = computed(() => authStore.currentUser?.staffId ?? null)
+// console.log("staffId", staffId.value);
 
 
 // ✅ Track the selected user across components
-const selectedUserId = ref("101"); // Default to the first user
+const selectedUserId = ref(staffId.value); // Default to the first user
 
 // ✅ Update selected user when changed in StaffInfo
 const updateUser = (userId: string) => {

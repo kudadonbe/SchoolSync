@@ -13,7 +13,10 @@ import { storeToRefs } from "pinia";
 const dataStore = useDataStore()
 const { staffList } = storeToRefs(dataStore);
 
-console.log("staffList", staffList.value);
+// 1️⃣ Grab the staffId right off the logged-in user
+// const myStaffId = computed(() => authStore.currentUser?.staffId ?? null);
+
+// console.log("staffList", staffList.value);
 
 
 // ✅ Track the selected user across components

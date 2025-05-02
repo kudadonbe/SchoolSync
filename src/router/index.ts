@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
   // Admin Routes (No authentication for now)
   {
     path: '/admin',
-    name: 'admin-dashboard',
+    name: 'admin',
     component: AdminDashboardView,
     meta: {
       requiresAuth: true,

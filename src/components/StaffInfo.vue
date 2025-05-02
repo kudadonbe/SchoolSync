@@ -20,7 +20,7 @@ const dataStore = useDataStore();
 const { staffList } = dataStore;
 
 // ✅ Props to accept selectedUserId from parent
-const props = defineProps<{ selectedUserId: string }>();
+const props = defineProps<{ selectedUserId: string | null }>();
 
 // ✅ Emit event when user is selected
 const emit = defineEmits(["updateUser"]);
@@ -88,28 +88,16 @@ const selectUser = (userId: string) => {
             <td class="p-3">{{ selectedUser.name }}</td>
           </tr>
           <tr>
-            <td class="p-3 font-semibold">Staff ID:</td>
-            <td class="p-3">{{ selectedUser.user_id }}</td>
-          </tr>
-          <tr>
-            <td class="p-3 font-semibold">Department:</td>
-            <td class="p-3">{{ selectedUser.department }}</td>
-          </tr>
-          <tr>
-            <td class="p-3 font-semibold">Position:</td>
+            <td class="p-3 font-semibold">Designation:</td>
             <td class="p-3">{{ selectedUser.position }}</td>
           </tr>
           <tr>
-            <td class="p-3 font-semibold">Join Date:</td>
+            <td class="p-3 font-semibold">Appointed Date:</td>
             <td class="p-3">{{ selectedUser.join_date || "N/A" }}</td>
           </tr>
           <tr>
-            <td class="p-3 font-semibold">Leave Count Date:</td>
+            <td class="p-3 font-semibold">Joined Date:</td>
             <td class="p-3">{{ selectedUser.leave_count_date || "N/A" }}</td>
-          </tr>
-          <tr>
-            <td class="p-3 font-semibold">Type:</td>
-            <td class="p-3">{{ selectedUser.staff_type || "N/A" }}</td>
           </tr>
         </tbody>
       </table>

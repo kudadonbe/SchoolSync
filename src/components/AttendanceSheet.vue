@@ -21,7 +21,7 @@ const dataStore = useDataStore()
 
 const { staffList, dutyRoster, attendancePolicies } = storeToRefs(dataStore);
 
-const props = defineProps<{ selectedUserId: string }>();
+const props = defineProps<{ selectedUserId: string | null }>();
 const today = new Date();
 
 
@@ -67,11 +67,11 @@ const setPaidPeriod = () => {
 
 
 const attendanceRecords = computed(() =>
-  dataStore.getAttendance(props.selectedUserId, startDate.value, endDate.value)
+  dataStore.getAttendance(props.selectedUserId as string, startDate.value, endDate.value)
 );
 
 const load = async () => {
-  await dataStore.loadAttendance(props.selectedUserId, startDate.value, endDate.value);
+  await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value);
 }
 
 onMounted(load)

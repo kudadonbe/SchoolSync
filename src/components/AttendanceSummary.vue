@@ -35,7 +35,7 @@ import { camelToSnake } from "@/utils/stringHelpers"
 const mockDataStore = useDataStore();
 
 // ✅ Define Props to Accept `selectedUserId`
-const props = defineProps<{ selectedUserId: string }>();
+const props = defineProps<{ selectedUserId: string | null }>();
 
 // ✅ Get attendance summary records from store
 const { attendanceSummaryRecords, attendancePolicies } = mockDataStore;

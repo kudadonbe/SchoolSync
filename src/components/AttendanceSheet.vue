@@ -3,7 +3,17 @@
 import { ref, computed, watch, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import { useDataStore } from "@/stores/dataStore"; // ✅ Pinia store
-import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday, toMinutes, sortPunchRecords, newAttendanceRecord } from "@/utils";
+import {
+  getScheduledInTime, getScheduledOutTime,
+  normalizePunchStatus,
+  calculateLateMinutes,
+  isHoliday,
+  toMinutes,
+  sortPunchRecords,
+  newAttendanceRecord,
+  formatDateLocal,
+  getCurrentWeek, getCurrentMonth, getCurrentYear, getPayablePeriod, getPaidPeriod
+} from "@/utils";
 import type { ProcessedAttendance, } from "@/types"
 // ✅ Get data from Pinia store
 
@@ -11,14 +21,44 @@ const dataStore = useDataStore()
 
 const { staffList, dutyRoster, attendancePolicies } = storeToRefs(dataStore);
 
-
 const props = defineProps<{ selectedUserId: string }>();
-
+const today = new Date();
 
 
 // ✅ Date range filters
-const startDate = ref("2025-04-16");
-const endDate = ref("2025-05-15");
+const startDate = ref(formatDateLocal(today));
+const endDate = ref(formatDateLocal(today));
+
+
+const setCurrentWeek = () => {
+  const { start, end } = getCurrentWeek()
+  startDate.value = formatDateLocal(start);
+  endDate.value = formatDateLocal(end);
+}
+
+const setCurrentMonth = () => {
+  const { start, end } = getCurrentMonth()
+  startDate.value = formatDateLocal(start);
+  endDate.value = formatDateLocal(end);
+}
+
+const setCurrentYear = () => {
+  const { start, end } = getCurrentYear()
+  startDate.value = formatDateLocal(start);
+  endDate.value = formatDateLocal(end);
+}
+
+const setPayablePeriod = () => {
+  const { start, end } = getPayablePeriod()
+  startDate.value = formatDateLocal(start);
+  endDate.value = formatDateLocal(end);
+}
+
+const setPaidPeriod = () => {
+  const { start, end } = getPaidPeriod()
+  startDate.value = formatDateLocal(start);
+  endDate.value = formatDateLocal(end);
+}
 
 
 const attendanceRecords = computed(() =>
@@ -150,6 +190,10 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
   return daysArray;
 });
 
+
+// style class
+const btnMouseOver = 'text-[3px] md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-2 py-1 transition-colors duration-200 ease-in-out'
+
 </script>
 
 <template>
@@ -157,10 +201,11 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
       <h2 class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
-      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Today</button>
-      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Current Month</button>
-      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Current Year</button>
-      <button class="text-[10px] md:text-lg font-semibold text-gray-200">Payble Period</button>
+      <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
+      <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
+      <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>
+      <button @click="setPayablePeriod" :class="btnMouseOver">Payble</button>
+      <button @click="setCurrentYear" :class="btnMouseOver">Year</button>
       <!-- Date Range Selection -->
       <div class="flex gap-2 md:gap-4 mt-2 md:mt-0">
         <div>

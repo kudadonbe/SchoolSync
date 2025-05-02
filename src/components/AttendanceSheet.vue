@@ -123,11 +123,11 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     const record = recordsMap.get(dateStr) || newAttendanceRecord(dateStr);
 
     // Ensure missing attendance is flagged correctly
-    record.missingCheckIn = !record.firstCheckIn && !isWeekend;
-    record.missingCheckOut = !record.lastCheckOut && !isWeekend;
     record.isHoliday = isHolidayDate
     record.day = dayName;
     record.isWeekend = isWeekend;
+    record.missingCheckIn = !record.firstCheckIn && !isWeekend && !isHolidayDate;
+    record.missingCheckOut = !record.lastCheckOut && !isWeekend && !isHolidayDate;
 
     // ✅ Break Validation - Highlight only missing pairs
     let breakOutCount = 0;

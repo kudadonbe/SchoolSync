@@ -106,12 +106,13 @@ export function getSpecialDutyForDate(
   specialDuties: SpecialDuty[],
 ): SpecialDuty | null {
   const date = new Date(dateStr)
-  const specialDuty = specialDuties.find((duty) => {
+  const matchingDuties = specialDuties.filter((duty) => {
     const start = new Date(duty.from)
     const end = new Date(duty.to)
     return date >= start && date <= end
   })
-  return specialDuty || null
+  return matchingDuties.length > 0 ? matchingDuties[0] : null
+
 }
 
 export function isHoliday(

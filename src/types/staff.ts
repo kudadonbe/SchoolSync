@@ -8,4 +8,5 @@ export interface Staff {
   join_date: string | null
   leave_count_date: string | null
   staff_type: StaffType
+  email?: string
 }

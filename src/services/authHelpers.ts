@@ -42,6 +42,9 @@ export async function syncUserToFirestore(firebaseUser: FirebaseUser): Promise<U
       createdAt: timestamp, // Set creation timestamp
       lastLoginAt: timestamp, // Set the first login timestamp
       isActive: true, // Mark user as active
+      staffId: '', // Optional staff ID
+      studentId: '', // Optional student ID
+      parentId: '', // Optional parent ID
     }
 
     // Set the new user document in Firestore

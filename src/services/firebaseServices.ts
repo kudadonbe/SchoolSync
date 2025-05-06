@@ -1,8 +1,8 @@
 // src/services/firebaseServices.ts
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
+import { collection, query, where, getDocs, Timestamp, updateDoc, doc } from 'firebase/firestore'
 import { db } from '@/firebase' // Adjust the path if needed
 
-import type { StaffAttendanceLog } from '@/types' // Adjust path if needed
+import type { StaffAttendanceLog, User } from '@/types' // Adjust path if needed
 
 export async function fetchAttendanceForUser(
   staffId: string,
@@ -35,3 +35,37 @@ export async function fetchAttendanceForUser(
 
   return records
 }
+
+
+export async function fetchUsers(): Promise<User[]> {
+  const usersRef = collection(db, 'user')
+  const q = query(usersRef)
+
+  const querySnapshot = await getDocs(q)
+
+  const users: User[] = []
+
+  querySnapshot.forEach((doc) => {
+    users.push({
+      uid: doc.id,
+      ...doc.data(),
+    } as User)
+  })
+
+  return users
+}
+
+export async function updateUserInFirestore(user: User) {
+  try {
+    const userRef = doc(db, 'user', user.uid)
+     await updateDoc(userRef, {
+      staffId: user.staffId ?? null,
+      role: user.role,
+    })
+    console.log('User updated in Firestore:', user.uid)
+  } catch (error) {
+    console.error('❌ Failed to update user:', error)
+    throw error
+  }
+}
+

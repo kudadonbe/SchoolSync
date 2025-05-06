@@ -1,6 +1,6 @@
 // src/stores/dataStore.ts
 import { defineStore } from 'pinia'
-import { fetchAttendanceForUser } from '@/services/firebaseServices'
+import { fetchAttendanceForUser, fetchUsers } from '@/services/firebaseServices'
 import { convertToDisplayRecords } from '@/utils/attendanceHelpers'
 
 // ✅ Import types from types folder
@@ -11,6 +11,7 @@ import type {
   AttendanceSummaryRecord,
   StaffAttendanceLog,
   DisplayAttendanceRecord,
+  User,
 } from '@/types'
 
 // ✅ Import raw JSON data (all based on new structure)
@@ -28,9 +29,13 @@ export const useDataStore = defineStore('data', {
     dutyRoster: dutyRoster as DutyRoster,
     attendancePolicies: attendancePolicies as AttendancePolicyGrouped,
 
+
     // Dynamic attendance cache
     attendanceCache: {} as Record<string, DisplayAttendanceRecord[]>,
     lastFetchedEndDate: {} as Record<string, string>,
+
+
+
   }),
   actions: {
     async loadAttendance(userId: string, start: string, end: string) {
@@ -63,6 +68,12 @@ export const useDataStore = defineStore('data', {
       const key = `${userId}_${start}_${end}`
       return this.attendanceCache[key] ?? []
     },
+
+    async getUserList(): Promise<User[]>{
+      const users: User[] = await fetchUsers()
+      return users
+    },
+
   },
   // persist cache & lastFetchedEndDate across reloads
   persist: true,

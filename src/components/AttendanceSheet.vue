@@ -30,6 +30,7 @@ const startDate = ref(formatDateLocal(today));
 const endDate = ref(formatDateLocal(today));
 
 
+
 const setToday = () => {
   startDate.value = formatDateLocal(today);
   endDate.value = formatDateLocal(today);
@@ -70,11 +71,15 @@ const attendanceRecords = computed(() =>
   dataStore.getAttendance(props.selectedUserId as string, startDate.value, endDate.value)
 );
 
+
 const load = async () => {
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value);
 }
 
-onMounted(load)
+onMounted(() =>{
+  load()
+  setCurrentWeek()
+})
 watch([() => props.selectedUserId, startDate, endDate], load);
 
 const threshold = attendancePolicies.value.punch.duplicate_threshold_minutes;

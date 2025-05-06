@@ -41,9 +41,9 @@ const navigation = computed(() => {
   const base = [...baseNavigation]
 
   if (authStore.isAuthenticated) {
-    // if (['developer', 'administrator'].includes(userRole.value)) {
-    //   base.push({ name: 'Admin Dashboard', href: '/admin' })
-    // }
+    if (['developer', 'administrator'].includes(userRole.value)) {
+      base.push({ name: 'Admin Dashboard', href: '/admin' })
+    }
     // if (['developer', 'leading_teacher', 'principal'].includes(userRole.value)) {
     //   base.push({ name: 'Dashboard', href: '/dashboard' })
     // }

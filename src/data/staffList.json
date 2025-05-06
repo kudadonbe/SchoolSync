@@ -4,8 +4,8 @@
     "name": "Mohamed Luthufee",
     "department": "Admin / Academic",
     "position": "Principal",
-    "join_date": null,
-    "leave_count_date": null,
+    "join_date": "2023-08-28",
+    "leave_count_date": "2023-08-28",
     "staff_type": "Academic"
   },
   {
@@ -13,8 +13,8 @@
     "name": "Samira Mohamed",
     "department": "Academic",
     "position": "Senior Teacher - Social Studies",
-    "join_date": null,
-    "leave_count_date": null,
+    "join_date": "2023-08-28",
+    "leave_count_date": "2023-08-28",
     "staff_type": "Academic"
   },
   {
@@ -22,8 +22,8 @@
     "name": "Mohamed Ihsan",
     "department": "Academic",
     "position": "Senior Teacher - Accounting",
-    "join_date": null,
-    "leave_count_date": null,
+    "join_date": "2023-08-28",
+    "leave_count_date": "2023-08-28",
     "staff_type": "Academic"
   },
   {
@@ -31,8 +31,8 @@
     "name": "Ashfaq Adam",
     "department": "Academic",
     "position": "Teacher - Islam",
-    "join_date": null,
-    "leave_count_date": null,
+    "join_date": "2023-08-30",
+    "leave_count_date": "2023-08-30",
     "staff_type": "Academic"
   },
   {
@@ -467,5 +467,24 @@
     "join_date": "2025-02-25",
     "leave_count_date": "2025-02-25",
     "staff_type": "Admin"
+  },
+  {
+    "user_id": "154",
+    "name": "Azma Jaufar",
+    "department": "Academic",
+    "position": "School Health and Safety Officer",
+    "join_date": null,
+    "leave_count_date": null,
+    "staff_type": "Academic"
+  },
+  {
+    "user_id": "155",
+    "name": "Natasha Antony",
+    "department": "Academic",
+    "position": "Teacher - Physics",
+    "join_date": null,
+    "leave_count_date": null,
+    "staff_type": "Academic"
   }
+  
 ]

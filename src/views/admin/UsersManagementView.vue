@@ -71,10 +71,10 @@ async function saveEdit(user: User) {
           {{ user.staffId || '-' }}
         </template>
       </td>
-      <td class="border border-gray-300 p-2">{{ user.displayName }}</td>
-      <td class="border border-gray-300 p-2">
+      <td class="border border-gray-300 p-2 text-left">{{ user.displayName }}</td>
+      <td class="border border-gray-300 p-2 text-left">
         <template v-if="editingUserId === user.uid">
-          <select v-model="user.role" class="border p-1 text-sm w-32">
+          <select v-model="user.role" class="border p-1 text-sm w-32 text-left">
             <option value="principal">Principal</option>
             <option value="administrator">Administrator</option>
             <option value="leading_teacher">Leading Teacher</option>
@@ -88,7 +88,7 @@ async function saveEdit(user: User) {
           {{ user.role }}
         </template>
       </td>
-      <td class="border border-gray-300 p-2">{{ user.email }}</td>
+      <td class="border border-gray-300 p-2 text-left">{{ user.email }}</td>
       <td class="border border-gray-300 p-2">
         <template v-if="isAdmin">
           <button

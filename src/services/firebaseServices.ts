@@ -62,7 +62,7 @@ export async function updateUserInFirestore(user: User) {
       staffId: user.staffId ?? null,
       role: user.role,
     })
-    console.log('User updated in Firestore:', user.uid)
+    // console.log('User updated in Firestore:', user.uid)
   } catch (error) {
     console.error('❌ Failed to update user:', error)
     throw error

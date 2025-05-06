@@ -1,0 +1,21 @@
+
+[
+   {
+    "staffId": "153",
+    "date": "2025-04-21",
+    "correctionType": "breakIn",
+    "requestedTime": "10:30",
+    "requestedWorkCode": 2,
+    "reason": "forgot to clock in",
+    "status": "pending"
+   },
+   {
+    "staffId": "153",
+    "date": "2025-04-27",
+    "correctionType": "breakIn",
+    "requestedTime": "10:40",
+    "requestedWorkCode": 2,
+    "reason": "forgot to clock in",
+    "status": "pending"
+   } 
+]

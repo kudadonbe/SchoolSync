@@ -12,6 +12,7 @@ import type {
   StaffAttendanceLog,
   DisplayAttendanceRecord,
   User,
+  AttendanceCorrectionLog,
 } from '@/types'
 
 // ✅ Import raw JSON data (all based on new structure)
@@ -20,6 +21,7 @@ import staffList from '@/data/staffList.json'
 import attendanceSummaryRecords from '@/data/attendanceSummaryRecords.json'
 import dutyRoster from '@/data/dutyRoster.json'
 import attendancePolicies from '@/data/attendancePolicies.json'
+import attendanceCorrectionLog  from '@/data/attendanceCorrectionLog.json'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -28,6 +30,7 @@ export const useDataStore = defineStore('data', {
     attendanceSummaryRecords: attendanceSummaryRecords as AttendanceSummaryRecord[],
     dutyRoster: dutyRoster as DutyRoster,
     attendancePolicies: attendancePolicies as AttendancePolicyGrouped,
+    attendanceCorrectionLog: attendanceCorrectionLog as AttendanceCorrectionLog[],
 
 
     // Dynamic attendance cache

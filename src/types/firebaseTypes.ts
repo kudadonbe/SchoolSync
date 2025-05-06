@@ -45,10 +45,10 @@ export interface AttendanceCorrectionLog {
   requestedWorkCode?: number // Optional: 0 = IN, 1 = OUT, etc.
   reason: string
   originalPunchId?: string // Optional link to staffAttendanceLog
-  status: 'pending' | 'approved' | 'rejected'
+  status?: 'pending' | 'approved' | 'rejected'
   reviewedBy?: string // Admin UID
   reviewedAt?: Timestamp | UnixTimestamp
-  createdAt: Timestamp | UnixTimestamp
+  createdAt?: Timestamp | UnixTimestamp
 }
 
 

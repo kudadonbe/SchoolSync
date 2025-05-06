@@ -27,7 +27,6 @@ const today = new Date()
 
 const dataStore = useDataStore()
 const { staffList, dutyRoster, attendancePolicies, attendanceCorrectionLog } = storeToRefs(dataStore)
-console.log(attendanceCorrectionLog.value);
 
 
 const correctionsMap = computed(() => {

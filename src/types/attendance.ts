@@ -76,4 +76,9 @@ export interface ProcessedAttendance {
     'BREAK IN': string | null
     'BREAK OUT': string | null
   }
+  correctedCheckIn?: boolean
+  correctedCheckOut?: boolean
+  correctedBreaks?: {
+    [time: string]: boolean
+  }
 }

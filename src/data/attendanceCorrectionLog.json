@@ -1,21 +1,398 @@
-
 [
-   {
+  {
+    "staffId": "139",
+    "date": "2025-04-28",
+    "correctionType": "breakOut",
+    "requestedTime": "10:05",
+    "requestedWorkCode": 1,
+    "reason": "breakOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "139",
+    "date": "2025-04-28",
+    "correctionType": "breakIn",
+    "requestedTime": "10:40",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "140",
+    "date": "2025-01-08",
+    "correctionType": "breakIn",
+    "requestedTime": "11:04",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "140",
+    "date": "2025-02-24",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "140",
+    "date": "2025-04-15",
+    "correctionType": "breakIn",
+    "requestedTime": "11:35",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "136",
+    "date": "2025-04-10",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "136",
+    "date": "2025-01-05",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "136",
+    "date": "2025-06-01",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "136",
+    "date": "2025-01-14",
+    "correctionType": "breakIn",
+    "requestedTime": "9:58",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "136",
+    "date": "2025-02-10",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "145",
+    "date": "2025-04-24",
+    "correctionType": "checkIn",
+    "requestedTime": "6:23",
+    "requestedWorkCode": 0,
+    "reason": "checkIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "145",
+    "date": "2025-04-30",
+    "correctionType": "breakIn",
+    "requestedTime": "11:15",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "146",
+    "date": "2025-03-03",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "146",
+    "date": "2025-03-17",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "146",
+    "date": "2025-10-03",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
     "staffId": "153",
     "date": "2025-04-21",
     "correctionType": "breakIn",
     "requestedTime": "10:30",
     "requestedWorkCode": 2,
-    "reason": "forgot to clock in",
+    "reason": "breakIn",
     "status": "pending"
-   },
-   {
+  },
+  {
     "staffId": "153",
     "date": "2025-04-27",
     "correctionType": "breakIn",
     "requestedTime": "10:40",
     "requestedWorkCode": 2,
-    "reason": "forgot to clock in",
+    "reason": "breakIn",
     "status": "pending"
-   } 
+  },
+  {
+    "staffId": "144",
+    "date": "2025-04-15",
+    "correctionType": "breakOut",
+    "requestedTime": "10:47",
+    "requestedWorkCode": 1,
+    "reason": "breakOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "144",
+    "date": "2025-02-18",
+    "correctionType": "breakIn",
+    "requestedTime": "12:44",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "144",
+    "date": "2025-03-18",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "144",
+    "date": "2025-04-14",
+    "correctionType": "breakOut",
+    "requestedTime": "8:59",
+    "requestedWorkCode": 1,
+    "reason": "breakOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "144",
+    "date": "2025-04-15",
+    "correctionType": "breakIn",
+    "requestedTime": "10:59",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-01-09",
+    "correctionType": "breakIn",
+    "requestedTime": "9:55",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-01-16",
+    "correctionType": "checkOut",
+    "requestedTime": "12:45",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-01-19",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-01-22",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-01-27",
+    "correctionType": "breakIn",
+    "requestedTime": "9:55",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-02-09",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-02-10",
+    "correctionType": "checkOut",
+    "requestedTime": "14:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-04-08",
+    "correctionType": "checkOut",
+    "requestedTime": "12:45",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "138",
+    "date": "2025-04-20",
+    "correctionType": "breakIn",
+    "requestedTime": "12:35",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-01-13",
+    "correctionType": "breakIn",
+    "requestedTime": "12:00",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-03-09",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-03-16",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-03-16",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-03-18",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-02-02",
+    "correctionType": "breakIn",
+    "requestedTime": "12:44",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "142",
+    "date": "2025-02-02",
+    "correctionType": "checkOut",
+    "requestedTime": "13:00",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "154",
+    "date": "2025-04-05",
+    "correctionType": "checkIn",
+    "requestedTime": "8:45",
+    "requestedWorkCode": 0,
+    "reason": "checkIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "154",
+    "date": "2025-04-05",
+    "correctionType": "checkOut",
+    "requestedTime": "13:15",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "154",
+    "date": "2025-04-06",
+    "correctionType": "breakIn",
+    "requestedTime": "9:45",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "154",
+    "date": "2025-04-23",
+    "correctionType": "breakIn",
+    "requestedTime": "9:15",
+    "requestedWorkCode": 2,
+    "reason": "breakIn",
+    "status": "pending"
+  },
+  {
+    "staffId": "154",
+    "date": "2025-04-23",
+    "correctionType": "checkOut",
+    "requestedTime": "15:10",
+    "requestedWorkCode": 3,
+    "reason": "checkOut",
+    "status": "pending"
+  },
+  {
+    "staffId": "154",
+    "date": "2025-04-27",
+    "correctionType": "breakOut",
+    "requestedTime": "9:10",
+    "requestedWorkCode": 1,
+    "reason": "breakOut",
+    "status": "pending"
+  }
 ]

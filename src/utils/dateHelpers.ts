@@ -98,3 +98,11 @@ export function getPaidPeriod(): DateRange {
 
   return { start, end }
 }
+
+
+export function formatTimeHHMMSS(time: string): string {
+  // Accepts: "07:55" or "07:55:30"
+  const [h = "00", m = "00", s = "00"] = time.split(":");
+  return `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
+}
+

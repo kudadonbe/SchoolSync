@@ -28,7 +28,6 @@ const today = new Date()
 const dataStore = useDataStore()
 const { staffList, dutyRoster, attendancePolicies, attendanceCorrectionLog } = storeToRefs(dataStore)
 
-
 const correctionsMap = computed(() => {
   const map = new Map<string, AttendanceCorrectionLog[]>()
   attendanceCorrectionLog.value
@@ -138,12 +137,17 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       const lastMin = lastTime ? toMinutes(lastTime) : -Infinity
 
       if (currentMin - lastMin >= threshold) {
-        dayRecord.lastBreakTimes[record.status] = record.time
-        dayRecord.breaks.push({
-          time: record.time,
-          type: record.status === 'BREAK IN' ? '(IN)' : '(OUT)',
-          missing: false,
-        })
+        const correctedBreaks = correctionsMap.value.get(`${record.date}_${record.status.toLowerCase()}`)
+        const correctedTimes = correctedBreaks?.map(c => formatTimeHHMMSS(c.requestedTime)) || []
+
+        if (!correctedTimes.includes(record.time)) {
+          dayRecord.lastBreakTimes[record.status] = record.time
+          dayRecord.breaks.push({
+            time: record.time,
+            type: record.status === 'BREAK IN' ? '(IN)' : '(OUT)',
+            missing: false,
+          })
+        }
       }
     }
   })
@@ -200,7 +204,6 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       record.correctedBreaks![correctedTime] = true
     })
 
-    // ✅ Break Validation - AFTER corrections are inserted
     let breakOutCount = 0
     let breakInCount = 0
     record.breaks.forEach((b) => {
@@ -223,6 +226,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
 const btnMouseOver =
   'text-sm md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-4 py-2 transition-colors duration-200 ease-in-out'
 </script>
+
 
 
 <template>

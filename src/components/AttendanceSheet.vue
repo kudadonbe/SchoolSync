@@ -19,6 +19,7 @@ import {
   getPayablePeriod,
   getPaidPeriod,
   formatTimeHHMMSS,
+  extractHHMM,
 } from '@/utils'
 import type { ProcessedAttendance, AttendanceCorrectionLog } from '@/types'
 
@@ -137,17 +138,12 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       const lastMin = lastTime ? toMinutes(lastTime) : -Infinity
 
       if (currentMin - lastMin >= threshold) {
-        const correctedBreaks = correctionsMap.value.get(`${record.date}_${record.status.toLowerCase()}`)
-        const correctedTimes = correctedBreaks?.map(c => formatTimeHHMMSS(c.requestedTime)) || []
-
-        if (!correctedTimes.includes(record.time)) {
-          dayRecord.lastBreakTimes[record.status] = record.time
-          dayRecord.breaks.push({
-            time: record.time,
-            type: record.status === 'BREAK IN' ? '(IN)' : '(OUT)',
-            missing: false,
-          })
-        }
+        dayRecord.lastBreakTimes[record.status] = record.time
+        dayRecord.breaks.push({
+          time: record.time,
+          type: record.status === 'BREAK IN' ? '(IN)' : '(OUT)',
+          missing: false,
+        })
       }
     }
   })
@@ -191,17 +187,36 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     record.correctedBreaks = {}
 
     const breakInCorrections = correctionsMap.value.get(`${dateStr}_breakIn`) || []
-    breakInCorrections.forEach((c) => {
-      const correctedTime = formatTimeHHMMSS(c.requestedTime)
-      record.breaks.push({ time: correctedTime, type: '(IN)', missing: false })
-      record.correctedBreaks![correctedTime] = true
+    const breakOutCorrections = correctionsMap.value.get(`${dateStr}_breakOut`) || []
+
+    const correctedHHMMs = new Set<string>()
+    const corrections = [...breakInCorrections, ...breakOutCorrections]
+    corrections.forEach(c => correctedHHMMs.add(extractHHMM(c.requestedTime)))
+
+    record.breaks = record.breaks.map(b => {
+      const hhmm = extractHHMM(b.time)
+      if (correctedHHMMs.has(hhmm)) {
+        record.correctedBreaks![b.time] = true
+      }
+      return b
     })
 
-    const breakOutCorrections = correctionsMap.value.get(`${dateStr}_breakOut`) || []
+    breakInCorrections.forEach((c) => {
+      const fullTime = record.breaks.find(b => extractHHMM(b.time) === extractHHMM(c.requestedTime))?.time
+      const timeToUse = fullTime || formatTimeHHMMSS(c.requestedTime)
+      if (!record.correctedBreaks![timeToUse]) {
+        record.breaks.push({ time: timeToUse, type: '(IN)', missing: false })
+        record.correctedBreaks![timeToUse] = true
+      }
+    })
+
     breakOutCorrections.forEach((c) => {
-      const correctedTime = formatTimeHHMMSS(c.requestedTime)
-      record.breaks.push({ time: correctedTime, type: '(OUT)', missing: false })
-      record.correctedBreaks![correctedTime] = true
+      const fullTime = record.breaks.find(b => extractHHMM(b.time) === extractHHMM(c.requestedTime))?.time
+      const timeToUse = fullTime || formatTimeHHMMSS(c.requestedTime)
+      if (!record.correctedBreaks![timeToUse]) {
+        record.breaks.push({ time: timeToUse, type: '(OUT)', missing: false })
+        record.correctedBreaks![timeToUse] = true
+      }
     })
 
     let breakOutCount = 0

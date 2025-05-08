@@ -106,3 +106,8 @@ export function formatTimeHHMMSS(time: string): string {
   return `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
 }
 
+export function extractHHMM(time: string): string {
+  return time.split(':').slice(0, 2).join(':');
+}
+
+

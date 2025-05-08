@@ -21,6 +21,17 @@ const isAdmin = computed(() => currentUser.value?.role === 'administrator' || cu
 onMounted(async () => {
   // Fetch user data when the component is mounted
     users.value = await dataStore.getUserList();
+    // sort users by staffId
+    users.value.sort((a, b) => {
+      if (a.staffId && b.staffId) {
+        return a.staffId.localeCompare(b.staffId);
+      } else if (a.staffId) {
+        return -1;
+      } else if (b.staffId) {
+        return 1;
+      }
+      return 0;
+    });
     // console.log(users.value);
 });
 

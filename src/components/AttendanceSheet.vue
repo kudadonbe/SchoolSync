@@ -80,6 +80,7 @@ const attendanceRecords = computed(() =>
 
 const load = async () => {
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
+  await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 }
 onMounted(() => {
   load()
@@ -88,6 +89,24 @@ onMounted(() => {
 watch([() => props.selectedUserId, startDate, endDate], load)
 
 const threshold = attendancePolicies.value.punch.duplicate_threshold_minutes
+
+const refreshCorrections = async () => {
+  if (!props.selectedUserId) return
+  await dataStore.loadAttendanceCorrections(
+    props.selectedUserId,
+    startDate.value,
+    endDate.value,
+    true // force = true
+  )
+  console.log('Staff ID:', props.selectedUserId);
+  console.log('Start Date:', startDate.value);
+  console.log('End Date:', endDate.value);
+  console.log('Attendance corrections refreshed');
+  console.log('Attendance corrections:', attendanceCorrectionLog.value);
+
+
+}
+
 
 const filteredRecords = computed<ProcessedAttendance[]>(() => {
   const recordsMap = new Map<string, ProcessedAttendance>()
@@ -248,7 +267,7 @@ const btnMouseOver =
   <div class="bg-white p-4 md:p-6 shadow-md rounded-lg mt-6">
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
-      <h2 class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
+      <h2 @click="refreshCorrections" class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
       <button @click="setToday" :class="btnMouseOver">Today</button>
       <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
       <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>

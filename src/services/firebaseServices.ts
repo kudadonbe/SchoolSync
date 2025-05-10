@@ -1,16 +1,8 @@
 // src/services/firebaseServices.ts
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  Timestamp,
-  updateDoc,
-  doc,
-} from 'firebase/firestore'
+import { collection, query, where, getDocs, Timestamp, updateDoc, doc } from 'firebase/firestore'
 import { db } from '@/firebase' // Adjust the path if needed
 
-import type { StaffAttendanceLog, User, Staff } from '@/types' // Adjust path if needed
+import type { StaffAttendanceLog, User, Staff, AttendanceCorrectionLog } from '@/types' // Adjust path if needed
 
 export async function fetchAttendanceForUser(
   staffId: string,
@@ -42,6 +34,60 @@ export async function fetchAttendanceForUser(
   // console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
 
   return records
+}
+
+export const fetchAttendanceCorrectionsForUser = async (
+  staffId: string,
+  startDate: string,
+  endDate: string,
+): Promise<AttendanceCorrectionLog[]> => {
+  try {
+    const correctionsRef = collection(db, 'attendanceCorrectionLog')
+
+    const q = query(
+      correctionsRef,
+      where('staffId', '==', staffId),
+      where('date', '>=', startDate),
+      where('date', '<=', endDate),
+    )
+
+    // console.log('fetching attendance corrections for user:', q)
+
+    const querySnapshot = await getDocs(q)
+
+    // if (querySnapshot.empty) {
+    //   console.warn(`⚠️ No correction logs found for`, { staffId, startDate, endDate })
+    // } else {
+    //   console.log(`✅ Found ${querySnapshot.size} correction logs`)
+    // }
+
+    const records: AttendanceCorrectionLog[] = []
+
+    querySnapshot.forEach((doc) => {
+      records.push({
+        id: doc.id,
+        ...doc.data(),
+      } as AttendanceCorrectionLog)
+    })
+
+    // console.log(
+    //   '✅ fetched attendance corrections for user:',
+    //   staffId,
+    //   '→',
+    //   startDate,
+    //   'to',
+    //   endDate,
+    // )
+    return records
+  } catch (error) {
+    console.error('❌ Failed to fetch attendance corrections:', {
+      staffId,
+      startDate,
+      endDate,
+      error,
+    })
+    throw error // let the caller (store or component) decide how to handle it
+  }
 }
 
 export async function fetchUsers(): Promise<User[]> {
@@ -92,7 +138,7 @@ export const fetchStaffList = async (): Promise<Staff[]> => {
       } as Staff)
     })
 
-    console.log('Staff list fetched from Firestore');
+    console.log('Staff list fetched from Firestore')
 
     return staffList
   } catch (error) {
@@ -114,8 +160,7 @@ export const fetchStaff = async (staffId: string): Promise<Staff | null> => {
       console.warn('No staff found with user_id:', staffId)
       return null
     }
-    console.log('Staff fetched from Firestore:', staffId);
-
+    console.log('Staff fetched from Firestore:', staffId)
   } catch (error) {
     console.error('Error fetching staff by user_id:', error)
     throw error

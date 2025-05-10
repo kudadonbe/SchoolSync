@@ -37,6 +37,13 @@ git pull
 # Merge the completed and tested work from developing
 git merge developing
 
+# If Git opens an editor asking for a commit message:
+# - Leave the default message like: Merge branch 'developing'
+# - In VS Code: Save and close the tab
+# - In terminal (vim): press Esc, type :wq and press Enter
+# OR use --no-edit to skip the editor:
+#   git merge developing --no-edit
+
 # ---------------------------------------------
 # STEP 3: TAG THE STABLE VERSION
 # ---------------------------------------------

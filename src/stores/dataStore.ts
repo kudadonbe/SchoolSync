@@ -5,10 +5,11 @@ import {
   fetchUsers,
   fetchStaffList,
   fetchStaff,
+  fetchAttendanceCorrectionsForUser,
 } from '@/services/firebaseServices'
 import { convertToDisplayRecords } from '@/utils/attendanceHelpers'
 
-// ✅ Import types from types folder
+// ✅ Import types
 import type {
   Staff,
   DutyRoster,
@@ -20,11 +21,10 @@ import type {
   AttendanceCorrectionLog,
 } from '@/types'
 
-// ✅ Import raw JSON data (all based on new structure)
+// ✅ Import raw JSON data
 import attendanceSummaryRecords from '@/data/attendanceSummaryRecords.json'
 import dutyRoster from '@/data/dutyRoster.json'
 import attendancePolicies from '@/data/attendancePolicies.json'
-import attendanceCorrectionLog from '@/data/attendanceCorrectionLog.json'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -32,16 +32,19 @@ export const useDataStore = defineStore('data', {
     attendanceSummaryRecords: attendanceSummaryRecords as AttendanceSummaryRecord[],
     dutyRoster: dutyRoster as DutyRoster,
     attendancePolicies: attendancePolicies as AttendancePolicyGrouped,
-    attendanceCorrectionLog: attendanceCorrectionLog as AttendanceCorrectionLog[],
 
-    // Dynamic attendance cache
+    // Dynamic attendance caches
     attendanceCache: {} as Record<string, DisplayAttendanceRecord[]>,
-    lastFetchedEndDate: {} as Record<string, string>,
+    attendanceCorrectionCache: {} as Record<string, AttendanceCorrectionLog[]>,
+
+    // Cache sync tracking
+    lastFetchedEndDate: {} as Record<string, string>, // Shared key map (can split later if needed)
 
     // Dynamic data
     staffList: [] as Staff[],
-    staffListLastFetched: '' as string, // ⏱️ Track last fetch time
+    staffListLastFetched: '' as string,
     currentStaff: null as Staff | null,
+    attendanceCorrectionLog: [] as AttendanceCorrectionLog[],
   }),
 
   actions: {
@@ -51,9 +54,8 @@ export const useDataStore = defineStore('data', {
       const hasEndDate = cached?.some((r) => r.date === end)
       const lastDate = this.lastFetchedEndDate[userId]
 
-      // if we've already cached through 'end', skip the fetch
       if (hasEndDate && lastDate && lastDate >= end) {
-        return
+        return // Already fetched
       }
 
       const logs: StaffAttendanceLog[] = await fetchAttendanceForUser(
@@ -63,15 +65,50 @@ export const useDataStore = defineStore('data', {
       )
       const attendanceRecords: DisplayAttendanceRecord[] = convertToDisplayRecords(logs)
 
-      // Save to cache
       this.attendanceCache[key] = attendanceRecords
       this.lastFetchedEndDate[userId] = end
     },
 
-    // Retrieve cached attendance records (empty array if none).
     getAttendance(userId: string, start: string, end: string): DisplayAttendanceRecord[] {
       const key = `${userId}_${start}_${end}`
       return this.attendanceCache[key] ?? []
+    },
+
+    async loadAttendanceCorrections(userId: string, start: string, end: string, force = false) {
+      const key = `${userId}_${start}_${end}`
+      const cached = this.attendanceCorrectionCache[key]
+
+
+      if (!force) {
+        const hasEndDate = cached?.some((r) => r.date === end)
+        const lastDate = this.lastFetchedEndDate[userId]
+        if (hasEndDate && lastDate && lastDate >= end) {
+          return // Skip fetch unless forced
+        }
+      }
+
+      const logs: AttendanceCorrectionLog[] = await fetchAttendanceCorrectionsForUser(
+        userId,
+        start,
+        end,
+      )
+
+      // if (logs.length === 0) {
+      //   console.info(`No correction logs found for ${userId} between ${start} and ${end}`)
+      // }
+
+      this.attendanceCorrectionCache[key] = logs
+      this.attendanceCorrectionLog = logs
+
+      // Only update lastFetchedEndDate if not forced
+      if (!force) {
+        this.lastFetchedEndDate[userId] = end
+      }
+    },
+
+    getAttendanceCorrections(userId: string, start: string, end: string): AttendanceCorrectionLog[] {
+      const key = `${userId}_${start}_${end}`
+      return this.attendanceCorrectionCache[key] ?? []
     },
 
     async getUserList(): Promise<User[]> {
@@ -80,7 +117,6 @@ export const useDataStore = defineStore('data', {
     },
 
     async loadStaffList(forceRefresh = false): Promise<Staff[]> {
-      // Only fetch from Firebase if no cache or forced refresh
       if (!forceRefresh && this.staffList.length > 0) {
         return this.staffList
       }
@@ -96,7 +132,7 @@ export const useDataStore = defineStore('data', {
 
     async loadCurrentStaff(userId: string): Promise<void> {
       if (this.currentStaff && this.currentStaff.user_id === userId) {
-        return // already loaded
+        return
       }
 
       const staff = await fetchStaff(userId)
@@ -108,6 +144,6 @@ export const useDataStore = defineStore('data', {
     },
   },
 
-  // Persist cache & lastFetchedEndDate across reloads
+  // 💾 Enable persistence
   persist: true,
 })

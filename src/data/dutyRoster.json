@@ -1,0 +1,61 @@
+{
+  "dutyTimes": [
+    { "type": "EarlyDuty", "time": "06:45" },
+    { "type": "AcademicDuty", "time": "07:00" },
+    { "type": "DefaultSchedule", "time": "08:00" }
+  ],
+
+  "specialDutys": [
+    {
+      "name": "PD Day",
+      "time": "07:45",
+      "from": "2025-05-03",
+      "to": "2025-05-03"
+    },
+    {
+      "name": "Ramadhaan",
+      "time": "09:00",
+      "from": "2025-03-01",
+      "to": "2025-04-06"
+    }
+    
+  ],
+  "publicHolidays": [
+    { "name": "New Year's Day", "date": "2025-01-01" },
+    { "name": "Eidul Fitru 1", "date": "2025-03-31" },
+    { "name": "Eidul Fitru 2", "date": "2025-04-01" },
+    { "name": "Eidul Fitru 3", "date": "2025-04-02" },
+    { "name": "May Day", "date": "2025-05-01" },
+    { "name": "Independence Day", "date": "2025-07-26" },
+    { "name": "On the Ocation of Independence Day", "date": "2025-07-27" }
+  ],
+  "specialHolidays": [
+    { "name": "School Anniversary", "date": "2025-01-01" },
+    { "name": "Last 20 Days of Ramadhaan", "date": "2025-03-20" },
+    { "name": "Last 23 Days of Ramadhaan", "date": "2025-03-23" },
+    { "name": "Last 24 Days of Ramadhaan", "date": "2025-03-24" },
+    { "name": "Last 25 Days of Ramadhaan", "date": "2025-03-25" },
+    { "name": "Last 26 Days of Ramadhaan", "date": "2025-03-26" },
+    { "name": "Last 27 Days of Ramadhaan", "date": "2025-03-27" },
+    { "name": "Last 30 Days of Ramadhaan", "date": "2025-03-30" },
+    { "name": "Presidents Special Offer after Eid", "date": "2025-04-03" }
+  ],
+  "dailyOverrides": [
+    {
+      "date": "2025-01-05",
+      "EarlyDuty": ["", ""]
+    },
+    {
+      "date": "2025-01-06",
+      "EarlyDuty": ["", ""]
+    },
+    {
+      "date": "2025-03-27",
+      "EarlyDuty": ["153", ""]
+    },
+    {
+      "date": "2025-05-05",
+      "DefaultSchedule": ["153", ""]
+    }
+  ]
+}

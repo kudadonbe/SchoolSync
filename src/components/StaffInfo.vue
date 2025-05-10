@@ -1,11 +1,95 @@
+<script setup lang="ts">
+// src/components/StaffInfo.vue
+import { ref, computed, onMounted } from "vue";
+import { useDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
+import type { Staff } from "@/types"; // ✅ Import Staff type
+import { useAuthStore } from '@/stores/authStore'
+
+
+const authStore = useAuthStore()
+const dataStore = useDataStore();
+const isLoading = ref(true)
+
+
+
+const staffRole = computed(() => authStore.currentUser?.role ?? null)
+// console.log("staffRole:", staffRole.value);
+const showSearch = computed(() => {
+  return staffRole.value === "administrator" || staffRole.value === "leading_teacher" || staffRole.value === "principal" || staffRole.value === "developer"
+})
+
+
+// ✅ Props to accept selectedUserId from parent
+const props = defineProps<{ selectedUserId: string | null }>();
+
+// ✅ Emit event when user is selected
+const emit = defineEmits(["updateUser"]);
+
+// ✅ Track selected user (sync with parent)
+const selectedUserId = ref(props.selectedUserId);
+
+// ✅ Search Query
+const searchQuery = ref("");
+
+onMounted(async () => {
+  const staffId = authStore.currentUser?.staffId;
+
+  if (showSearch.value) {
+    await dataStore.loadStaffList(); // Admin-type role, full access
+  } else {
+    if (!staffId) {
+      console.warn("No staffId found for current user");
+      isLoading.value = false;
+      return;
+    }
+
+    await dataStore.loadCurrentStaff(staffId); // Load only own staff data
+    selectedUserId.value = staffId;
+    emit("updateUser", staffId);
+  }
+  // console.log("staffList:", dataStore.staffList);
+
+  isLoading.value = false;
+});
+
+
+// Data sources
+const staffList = computed(() => {
+  return showSearch.value ? dataStore.staffList : (dataStore.currentStaff ? [dataStore.currentStaff] : []);
+});
+
+// ✅ Filter staff list based on search query
+const filteredStaff = computed((): Staff[] => {
+  if (!searchQuery.value) return [];
+  return staffList.value.filter((user) =>
+    user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// ✅ Find selected user's details
+const selectedUser = computed((): Staff | undefined => {
+  return staffList.value.find((user) => user.user_id === selectedUserId.value);
+});
+
+// ✅ Update user when selection changes
+const selectUser = (userId: string) => {
+  selectedUserId.value = userId;
+  searchQuery.value = ""; // Clear search after selection
+  emit("updateUser", userId);
+};
+</script>
 <template>
-  <div class="bg-white p-6 relative">
+
+  <p v-if="isLoading" class="text-gray-500">Loading staff information...</p>
+  <div v-else class="bg-white p-6 relative">
     <h2 class="text-xl font-semibold text-green-700 mb-4">Staff Information</h2>
 
     <!-- Search Staff -->
     <div class="relative">
-      <input v-model="searchQuery" type="text" placeholder="Search staff by name..."
-        class="w-full p-2 border border-gray-300 rounded-md mb-3" />
+      <div v-if="showSearch" class="mb-3">
+        <input v-model="searchQuery" type="text" placeholder="Search staff by name..."
+          class="w-full p-2 border border-gray-300 rounded-md mb-3" />
+      </div>
 
       <!-- Filtered Staff List (Floating Dropdown) -->
       <div v-if="searchQuery && filteredStaff.length > 0"
@@ -33,60 +117,19 @@
             <td class="p-3">{{ selectedUser.name }}</td>
           </tr>
           <tr>
-            <td class="p-3 font-semibold">Staff ID:</td>
-            <td class="p-3">{{ selectedUser.user_id }}</td>
-          </tr>
-          <tr>
-            <td class="p-3 font-semibold">Department:</td>
-            <td class="p-3">{{ selectedUser.department }}</td>
-          </tr>
-          <tr>
-            <td class="p-3 font-semibold">Position:</td>
+            <td class="p-3 font-semibold">Designation:</td>
             <td class="p-3">{{ selectedUser.position }}</td>
           </tr>
           <tr>
-            <td class="p-3 font-semibold">Join Date:</td>
-            <td class="p-3">{{ selectedUser.join_date }}</td>
+            <td class="p-3 font-semibold">Appointed Date:</td>
+            <td class="p-3">{{ selectedUser.join_date || "N/A" }}</td>
+          </tr>
+          <tr>
+            <td class="p-3 font-semibold">Joined Date:</td>
+            <td class="p-3">{{ selectedUser.leave_count_date || "N/A" }}</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref, computed, defineEmits, defineProps } from "vue";
-import { staffList } from "@/data/mockData"; // ✅ Import staff data
-
-// ✅ Props to accept selectedUserId from parent
-const props = defineProps<{ selectedUserId: string }>();
-
-// ✅ Emit event when user is selected
-const emit = defineEmits(["updateUser"]);
-
-// ✅ Track selected user (sync with parent)
-const selectedUserId = ref(props.selectedUserId);
-
-// ✅ Search Query
-const searchQuery = ref("");
-
-// ✅ Filter staff list based on search query
-const filteredStaff = computed(() => {
-  if (!searchQuery.value) return [];
-  return staffList.filter((user) =>
-    user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
-});
-
-// ✅ Find selected user's details
-const selectedUser = computed(() => {
-  return staffList.find((user) => user.user_id === selectedUserId.value);
-});
-
-// ✅ Update user when selection changes
-const selectUser = (userId: string) => {
-  selectedUserId.value = userId;
-  searchQuery.value = ""; // Clear search after selection
-  emit("updateUser", userId);
-};
-</script>

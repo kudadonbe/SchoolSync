@@ -8,7 +8,8 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "fire": "npm run build-only && firebase deploy --only hosting",
+    "build:docs": "vite build --outDir docs",
+    "deploy": "npm run build:docs && git add docs && git commit -m 'Deploy to GitHub Pages' && git push",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/"
@@ -19,7 +20,6 @@
     "@tailwindcss/vite": "^4.0.12",
     "firebase": "^11.5.0",
     "pinia": "^3.0.1",
-    "pinia-plugin-persistedstate": "^4.2.0",
     "tailwindcss": "^4.0.12",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"

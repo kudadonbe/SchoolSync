@@ -1,1 +1,0 @@
-import{d as t,c as a,w as n,P as s,o as u,a as o}from"./index-Bf_WX29r.js";const c=t({__name:"NotFoundView",setup(l){return(r,e)=>(u(),a(s,null,{default:n(()=>e[0]||(e[0]=[o("h1",null," 404 ",-1),o("p",null," Page not found! ",-1)])),_:1}))}});export{c as default};

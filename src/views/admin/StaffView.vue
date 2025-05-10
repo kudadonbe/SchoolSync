@@ -1,17 +1,28 @@
 <script setup lang="ts">
+// src/views/admin/StaffView.vue
+
 import AttendanceSummary from "@/components/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
 import AttendanceSheet from "@/components/AttendanceSheet.vue";
-import { ref } from "vue";
+import { ref, computed } from "vue";
+
+
+import { useAuthStore } from '@/stores/authStore'
+
+const authStore = useAuthStore()
+
+const staffId = computed(() => authStore.currentUser?.staffId ?? null)
+// console.log("staffId", staffId.value);
 
 
 // ✅ Track the selected user across components
-const selectedUserId = ref("153"); // Default to the first user
+const selectedUserId = ref(staffId.value); // Default to the first user
 
 // ✅ Update selected user when changed in StaffInfo
 const updateUser = (userId: string) => {
   selectedUserId.value = userId;
 };
+
 </script>
 
 <template>
@@ -33,7 +44,9 @@ const updateUser = (userId: string) => {
 
     <!-- Full width: Attendance Sheet -->
     <div class="mt-6">
+      <!-- <AttendanceSheet :selectedUserId="selectedUserId" /> -->
       <AttendanceSheet :selectedUserId="selectedUserId" />
+
     </div>
   </div>
 </template>

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+// src/views/admin/StaffView.vue
+import { computed, ref } from 'vue';
 import { RouterLink, useRoute } from 'vue-router'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { Bars3Icon, XMarkIcon, UserIcon } from '@heroicons/vue/24/outline'
@@ -15,20 +16,45 @@ const logoUrl = logo;
 const route = useRoute();
 const authStore = useAuthStore()  // Initialize auth store
 
+const userName = computed(() => authStore.currentUser?.displayName ?? 'User')
+const userPhoto = computed(() => authStore.currentUser?.photoURL ?? null)
+const userEmail = computed(() => authStore.currentUser?.email ?? '')
+
+const userRole = computed(() => authStore.currentUser?.role ?? 'public')
+
+const imageFailed = ref(false)
+
+const handleImageError = () => {
+  console.warn('Profile image failed to load. Fallback will be shown.')
+  imageFailed.value = true
+}
 
 
 const baseNavigation = [
   { name: 'Home', href: '/' },
-  { name: 'About', href: '/about' },
+  // { name: 'About', href: '/about' },
 ]
 
 
 // Conditionally add the "Admin" link
 const navigation = computed(() => {
-  return authStore.isAuthenticated
-    ? [...baseNavigation, { name: 'Admin', href: '/admin' }]
-    : baseNavigation
+  const base = [...baseNavigation]
+
+  if (authStore.isAuthenticated) {
+    if (['developer', 'administrator'].includes(userRole.value)) {
+      base.push({ name: 'Admin Dashboard', href: '/admin' })
+    }
+    // if (['developer', 'leading_teacher', 'principal'].includes(userRole.value)) {
+    //   base.push({ name: 'Dashboard', href: '/dashboard' })
+    // }
+    if (!['public', 'parent', 'student'].includes(userRole.value)) {
+      base.push({ name: 'Attendance', href: '/attendance' })
+    }
+  }
+  return base
 })
+
+// console.log(navigation.value);
 
 
 </script>
@@ -74,7 +100,9 @@ const navigation = computed(() => {
                 class="relative flex rounded-full bg-green-800 text-sm focus:ring-2 focus:ring-green focus:ring-offset-2 focus:ring-offset-green-800 focus:outline-hidden">
                 <span class="absolute -inset-1.5" />
                 <span class="sr-only">Open user menu</span>
-                <UserIcon class="block size-6" aria-hidden="true" />
+                <img v-if="userPhoto && !imageFailed" :src="userPhoto" @error="handleImageError"
+                  class="h-8 w-8 rounded-full" alt="User Photo" referrerpolicy="no-referrer" />
+                <UserIcon v-else class="block size-6 text-white" aria-hidden="true" />
               </MenuButton>
             </div>
             <transition enter-active-class="transition ease-out duration-100"
@@ -83,14 +111,23 @@ const navigation = computed(() => {
               leave-to-class="transform opacity-0 scale-95">
               <MenuItems
                 class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 ring-1 shadow-lg ring-black/5 focus:outline-hidden">
+
+                <MenuItem disabled>
+                <div class="px-4 py-3 text-sm text-gray-700 border-b border-gray-100">
+                  <div class="font-medium text-green-800">{{ userName }}</div>
+                  <div class="text-xs text-gray-500 truncate">{{ userEmail }}</div>
+                </div>
+                </MenuItem>
+
                 <MenuItem v-slot="{ active }">
                 <a href="#"
                   :class="[active ? 'bg-green-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-green-700']">Your
                   Profile</a>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
-                <a href="#"
-                  :class="[active ? 'bg-green-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-green-700']">Settings</a>
+                <RouterLink to="/admin/settings"
+                  :class="[active ? 'bg-green-100 outline-hidden' : '', 'block px-4 py-2 text-sm text-green-700']">
+                  Settings</RouterLink>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
                 <div @click="authStore.logout"

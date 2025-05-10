@@ -1,11 +1,10 @@
 <script setup lang="ts">
-// src/views/admin/AdminDashboardView.vue
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import UsersManagementView from './UsersManagementView.vue';
+import StaffView from './StaffView.vue';
 </script>
 
 <template>
   <AdminLayout>
-    <UsersManagementView />
+    <StaffView />
   </AdminLayout>
 </template>

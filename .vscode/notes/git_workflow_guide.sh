@@ -13,46 +13,55 @@
 # STEP 1: SWITCH TO DEVELOPING BRANCH AND START WORK
 # ---------------------------------------------
 
-# Switch to developing branch
-git switch developing
-
-# Pull latest updates to ensure you're up to date
-git pull
-
-# Make your changes (code, fix, or feature)
-# Then stage and commit your changes:
-git add .
-git commit -m "Describe what was added or fixed"
+git switch developing        # Switch to developing branch
+git pull                    # Pull latest updates from origin
+git add .                   # Stage your changes
+git commit -m "Describe what was added or fixed"  # Commit work
 
 # ---------------------------------------------
 # STEP 2: MERGE STABLE CHANGES TO MAIN BRANCH
 # ---------------------------------------------
 
-# Switch to main branch (your stable code base)
-git switch main
+git switch main             # Switch to main (stable) branch
+git pull                    # Pull latest from origin
+git merge developing        # Merge latest work from developing
 
-# Pull latest stable updates
-git pull
-
-# Merge the completed and tested work from developing
-git merge developing
-
-# If Git opens an editor asking for a commit message:
-# - Leave the default message like: Merge branch 'developing'
-# - In VS Code: Save and close the tab
-# - In terminal (vim): press Esc, type :wq and press Enter
-# OR use --no-edit to skip the editor:
+# ─── Merge Message Behavior ─────────────────────────────────────
+# Git will prompt for a merge message IF:
+# - The merge is not a fast-forward (both branches have new commits)
+#
+# ▶ To continue:
+#   - In VS Code: Save and close the merge tab
+#   - In Vim: Press Esc, type :wq, then Enter
+#
+# ▶ To skip the editor and use default message automatically:
 #   git merge developing --no-edit
+#
+# ▶ To use a custom message directly:
+#   git merge developing -m "Merge: include staff sync and log cleanup"
+
+# ---------------------------------------------
+# MERGE CONFLICT: FILE MODIFIED IN DEVELOPING BUT DELETED IN MAIN
+# ---------------------------------------------
+# Problem:
+#   CONFLICT (modify/delete): file deleted in 'main' but modified in 'developing'
+#   => Git does not know whether to keep or delete it
+#
+# Solution: Keep the version from developing
+
+# Restore the file as it existed in developing
+git restore --source=developing --staged .vscode/notes/git_workflow_guide.sh
+git restore --source=developing .vscode/notes/git_workflow_guide.sh
+
+# Stage and commit the resolution
+git add .vscode/notes/git_workflow_guide.sh
+git commit -m "Resolve merge conflict: keep git_workflow_guide.sh from developing"
 
 # ---------------------------------------------
 # STEP 3: TAG THE STABLE VERSION
 # ---------------------------------------------
 
-# Create an annotated tag with version and message
-# Format: v<MAJOR>.<MINOR>.<PATCH>
 git tag -a v0.4.0 -m "Stable: Describe what this version includes"
-
-# Push the main branch and the new tag to origin
 git push origin main
 git push origin v0.4.0
 
@@ -60,7 +69,5 @@ git push origin v0.4.0
 # STEP 4: SWITCH BACK TO DEVELOPING
 # ---------------------------------------------
 
-# Return to developing branch to continue next task/module
-git switch developing
-
-# Now continue working on the next feature or fix
+git switch developing       # Return to developing branch
+# Continue next tasks here

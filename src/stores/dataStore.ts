@@ -1,6 +1,11 @@
 // src/stores/dataStore.ts
 import { defineStore } from 'pinia'
-import { fetchAttendanceForUser, fetchUsers } from '@/services/firebaseServices'
+import {
+  fetchAttendanceForUser,
+  fetchUsers,
+  fetchStaffList,
+  fetchStaff,
+} from '@/services/firebaseServices'
 import { convertToDisplayRecords } from '@/utils/attendanceHelpers'
 
 // ✅ Import types from types folder
@@ -16,29 +21,29 @@ import type {
 } from '@/types'
 
 // ✅ Import raw JSON data (all based on new structure)
-import staffList from '@/data/staffList.json'
+// import staffList from '@/data/staffList.json'
 // import attendanceRaw from '@/data/attendanceRecords.json'
 import attendanceSummaryRecords from '@/data/attendanceSummaryRecords.json'
 import dutyRoster from '@/data/dutyRoster.json'
 import attendancePolicies from '@/data/attendancePolicies.json'
-import attendanceCorrectionLog  from '@/data/attendanceCorrectionLog.json'
+import attendanceCorrectionLog from '@/data/attendanceCorrectionLog.json'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
     // Static data
-    staffList: staffList as Staff[],
     attendanceSummaryRecords: attendanceSummaryRecords as AttendanceSummaryRecord[],
     dutyRoster: dutyRoster as DutyRoster,
     attendancePolicies: attendancePolicies as AttendancePolicyGrouped,
     attendanceCorrectionLog: attendanceCorrectionLog as AttendanceCorrectionLog[],
 
-
     // Dynamic attendance cache
     attendanceCache: {} as Record<string, DisplayAttendanceRecord[]>,
     lastFetchedEndDate: {} as Record<string, string>,
 
-
-
+    // Dynamic data
+    staffList: [] as Staff[],
+    staffListLastFetched: '' as string, // ⏱️ Track last fetch time
+    currentStaff: null as Staff | null,
   }),
   actions: {
     async loadAttendance(userId: string, start: string, end: string) {
@@ -72,11 +77,37 @@ export const useDataStore = defineStore('data', {
       return this.attendanceCache[key] ?? []
     },
 
-    async getUserList(): Promise<User[]>{
+    async getUserList(): Promise<User[]> {
       const users: User[] = await fetchUsers()
       return users
     },
 
+    async loadStaffList(forceRefresh = false): Promise<void> {
+      // Only fetch from Firebase if no cache or forced refresh
+      if (!forceRefresh && this.staffList.length > 0) {
+        return
+      }
+
+      const staff = await fetchStaffList()
+      this.staffList = staff
+    },
+
+    async refreshStaffList(): Promise<void> {
+      await this.loadStaffList(true)
+    },
+
+    async loadCurrentStaff(userId: string): Promise<void> {
+      if (this.currentStaff && this.currentStaff.user_id === userId) {
+        return // already loaded
+      }
+
+      const staff = await fetchStaff(userId)
+      if (staff) {
+        this.currentStaff = staff
+      } else {
+        console.warn('Staff not found for userId:', userId)
+      }
+    },
   },
   // persist cache & lastFetchedEndDate across reloads
   persist: true,

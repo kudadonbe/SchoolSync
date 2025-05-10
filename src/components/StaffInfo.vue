@@ -1,12 +1,16 @@
 <script setup lang="ts">
 // src/components/StaffInfo.vue
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useDataStore } from "@/stores/dataStore"; // ✅ Use Pinia store
 import type { Staff } from "@/types"; // ✅ Import Staff type
 import { useAuthStore } from '@/stores/authStore'
 
 
 const authStore = useAuthStore()
+const dataStore = useDataStore();
+const isLoading = ref(true)
+
+
 
 const staffRole = computed(() => authStore.currentUser?.role ?? null)
 // console.log("staffRole:", staffRole.value);
@@ -14,10 +18,6 @@ const showSearch = computed(() => {
   return staffRole.value === "administrator" || staffRole.value === "leading_teacher" || staffRole.value === "principal" || staffRole.value === "developer"
 })
 
-
-// ✅ Get state from Pinia store
-const dataStore = useDataStore();
-const { staffList } = dataStore;
 
 // ✅ Props to accept selectedUserId from parent
 const props = defineProps<{ selectedUserId: string | null }>();
@@ -31,17 +31,44 @@ const selectedUserId = ref(props.selectedUserId);
 // ✅ Search Query
 const searchQuery = ref("");
 
+onMounted(async () => {
+  const staffId = authStore.currentUser?.staffId;
+
+  if (showSearch.value) {
+    await dataStore.loadStaffList(); // Admin-type role, full access
+  } else {
+    if (!staffId) {
+      console.warn("No staffId found for current user");
+      isLoading.value = false;
+      return;
+    }
+
+    await dataStore.loadCurrentStaff(staffId); // Load only own staff data
+    selectedUserId.value = staffId;
+    emit("updateUser", staffId);
+  }
+  // console.log("staffList:", dataStore.staffList);
+
+  isLoading.value = false;
+});
+
+
+// Data sources
+const staffList = computed(() => {
+  return showSearch.value ? dataStore.staffList : (dataStore.currentStaff ? [dataStore.currentStaff] : []);
+});
+
 // ✅ Filter staff list based on search query
 const filteredStaff = computed((): Staff[] => {
   if (!searchQuery.value) return [];
-  return staffList.filter((user) =>
+  return staffList.value.filter((user) =>
     user.name.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
 
 // ✅ Find selected user's details
 const selectedUser = computed((): Staff | undefined => {
-  return staffList.find((user) => user.user_id === selectedUserId.value);
+  return staffList.value.find((user) => user.user_id === selectedUserId.value);
 });
 
 // ✅ Update user when selection changes
@@ -52,7 +79,9 @@ const selectUser = (userId: string) => {
 };
 </script>
 <template>
-  <div class="bg-white p-6 relative">
+
+  <p v-if="isLoading" class="text-gray-500">Loading staff information...</p>
+  <div v-else class="bg-white p-6 relative">
     <h2 class="text-xl font-semibold text-green-700 mb-4">Staff Information</h2>
 
     <!-- Search Staff -->

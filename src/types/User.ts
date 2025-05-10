@@ -9,6 +9,7 @@ export type UserRole =
   | 'labor'
   | 'teacher'
   | 'administrative_officer'
+  | 'hr'
   | 'leading_teacher'
   | 'administrator'
   | 'principal'

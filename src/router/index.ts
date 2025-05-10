@@ -12,6 +12,7 @@ import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 
 import StockManagementView from '@/views/admin/StockManagementView.vue'
 import AttendanceView from '@/views/admin/AttendanceView.vue'
+import HrManagmentView from '@/views/admin/HrManagmentView.vue'
 
 const routes: RouteRecordRaw[] = [
   // Public Routes
@@ -28,6 +29,15 @@ const routes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: true,
       roles: ['developer', 'administrator', 'administrative_officer'],
+    },
+  },
+  {
+    path: '/hr',
+    name: 'HR-dashboard',
+    component: HrManagmentView,
+    meta: {
+      requiresAuth: true,
+      roles: ['developer', 'administrator', 'administrative_officer', 'hr'],
     },
   },
   {

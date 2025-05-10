@@ -42,11 +42,11 @@ const navigation = computed(() => {
 
   if (authStore.isAuthenticated) {
     if (['developer', 'administrator'].includes(userRole.value)) {
-      base.push({ name: 'Admin Dashboard', href: '/admin' })
+      base.push({ name: 'Administration', href: '/admin' })
     }
-    // if (['developer', 'leading_teacher', 'principal'].includes(userRole.value)) {
-    //   base.push({ name: 'Dashboard', href: '/dashboard' })
-    // }
+    if (['developer', 'administrator', 'administrative_officer', 'hr'].includes(userRole.value)) {
+      base.push({ name: 'Human Resources', href: '/hr' })
+    }
     if (!['public', 'parent', 'student'].includes(userRole.value)) {
       base.push({ name: 'Attendance', href: '/attendance' })
     }

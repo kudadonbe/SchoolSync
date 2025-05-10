@@ -21,8 +21,6 @@ import type {
 } from '@/types'
 
 // ✅ Import raw JSON data (all based on new structure)
-// import staffList from '@/data/staffList.json'
-// import attendanceRaw from '@/data/attendanceRecords.json'
 import attendanceSummaryRecords from '@/data/attendanceSummaryRecords.json'
 import dutyRoster from '@/data/dutyRoster.json'
 import attendancePolicies from '@/data/attendancePolicies.json'
@@ -45,6 +43,7 @@ export const useDataStore = defineStore('data', {
     staffListLastFetched: '' as string, // ⏱️ Track last fetch time
     currentStaff: null as Staff | null,
   }),
+
   actions: {
     async loadAttendance(userId: string, start: string, end: string) {
       const key = `${userId}_${start}_${end}`
@@ -57,7 +56,6 @@ export const useDataStore = defineStore('data', {
         return
       }
 
-      //
       const logs: StaffAttendanceLog[] = await fetchAttendanceForUser(
         userId,
         new Date(start),
@@ -70,8 +68,7 @@ export const useDataStore = defineStore('data', {
       this.lastFetchedEndDate[userId] = end
     },
 
-    // retrive cached attendance records (empty array if none).
-
+    // Retrieve cached attendance records (empty array if none).
     getAttendance(userId: string, start: string, end: string): DisplayAttendanceRecord[] {
       const key = `${userId}_${start}_${end}`
       return this.attendanceCache[key] ?? []
@@ -82,18 +79,19 @@ export const useDataStore = defineStore('data', {
       return users
     },
 
-    async loadStaffList(forceRefresh = false): Promise<void> {
+    async loadStaffList(forceRefresh = false): Promise<Staff[]> {
       // Only fetch from Firebase if no cache or forced refresh
       if (!forceRefresh && this.staffList.length > 0) {
-        return
+        return this.staffList
       }
 
       const staff = await fetchStaffList()
       this.staffList = staff
+      return staff
     },
 
-    async refreshStaffList(): Promise<void> {
-      await this.loadStaffList(true)
+    async refreshStaffList(): Promise<Staff[]> {
+      return await this.loadStaffList(true)
     },
 
     async loadCurrentStaff(userId: string): Promise<void> {
@@ -109,6 +107,7 @@ export const useDataStore = defineStore('data', {
       }
     },
   },
-  // persist cache & lastFetchedEndDate across reloads
+
+  // Persist cache & lastFetchedEndDate across reloads
   persist: true,
 })

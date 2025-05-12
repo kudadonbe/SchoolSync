@@ -4,6 +4,8 @@ import { computed, onMounted, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
 import type { DisplayAttendanceRecord } from '@/types'
+import { submitAttendanceCorrection } from '@/services/firebaseServices'
+
 
 const props = defineProps<{
   selectedUserId: string | null
@@ -94,16 +96,30 @@ function openCorrectionForm(date: string, issue: string) {
   correctionReason.value = ''
 }
 
-function submitCorrection() {
-  // TODO: Add API or store action to actually submit the correction
-  console.log('Submitting correction:', {
-    date: selectedDate.value,
-    type: correctionType.value,
-    time: correctionTime.value,
-    reason: correctionReason.value,
-  })
-  showForm.value = false
+async function submitCorrection() {
+  if (!props.selectedUserId || !correctionType.value || !correctionTime.value || !correctionReason.value) {
+    alert('Please fill all fields before submitting.')
+    return
+  }
+
+  try {
+    await submitAttendanceCorrection({
+      staffId: props.selectedUserId,
+      date: selectedDate.value,
+      correctionType: correctionType.value,
+      requestedTime: correctionTime.value,
+      reason: correctionReason.value,
+    })
+
+    alert('✅ Correction submitted successfully.')
+    showForm.value = false
+    await dataStore.loadAttendanceCorrections(props.selectedUserId, props.startDate, props.endDate)
+  } catch (err) {
+    console.error('❌ Failed to submit correction:', err)
+    alert('Failed to submit correction. Please try again.')
+  }
 }
+
 
 const allAttendanceRecords = computed(() => Object.values(attendanceCache.value).flat())
 

@@ -193,7 +193,10 @@ const groupedByDate = computed(() => {
 </script>
 <template>
   <div>
-    <h2 class="text-xl font-bold mb-4">📅 Attendance Issue Summary</h2>
+    <h2 class="text-xl font-bold mb-4">📅 Attendance Issues
+
+
+    </h2>
     <table class="table-auto w-full text-sm">
       <thead>
         <tr class="bg-gray-100">

@@ -81,7 +81,7 @@ const btnMouseOver =
 
 <template>
   <div class="p-6 max-w-6xl mx-auto">
-    <h1 class="text-3xl font-semibold text-rose-700 mb-6">Attendance Issue Summary</h1>
+    <h1 class="text-3xl font-semibold text-rose-700 mb-6">Attendance Issues</h1>
 
     <!-- Staff Info -->
     <div class="grid grid-cols-1 md:grid-cols-7 gap-6 shadow-md rounded-lg">

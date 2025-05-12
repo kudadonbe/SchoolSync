@@ -1,0 +1,128 @@
+<script setup lang="ts">
+// src/views/admin/AttendanceIssuesView.vue
+import { ref, computed } from "vue";
+import { useAuthStore } from '@/stores/authStore';
+import AttendanceIssues from '@/components/AttendanceIssues.vue'
+import StaffInfo from '@/components/StaffInfo.vue';
+import AttendanceCorrectionLog from "@/components/AttendanceCorrectionLog.vue";
+import {
+  formatDateLocal,
+  getCurrentWeek,
+  getCurrentMonth,
+  getCurrentYear,
+  getPayablePeriod,
+  getPaidPeriod,
+} from '@/utils'
+import { useDataStore } from '@/stores/dataStore'
+
+const authStore = useAuthStore()
+const dataStore = useDataStore()
+
+const staffId = computed(() => authStore.currentUser?.staffId ?? null)
+const selectedUserId = ref(staffId.value)
+
+// Handle staff selection
+const updateUser = (userId: string) => {
+  selectedUserId.value = userId
+}
+
+// Default to current week
+const { start, end } = getCurrentWeek()
+const startDate = ref(formatDateLocal(start))
+const endDate = ref(formatDateLocal(end))
+
+// Date range control functions
+const today = new Date()
+const setToday = () => {
+  startDate.value = formatDateLocal(today)
+  endDate.value = formatDateLocal(today)
+}
+const setCurrentWeek = () => {
+  const { start, end } = getCurrentWeek()
+  startDate.value = formatDateLocal(start)
+  endDate.value = formatDateLocal(end)
+}
+const setCurrentMonth = () => {
+  const { start, end } = getCurrentMonth()
+  startDate.value = formatDateLocal(start)
+  endDate.value = formatDateLocal(end)
+}
+const setCurrentYear = () => {
+  const { start, end } = getCurrentYear()
+  startDate.value = formatDateLocal(start)
+  endDate.value = formatDateLocal(end)
+}
+const setPayablePeriod = () => {
+  const { start, end } = getPayablePeriod()
+  startDate.value = formatDateLocal(start)
+  endDate.value = formatDateLocal(end)
+}
+const setPaidPeriod = () => {
+  const { start, end } = getPaidPeriod()
+  startDate.value = formatDateLocal(start)
+  endDate.value = formatDateLocal(end)
+}
+
+// Manual data refresh
+const refreshCorrections = async () => {
+  if (!selectedUserId.value) return
+  await dataStore.loadAttendanceCorrections(
+    selectedUserId.value,
+    startDate.value,
+    endDate.value,
+    true
+  )
+  console.log('✅ Corrections refreshed')
+}
+</script>
+
+<template>
+  <div class="p-6 max-w-6xl mx-auto">
+    <h1 class="text-3xl font-semibold text-rose-700 mb-6">Attendance Issue Summary</h1>
+
+    <!-- Staff Info -->
+    <div class="grid grid-cols-1 md:grid-cols-7 gap-6 shadow-md rounded-lg">
+      <div class="md:col-span-4">
+        <StaffInfo :selectedUserId="selectedUserId" @updateUser="updateUser" />
+      </div>
+    </div>
+
+    <!-- 🔘 Date Controls -->
+    <div class="flex flex-wrap gap-2 mt-6">
+      <button @click="setToday" class="btn">Today</button>
+      <button @click="setCurrentWeek" class="btn">Week</button>
+      <button @click="setCurrentMonth" class="btn">Month</button>
+      <button @click="setPaidPeriod" class="btn">Paid</button>
+      <button @click="setPayablePeriod" class="btn">Payable</button>
+      <button @click="setCurrentYear" class="btn">Year</button>
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium">From:</label>
+        <input type="date" v-model="startDate" class="input" />
+      </div>
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium">To:</label>
+        <input type="date" v-model="endDate" class="input" />
+      </div>
+      <button @click="refreshCorrections" class="btn bg-blue-700 hover:bg-blue-800">🔄 Refresh</button>
+    </div>
+
+    <!-- Issues -->
+    <div class="mt-6">
+      <AttendanceIssues
+        :selected-user-id="selectedUserId"
+        :start-date="startDate"
+        :end-date="endDate"
+      />
+    </div>
+
+    <!-- Corrections -->
+    <div class="mt-6">
+      <AttendanceCorrectionLog
+        :selected-user-id="selectedUserId"
+        :start-date="startDate"
+        :end-date="endDate"
+      />
+    </div>
+  </div>
+</template>
+

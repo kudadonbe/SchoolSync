@@ -49,6 +49,7 @@ const navigation = computed(() => {
     }
     if (!['public', 'parent', 'student'].includes(userRole.value)) {
       base.push({ name: 'Attendance', href: '/attendance' })
+      base.push({ name: 'Issues', href: '/missing' })
     }
   }
   return base

@@ -13,6 +13,7 @@ import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 import StockManagementView from '@/views/admin/StockManagementView.vue'
 import AttendanceView from '@/views/admin/AttendanceView.vue'
 import HrManagmentView from '@/views/admin/HrManagmentView.vue'
+import AttendanceIssuesView from '@/views/admin/AttendanceIssuesView.vue'
 
 const routes: RouteRecordRaw[] = [
   // Public Routes
@@ -77,6 +78,23 @@ const routes: RouteRecordRaw[] = [
     path: '/attendance',
     name: 'staff-attendance',
     component: AttendanceView,
+    meta: {
+      requiresAuth: true,
+      roles: [
+        'developer',
+        'principal',
+        'administrator',
+        'administrative_officer',
+        'leading_teacher',
+        'teacher',
+        'labor',
+      ],
+    },
+  },
+  {
+    path: '/missing',
+    name: 'staff-attendance-issues',
+    component: AttendanceIssuesView,
     meta: {
       requiresAuth: true,
       roles: [

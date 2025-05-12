@@ -1,5 +1,5 @@
 // src/services/firebaseServices.ts
-import { collection, query, where, getDocs, Timestamp, updateDoc, doc } from 'firebase/firestore'
+import { collection, query, where, getDocs, Timestamp, updateDoc, doc, addDoc } from 'firebase/firestore'
 import { db } from '@/firebase' // Adjust the path if needed
 
 import type { StaffAttendanceLog, User, Staff, AttendanceCorrectionLog } from '@/types' // Adjust path if needed
@@ -165,4 +165,23 @@ export const fetchStaff = async (staffId: string): Promise<Staff | null> => {
     console.error('Error fetching staff by user_id:', error)
     throw error
   }
+}
+
+
+export async function submitAttendanceCorrection(data: {
+  staffId: string
+  date: string
+  correctionType: string
+  requestedTime: string
+  reason: string
+}) {
+  const correctionRef = collection(db, 'attendanceCorrectionLog')
+  await addDoc(correctionRef, {
+    staffId: data.staffId,
+    date: data.date,
+    correctionType: data.correctionType,
+    requestedTime: data.requestedTime,
+    reason: data.reason,
+    status: 'pending'
+  })
 }

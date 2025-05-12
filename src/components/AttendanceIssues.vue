@@ -5,7 +5,11 @@ import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
 import type { DisplayAttendanceRecord } from '@/types'
 
-const props = defineProps<{ selectedUserId: string | null }>()
+const props = defineProps<{
+  selectedUserId: string | null
+  startDate: string
+  endDate: string
+}>()
 
 interface DaySummary {
   date: string
@@ -14,26 +18,31 @@ interface DaySummary {
   issues: string[]
 }
 
+const showForm = ref(false)
+const selectedDate = ref('')
+const selectedIssue = ref('')
+const correctionType = ref('')
+const correctionTime = ref('')
+const correctionReason = ref('')
+
 const dataStore = useDataStore()
 const { attendanceCache, attendanceCorrectionCache } = storeToRefs(dataStore)
 
-const startDate = ref('2024-01-01')
-const endDate = ref(new Date().toISOString().slice(0, 10))
-
-const allCorrections = computed(() => Object.values(attendanceCorrectionCache.value).flat().filter(Boolean))
+const allCorrections = computed(() => Object.values(attendanceCorrectionCache.value).flat())
 
 const load = async () => {
   if (props.selectedUserId) {
-    await dataStore.loadAttendance(props.selectedUserId, startDate.value, endDate.value)
-    await dataStore.loadAttendanceCorrections(props.selectedUserId, startDate.value, endDate.value)
+    await dataStore.loadAttendance(props.selectedUserId, props.startDate, props.endDate)
+    await dataStore.loadAttendanceCorrections(props.selectedUserId, props.startDate, props.endDate)
   }
 }
 
-onMounted(() => {
-  load()
-})
+onMounted(load)
 
-watch([() => props.selectedUserId, startDate, endDate], load)
+watch(
+  [() => props.selectedUserId, () => props.startDate, () => props.endDate],
+  load
+)
 
 function hasCorrection(userId: string, date: string, type: string) {
   return allCorrections.value.some(c =>
@@ -48,8 +57,11 @@ function hasCorrection(userId: string, date: string, type: string) {
 function getCorrections(userId: string, date: string): string[] {
   return allCorrections.value
     .filter(c =>
-    c &&
-    c.staffId === userId && c.date === date && c.status !== 'approved')
+      c &&
+      c.staffId === userId &&
+      c.date === date &&
+      c.status !== 'approved'
+    )
     .map(c => `CORRECTION - ${c.status} - (${c.correctionType} @ ${c.requestedTime})  - ${c.reason}`)
 }
 
@@ -73,14 +85,37 @@ function deduplicatePunches(punches: DisplayAttendanceRecord[], thresholdMinutes
   return result
 }
 
-const allAttendanceRecords = computed(() => {
-  return Object.values(attendanceCache.value).flat()
-})
+function openCorrectionForm(date: string, issue: string) {
+  selectedDate.value = date
+  selectedIssue.value = issue
+  showForm.value = true
+  correctionType.value = ''
+  correctionTime.value = ''
+  correctionReason.value = ''
+}
+
+function submitCorrection() {
+  // TODO: Add API or store action to actually submit the correction
+  console.log('Submitting correction:', {
+    date: selectedDate.value,
+    type: correctionType.value,
+    time: correctionTime.value,
+    reason: correctionReason.value,
+  })
+  showForm.value = false
+}
+
+const allAttendanceRecords = computed(() => Object.values(attendanceCache.value).flat())
 
 const groupedByDate = computed(() => {
   if (!props.selectedUserId) return []
 
-  const filtered = allAttendanceRecords.value.filter(r => r.user_id === props.selectedUserId)
+  const filtered = allAttendanceRecords.value.filter(r =>
+    r.user_id === props.selectedUserId &&
+    r.date >= props.startDate &&
+    r.date <= props.endDate
+  )
+
   const byDate: Record<string, DisplayAttendanceRecord[]> = {}
 
   for (const rec of filtered) {
@@ -111,16 +146,17 @@ const groupedByDate = computed(() => {
     for (let i = 0; i < deduped.length; i += 2) {
       const first = deduped[i]
       const second = deduped[i + 1]
-      const expected = first.status === 'BREAK IN' ? 'breakOut' : 'breakIn'
-      const isCorrected = hasCorrection(props.selectedUserId, date, expected)
 
-      if (!second && !isCorrected) {
-        issues.push(`${first.status} at ${first.time}, ${expected === 'breakIn' ? 'BREAK IN' : 'BREAK OUT'} Missing`)
-      } else if (first.status === second.status && !isCorrected) {
-        issues.push(`${first.status} at ${first.time}, ${expected === 'breakIn' ? 'BREAK IN' : 'BREAK OUT'} Missing`)
+      const expectedMissing = first.status === 'BREAK IN' ? 'BREAK OUT' : 'BREAK IN'
+      const correctionType = expectedMissing === 'BREAK IN' ? 'breakIn' : 'breakOut'
+
+      if (!second || first.status === second.status) {
+        if (!hasCorrection(props.selectedUserId, date, correctionType)) {
+          issues.push(`${first.status} at ${first.time}, ${expectedMissing} Missing`)
+        }
       }
-
     }
+
 
     const correctionNotes = [...new Set(getCorrections(props.selectedUserId, date))]
     issues.push(...correctionNotes)
@@ -137,8 +173,8 @@ const groupedByDate = computed(() => {
 
   return summaries.sort((b, a) => new Date(b.date).getTime() - new Date(a.date).getTime())
 })
-</script>
 
+</script>
 <template>
   <div>
     <h2 class="text-xl font-bold mb-4">📅 Attendance Issue Summary</h2>
@@ -149,6 +185,7 @@ const groupedByDate = computed(() => {
           <th class="border px-2 py-1">Day</th>
           <th class="border px-2 py-1">Records</th>
           <th class="border px-2 py-1">Issues</th>
+          <th class="border px-2 py-1">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -169,8 +206,54 @@ const groupedByDate = computed(() => {
 }">{{ i }}</li>
             </ul>
           </td>
+          <td class="border px-2 py-1 align-top">
+            <ul>
+              <li v-for="i in item.issues" :key="i">
+                <button
+                  v-if="!i.includes('CORRECTION')"
+                  @click="openCorrectionForm(item.date, i)"
+                  class="text-blue-600 underline hover:text-blue-800"
+                >
+                  Apply
+                </button>
+              </li>
+            </ul>
+          </td>
         </tr>
       </tbody>
     </table>
   </div>
+
+  <div v-if="showForm" class="fixed inset-0 bg-green-500/40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+    <h3 class="text-lg font-bold mb-4">Apply for Correction</h3>
+    <div class="mb-2">
+      <label class="block text-sm font-medium">Date</label>
+      <input type="text" v-model="selectedDate" disabled class="border rounded px-2 py-1 w-full bg-gray-100" />
+    </div>
+    <div class="mb-2">
+      <label class="block text-sm font-medium">Correction Type</label>
+      <select v-model="correctionType" class="border rounded px-2 py-1 w-full">
+        <option disabled value="">-- Select --</option>
+        <option value="checkIn">Check-In</option>
+        <option value="checkOut">Check-Out</option>
+        <option value="breakIn">Break-In</option>
+        <option value="breakOut">Break-Out</option>
+      </select>
+    </div>
+    <div class="mb-2">
+      <label class="block text-sm font-medium">Correct Time</label>
+      <input type="time" v-model="correctionTime" class="border rounded px-2 py-1 w-full" />
+    </div>
+    <div class="mb-2">
+      <label class="block text-sm font-medium">Reason</label>
+      <textarea v-model="correctionReason" rows="2" class="border rounded px-2 py-1 w-full"></textarea>
+    </div>
+    <div class="flex justify-end gap-2 mt-4">
+      <button @click="showForm = false" class="px-4 py-1 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
+      <button @click="submitCorrection" class="px-4 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Submit</button>
+    </div>
+  </div>
+</div>
+
 </template>

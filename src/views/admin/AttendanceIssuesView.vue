@@ -74,6 +74,9 @@ const refreshCorrections = async () => {
   )
   console.log('✅ Corrections refreshed')
 }
+
+const btnMouseOver =
+  'text-sm md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-4 py-2 transition-colors duration-200 ease-in-out'
 </script>
 
 <template>
@@ -89,12 +92,12 @@ const refreshCorrections = async () => {
 
     <!-- 🔘 Date Controls -->
     <div class="flex flex-wrap gap-2 mt-6">
-      <button @click="setToday" class="btn">Today</button>
-      <button @click="setCurrentWeek" class="btn">Week</button>
-      <button @click="setCurrentMonth" class="btn">Month</button>
-      <button @click="setPaidPeriod" class="btn">Paid</button>
-      <button @click="setPayablePeriod" class="btn">Payable</button>
-      <button @click="setCurrentYear" class="btn">Year</button>
+      <button @click="setToday" :class="btnMouseOver">Today</button>
+      <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
+      <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
+      <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>
+      <button @click="setPayablePeriod" :class="btnMouseOver">Payable</button>
+      <button @click="setCurrentYear" :class="btnMouseOver">Year</button>
       <div class="flex items-center gap-2">
         <label class="text-sm font-medium">From:</label>
         <input type="date" v-model="startDate" class="input" />
@@ -103,7 +106,7 @@ const refreshCorrections = async () => {
         <label class="text-sm font-medium">To:</label>
         <input type="date" v-model="endDate" class="input" />
       </div>
-      <button @click="refreshCorrections" class="btn bg-blue-700 hover:bg-blue-800">🔄 Refresh</button>
+      <button @click="refreshCorrections" :class="btnMouseOver">Refresh</button>
     </div>
 
     <!-- Issues -->

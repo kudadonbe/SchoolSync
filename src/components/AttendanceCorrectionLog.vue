@@ -5,6 +5,16 @@ import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
 import type { AttendanceCorrectionLog } from '@/types'
 
+import { useAuthStore } from '@/stores/authStore'
+
+const authStore = useAuthStore()
+const userRole = computed(() => authStore.currentUser?.role ?? '')
+
+const isPrivileged = computed(() =>
+  ['developer', 'hr', 'leading_teacher', 'principal'].includes(userRole.value)
+)
+
+
 const props = defineProps<{
   selectedUserId: string | null
   startDate: string
@@ -90,7 +100,7 @@ watch([() => props.selectedUserId, () => props.startDate, () => props.endDate], 
             <th class="p-2 border">Correction</th>
             <th class="p-2 border">Reason</th>
             <th class="p-2 border">Status</th>
-            <th class="p-2 border">Action</th>
+            <th v-if="isPrivileged" class="p-2 border">Action</th>
           </tr>
         </thead>
         <tbody>
@@ -100,7 +110,7 @@ watch([() => props.selectedUserId, () => props.startDate, () => props.endDate], 
             <td class="p-2 border">{{ log.requestedTime }} – {{ log.correctionType }}</td>
             <td class="p-2 border">{{ log.reason }}</td>
             <td class="p-2 border text-yellow-700 capitalize">{{ log.status }}</td>
-            <td class="p-2 border space-x-2">
+            <td v-if="isPrivileged" class="p-2 border space-x-2">
               <button @click="approve(log)" class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700">Approve</button>
               <button @click="reject(log)" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">Reject</button>
             </td>

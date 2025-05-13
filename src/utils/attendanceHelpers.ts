@@ -150,19 +150,21 @@ export function sortPunchRecords(records: DisplayAttendanceRecord[]): DisplayAtt
   })
 }
 
-/**
- * Normalize punch status based on punch time compared to scheduled in/out.
- * Used to correct biometric mislogs like BREAK IN instead of CHECK OUT.
- */
+
 export function normalizePunchStatus(
   punchTime: string,
   scheduledIn: string,
   scheduledOut: string,
   originalStatus: DisplayAttendanceStatus,
-  grace = 15, // Minutes after IN and before OUT
-  earlyWindow = 60, // Minutes before scheduled IN
-  lateWindow = 60, // Minutes after scheduled OUT
+  grace = 15,
+  earlyWindow = 60,
+  lateWindow = 60,
 ): DisplayAttendanceStatus {
+  // ✅ Preserve raw break statuses
+  if (originalStatus === 'BREAK IN' || originalStatus === 'BREAK OUT') {
+    return originalStatus
+  }
+
   const time = toMinutes(punchTime)
   const inMin = toMinutes(scheduledIn)
   const outMin = toMinutes(scheduledOut)
@@ -177,10 +179,42 @@ export function normalizePunchStatus(
     return 'CHECK OUT'
   }
 
-  // ✅ Everything else → Assume break
-  // return (time - inMin) % 2 === 0 ? 'BREAK OUT' : 'BREAK IN'
+  // ✅ Leave unknown or unmapped statuses untouched
   return originalStatus
 }
+
+
+// /**
+//  * Normalize punch status based on punch time compared to scheduled in/out.
+//  * Used to correct biometric mislogs like BREAK IN instead of CHECK OUT.
+//  */
+// export function normalizePunchStatus(
+//   punchTime: string,
+//   scheduledIn: string,
+//   scheduledOut: string,
+//   originalStatus: DisplayAttendanceStatus,
+//   grace = 15, // Minutes after IN and before OUT
+//   earlyWindow = 60, // Minutes before scheduled IN
+//   lateWindow = 60, // Minutes after scheduled OUT
+// ): DisplayAttendanceStatus {
+//   const time = toMinutes(punchTime)
+//   const inMin = toMinutes(scheduledIn)
+//   const outMin = toMinutes(scheduledOut)
+
+//   // ✅ CHECK IN: between earlyWindow before and grace after scheduledIn
+//   if (time >= inMin - earlyWindow && time <= inMin + grace) {
+//     return 'CHECK IN'
+//   }
+
+//   // ✅ CHECK OUT: between grace before and lateWindow after scheduledOut
+//   if (time >= outMin - grace && time <= outMin + lateWindow) {
+//     return 'CHECK OUT'
+//   }
+
+//   // ✅ Everything else → Assume break
+//   // return (time - inMin) % 2 === 0 ? 'BREAK OUT' : 'BREAK IN'
+//   return originalStatus
+// }
 
 export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
   const newRecord: ProcessedAttendance = {

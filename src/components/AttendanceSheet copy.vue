@@ -9,7 +9,7 @@ import {
   normalizePunchStatus,
   calculateLateMinutes,
   isHoliday,
-  // toMinutes,
+  toMinutes,
   sortPunchRecords,
   newAttendanceRecord,
   formatDateLocal,
@@ -88,23 +88,31 @@ onMounted(() => {
 })
 watch([() => props.selectedUserId, startDate, endDate], load)
 
+const threshold = attendancePolicies.value.punch.duplicate_threshold_minutes
+
 const refreshCorrections = async () => {
   if (!props.selectedUserId) return
   await dataStore.loadAttendanceCorrections(
     props.selectedUserId,
     startDate.value,
     endDate.value,
-    true
+    true // force = true
   )
-  console.log('Attendance corrections refreshed')
+  console.log('Staff ID:', props.selectedUserId);
+  console.log('Start Date:', startDate.value);
+  console.log('End Date:', endDate.value);
+  console.log('Attendance corrections refreshed');
+  console.log('Attendance corrections:', attendanceCorrectionLog.value);
+
+
 }
+
 
 const filteredRecords = computed<ProcessedAttendance[]>(() => {
   const recordsMap = new Map<string, ProcessedAttendance>()
   const userRecords = sortPunchRecords(attendanceRecords.value)
 
   userRecords.forEach((record) => {
-    const originalStatus = record.status // Preserve before normalization
     record.time = formatTimeHHMMSS(record.time)
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, newAttendanceRecord(record.date))
@@ -140,16 +148,22 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
         attendancePolicies.value.late.grace_period_minutes,
       )
     }
+
     if (record.status === 'CHECK OUT') dayRecord.lastCheckOut = record.time
 
-    // ✅ Use originalStatus here to include raw BREAK punches
-    console.log(`DATE: ${record.date} — TIME: ${record.time} — ORIGINAL: ${originalStatus} — NORMALIZED: ${record.status}`);
-    if (originalStatus === 'BREAK IN' || originalStatus === 'BREAK OUT') {
-      dayRecord.breaks.push({
-        time: record.time,
-        type: originalStatus === 'BREAK IN' ? '(IN)' : '(OUT)',
-        missing: false,
-      })
+    if (record.status === 'BREAK IN' || record.status === 'BREAK OUT') {
+      const lastTime = dayRecord.lastBreakTimes[record.status]
+      const currentMin = toMinutes(record.time)
+      const lastMin = lastTime ? toMinutes(lastTime) : -Infinity
+
+      if (currentMin - lastMin >= threshold) {
+        dayRecord.lastBreakTimes[record.status] = record.time
+        dayRecord.breaks.push({
+          time: record.time,
+          type: record.status === 'BREAK IN' ? '(IN)' : '(OUT)',
+          missing: false,
+        })
+      }
     }
   })
 
@@ -168,6 +182,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     )
 
     const record = recordsMap.get(dateStr) || newAttendanceRecord(dateStr)
+
     record.isHoliday = isHolidayDate
     record.day = dayName
     record.isWeekend = isWeekend

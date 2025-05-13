@@ -111,7 +111,7 @@ async function submitCorrection() {
       reason: correctionReason.value,
     })
 
-    alert('✅ Correction submitted successfully.')
+    // alert('✅ Correction submitted successfully.')
     showForm.value = false
     await dataStore.loadAttendanceCorrections(props.selectedUserId, props.startDate, props.endDate)
   } catch (err) {

@@ -4,7 +4,7 @@ import { computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
 import type { AttendanceCorrectionLog } from '@/types'
-
+import { updateAttendanceCorrectionStatus } from '@/services/firebaseServices'
 import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
@@ -64,15 +64,32 @@ const reviewed = computed(() =>
   )
 )
 
-const approve = (log: AttendanceCorrectionLog) => {
-  console.log('✅ Approving:', log)
-  // TODO: Implement Firestore or backend update
+const approve = async (log: AttendanceCorrectionLog) => {
+  if (!log.id || !authStore.currentUser?.uid) return
+  try {
+    console.log('✅ Approving:', log)
+    await updateAttendanceCorrectionStatus(log.id, 'approved', authStore.currentUser.displayName)
+    await load() // Refresh list
+    alert('Correction approved successfully.')
+  } catch (err) {
+    console.error('Approval error:', err)
+    alert('Failed to approve correction.')
+  }
 }
 
-const reject = (log: AttendanceCorrectionLog) => {
-  console.log('❌ Rejecting:', log)
-  // TODO: Implement Firestore or backend update
+const reject = async (log: AttendanceCorrectionLog) => {
+  if (!log.id || !authStore.currentUser?.uid) return
+  try {
+    console.log('❌ Rejecting:', log)
+    await updateAttendanceCorrectionStatus(log.id, 'rejected', authStore.currentUser.uid)
+    await load() // Refresh list
+    alert('Correction rejected successfully.')
+  } catch (err) {
+    console.error('Rejection error:', err)
+    alert('Failed to reject correction.')
+  }
 }
+
 
 const load = async () => {
   if (!props.selectedUserId) return
@@ -133,6 +150,8 @@ watch([() => props.selectedUserId, () => props.startDate, () => props.endDate], 
             <th class="p-2 border">Correction</th>
             <th class="p-2 border">Reason</th>
             <th class="p-2 border">Status</th>
+            <th class="p-2 border">Reviewed By</th>
+            <th class="p-2 border">Reviewed At</th>
           </tr>
         </thead>
         <tbody>
@@ -150,6 +169,8 @@ watch([() => props.selectedUserId, () => props.startDate, () => props.endDate], 
             >
               {{ log.status }}
             </td>
+            <td class="p-2 border">{{ log.reviewedBy ?? '-' }}</td>
+            <td class="p-2 border">{{ log.reviewedAt ? new Date(log.reviewedAt.seconds * 1000).toLocaleString() : '-' }}</td>
           </tr>
           <tr v-if="reviewed.length === 0">
             <td colspan="5" class="p-2 border text-center text-gray-500">No reviewed corrections yet.</td>

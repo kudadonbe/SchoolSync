@@ -51,7 +51,7 @@ function hasCorrection(userId: string, date: string, type: string) {
     c &&
     c.staffId === userId &&
     c.date === date &&
-    c.status === 'approved' &&
+    // c.status === 'approved' &&
     c.correctionType === type
   )
 }
@@ -174,8 +174,8 @@ const groupedByDate = computed(() => {
     }
 
 
-    const correctionNotes = [...new Set(getCorrections(props.selectedUserId, date))]
-    issues.push(...correctionNotes)
+    // const correctionNotes = [...new Set(getCorrections(props.selectedUserId, date))]
+    // issues.push(...correctionNotes)
 
     if (issues.length > 0) {
       summaries.push({

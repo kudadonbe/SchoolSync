@@ -333,7 +333,7 @@ const btnMouseOver =
                 'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,
               }"
             >
-              <span :class="record.correctedCheckIn ? 'text-orange-600 font-semibold' : ''">
+              <span :class="record.correctedCheckIn ? 'text-yellow-600 font-semibold' : ''">
                 {{ record.firstCheckIn || '--' }}
               </span>
             </td>
@@ -353,7 +353,7 @@ const btnMouseOver =
                 class="inline-block px-1"
                 :class="{
                   'bg-red-100 text-red-700': b.missing,
-                  'text-orange-600 font-semibold': record.correctedBreaks?.[b.time]
+                  'text-yellow-600 font-semibold': record.correctedBreaks?.[b.time]
                 }"
               >
                 {{ b.time }} {{ b.type }}
@@ -367,7 +367,7 @@ const btnMouseOver =
                 'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,
               }"
             >
-              <span :class="record.correctedCheckOut ? 'text-orange-600 font-semibold' : ''">
+              <span :class="record.correctedCheckOut ? 'text-yellow-600 font-semibold' : ''">
                 {{ record.lastCheckOut || '--' }}
               </span>
             </td>

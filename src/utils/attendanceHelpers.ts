@@ -12,11 +12,11 @@ import type {
   AttendanceRecord,
   PunchStatus,
   AttendanceCorrectionLog,
-  RemovedPunchLog
+  RemovedPunchLog,
 } from '@/types'
 
 import type { Timestamp } from 'firebase/firestore'
-import { formatTimeHHMMSS, formatDateUTC, formatTimeUTC } from "@/utils"
+import { formatTimeHHMMSS, formatDateUTC, formatTimeUTC } from '@/utils'
 
 /**
  * Get scheduled in time for a user on a specific date.
@@ -184,7 +184,6 @@ export function normalizePunchStatus(
   return originalStatus
 }
 
-
 export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
   const newRecord: ProcessedAttendance = {
     date: dateStr,
@@ -233,6 +232,8 @@ export function convertToDisplayRecords(logs: StaffAttendanceLog[]): DisplayAtte
     1: 'CHECK OUT',
     2: 'BREAK OUT',
     3: 'BREAK IN',
+    4: 'OVERTIME IN',
+    5: 'OVERTIME OUT',
   }
 
   return logs.map((log) => {
@@ -377,11 +378,15 @@ export function removeCancelledPairs(
       const inPunch = dailyPunches[i]
       const inMins = toMinutes(inPunch.time)
 
-      const matchIdx = outs.find(j => {
+      const matchIdx = outs.find((j) => {
         if (dailyUsed.has(j)) return false
         const outPunch = dailyPunches[j]
         const diff = Math.abs(toMinutes(outPunch.time) - inMins)
-        return isMatchingType(inPunch.status, outPunch.status) && diff <= thresholdMinutes && toMinutes(outPunch.time) > inMins
+        return (
+          isMatchingType(inPunch.status, outPunch.status) &&
+          diff <= thresholdMinutes &&
+          toMinutes(outPunch.time) > inMins
+        )
       })
 
       if (matchIdx !== undefined) {
@@ -419,8 +424,6 @@ export function removeCancelledPairs(
   }
 }
 
-
-
 export function convertCorrectionsToDisplayRecords(
   corrections: AttendanceCorrectionLog[],
 ): DisplayAttendanceRecord[] {
@@ -429,8 +432,8 @@ export function convertCorrectionsToDisplayRecords(
     checkOut: 'CHECK OUT',
     breakIn: 'BREAK IN',
     breakOut: 'BREAK OUT',
-    otIn: 'CHECK IN',
-    otOut: 'CHECK OUT',
+    otIn: 'OVERTIME IN',
+    otOut: 'OVERTIME OUT',
     wrongWorkcode: 'CHECK IN', // optionally skip
   }
 
@@ -471,18 +474,17 @@ export function cleanDisplayAttendanceLogs(
   const cleanedKeys = new Set(cleaned.map(key))
   const duplicateKeys = new Set(duplicates.map(key))
   const cancellationKeys = new Set(cancellations.map(key))
-  const noisyKeys = new Set(
-    cleanedWithNoise
-      .filter(p => !cleaned.includes(p))
-      .map(p => key(p))
-  )
+  const noisyKeys = new Set(cleanedWithNoise.filter((p) => !cleaned.includes(p)).map((p) => key(p)))
 
   // Separate cleaned records into their sources
   const iClockLog = iClockDisplay.filter((r) => cleanedKeys.has(key(r)))
   const correctionLog = correctionDisplay.filter((r) => cleanedKeys.has(key(r)))
 
   // Map for removal tracking
-  const sourceMap = new Map<string, { source: 'iclock' | 'correction'; record: DisplayAttendanceRecord }>()
+  const sourceMap = new Map<
+    string,
+    { source: 'iclock' | 'correction'; record: DisplayAttendanceRecord }
+  >()
   iClockDisplay.forEach((r) => sourceMap.set(key(r), { source: 'iclock', record: r }))
   correctionDisplay.forEach((r) => sourceMap.set(key(r), { source: 'correction', record: r }))
 
@@ -520,18 +522,12 @@ export function cleanDisplayAttendanceLogs(
   }
 }
 
-
-
 export function filterNoisyBreakPunches(
   punches: DisplayAttendanceRecord[],
 ): DisplayAttendanceRecord[] {
   // ✅ Separate break punches and others
-  const breakPunches = punches.filter(p =>
-    p.status === 'BREAK IN' || p.status === 'BREAK OUT'
-  )
-  const otherPunches = punches.filter(p =>
-    p.status !== 'BREAK IN' && p.status !== 'BREAK OUT'
-  )
+  const breakPunches = punches.filter((p) => p.status === 'BREAK IN' || p.status === 'BREAK OUT')
+  const otherPunches = punches.filter((p) => p.status !== 'BREAK IN' && p.status !== 'BREAK OUT')
 
   // 🔃 Sort break punches by date and time
   const sorted = [...breakPunches].sort((a, b) => {
@@ -576,7 +572,3 @@ export function filterNoisyBreakPunches(
     return a.date.localeCompare(b.date)
   })
 }
-
-
-
-

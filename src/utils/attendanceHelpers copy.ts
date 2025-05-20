@@ -328,7 +328,6 @@ export function deduplicatePunches(
 
 /**
  * Removes cancel-like punch pairs (e.g., BREAK IN ↔ BREAK OUT or CHECK OUT ↔ CHECK IN) within a short time window.
- * Now enhanced to avoid canceling punches that could help fix unpaired entries.
  */
 export function removeCancelledPairs(
   punches: DisplayAttendanceRecord[],
@@ -350,65 +349,26 @@ export function removeCancelledPairs(
     (a.startsWith('BREAK') && b.startsWith('BREAK')) ||
     (a.startsWith('CHECK') && b.startsWith('CHECK'))
 
-  // Group by date
-  const groupedByDate = new Map<string, DisplayAttendanceRecord[]>()
-  for (const p of sorted) {
-    if (!groupedByDate.has(p.date)) groupedByDate.set(p.date, [])
-    groupedByDate.get(p.date)!.push(p)
-  }
+  for (let i = 0; i < sorted.length; i++) {
+    if (used.has(i)) continue
+    const a = sorted[i]
+    const aMins = toMinutes(a.time)
 
-  for (const dailyPunches of groupedByDate.values()) {
-    const dailyUsed = new Set<number>()
-    const ins: number[] = []
-    const outs: number[] = []
+    for (let j = i + 1; j < sorted.length; j++) {
+      if (used.has(j)) continue
+      const b = sorted[j]
+      if (a.date !== b.date) continue
+      if (!isMatchingType(a.status, b.status)) continue
 
-    // Categorize by IN/OUT type
-    dailyPunches.forEach((p, idx) => {
-      if (p.status.endsWith('IN')) ins.push(idx)
-      else if (p.status.endsWith('OUT')) outs.push(idx)
-    })
+      const bMins = toMinutes(b.time)
+      const diff = Math.abs(aMins - bMins)
 
-    const paired: [number, number][] = []
-    const unpairedIns = new Set(ins)
-    const unpairedOuts = new Set(outs)
-
-    // Greedy pairing
-    for (const i of ins) {
-      const inPunch = dailyPunches[i]
-      const inMins = toMinutes(inPunch.time)
-
-      const matchIdx = outs.find(j => {
-        if (dailyUsed.has(j)) return false
-        const outPunch = dailyPunches[j]
-        const diff = Math.abs(toMinutes(outPunch.time) - inMins)
-        return isMatchingType(inPunch.status, outPunch.status) && diff <= thresholdMinutes && toMinutes(outPunch.time) > inMins
-      })
-
-      if (matchIdx !== undefined) {
-        paired.push([i, matchIdx])
-        dailyUsed.add(i)
-        dailyUsed.add(matchIdx)
-        unpairedIns.delete(i)
-        unpairedOuts.delete(matchIdx)
-      }
-    }
-
-    // Cancel only if both sides are not needed to fix unpaired
-    for (const [i, j] of paired) {
-      const a = dailyPunches[i]
-      const b = dailyPunches[j]
-
-      const aIsIN = a.status.endsWith('IN')
-      const bIsIN = b.status.endsWith('IN')
-
-      const aCouldHelp = aIsIN ? unpairedOuts.size > 0 : unpairedIns.size > 0
-      const bCouldHelp = bIsIN ? unpairedOuts.size > 0 : unpairedIns.size > 0
-
-      if (!aCouldHelp && !bCouldHelp) {
+      if (diff <= thresholdMinutes) {
         finePairs.push([a, b])
         removed.push(a, b)
         used.add(i)
         used.add(j)
+        break // move on to next base
       }
     }
   }
@@ -418,8 +378,6 @@ export function removeCancelledPairs(
     removed,
   }
 }
-
-
 
 export function convertCorrectionsToDisplayRecords(
   corrections: AttendanceCorrectionLog[],
@@ -448,7 +406,7 @@ export function cleanDisplayAttendanceLogs(
   iClockDisplay: DisplayAttendanceRecord[],
   corrections: AttendanceCorrectionLog[],
   thresholdMinutes = 1,
-  skipCancellation = false,
+  skipCancellation = false, // ← new param
 ): {
   iClockLog: DisplayAttendanceRecord[]
   correctionLog: DisplayAttendanceRecord[]
@@ -459,36 +417,30 @@ export function cleanDisplayAttendanceLogs(
 
   const { deduplicated, removed: duplicates } = deduplicatePunches(all, thresholdMinutes)
 
+  // Remove cancellation-like pairs if not skipped
   const cancellations = skipCancellation
     ? []
     : removeCancelledPairs(deduplicated, thresholdMinutes).removed
 
-  const cleanedWithNoise = deduplicated.filter((p) => !cancellations.includes(p))
-
-  const cleaned = filterNoisyBreakPunches(cleanedWithNoise)
+  const cleaned = deduplicated.filter((p) => !cancellations.includes(p))
 
   const key = (r: DisplayAttendanceRecord) => `${r.user_id}_${r.date}_${r.time}_${r.status}`
   const cleanedKeys = new Set(cleaned.map(key))
   const duplicateKeys = new Set(duplicates.map(key))
   const cancellationKeys = new Set(cancellations.map(key))
-  const noisyKeys = new Set(
-    cleanedWithNoise
-      .filter(p => !cleaned.includes(p))
-      .map(p => key(p))
-  )
 
   // Separate cleaned records into their sources
   const iClockLog = iClockDisplay.filter((r) => cleanedKeys.has(key(r)))
   const correctionLog = correctionDisplay.filter((r) => cleanedKeys.has(key(r)))
 
-  // Map for removal tracking
+  // For removed tracking
   const sourceMap = new Map<string, { source: 'iclock' | 'correction'; record: DisplayAttendanceRecord }>()
   iClockDisplay.forEach((r) => sourceMap.set(key(r), { source: 'iclock', record: r }))
   correctionDisplay.forEach((r) => sourceMap.set(key(r), { source: 'correction', record: r }))
 
   const removed: RemovedPunchLog[] = []
-  const seen = new Set<string>()
 
+  const seen = new Set<string>()
   for (const k of duplicateKeys) {
     const ref = sourceMap.get(k)
     if (ref && !seen.has(k)) {
@@ -505,78 +457,6 @@ export function cleanDisplayAttendanceLogs(
     }
   }
 
-  for (const k of noisyKeys) {
-    const ref = sourceMap.get(k)
-    if (ref && !seen.has(k)) {
-      removed.push({ source: ref.source, reason: 'noise', record: ref.record })
-      seen.add(k)
-    }
-  }
-
-  return {
-    iClockLog,
-    correctionLog,
-    removed,
-  }
+  return { iClockLog, correctionLog, removed }
 }
-
-
-
-export function filterNoisyBreakPunches(
-  punches: DisplayAttendanceRecord[],
-): DisplayAttendanceRecord[] {
-  // ✅ Separate break punches and others
-  const breakPunches = punches.filter(p =>
-    p.status === 'BREAK IN' || p.status === 'BREAK OUT'
-  )
-  const otherPunches = punches.filter(p =>
-    p.status !== 'BREAK IN' && p.status !== 'BREAK OUT'
-  )
-
-  // 🔃 Sort break punches by date and time
-  const sorted = [...breakPunches].sort((a, b) => {
-    if (a.date === b.date) return a.time.localeCompare(b.time)
-    return a.date.localeCompare(b.date)
-  })
-
-  // 🧠 Group break punches by date
-  const groupedByDate = new Map<string, DisplayAttendanceRecord[]>()
-  for (const p of sorted) {
-    if (!groupedByDate.has(p.date)) groupedByDate.set(p.date, [])
-    groupedByDate.get(p.date)!.push(p)
-  }
-
-  const finalBreaks: DisplayAttendanceRecord[] = []
-
-  for (const daily of groupedByDate.values()) {
-    const used = new Set<number>()
-    const valid: DisplayAttendanceRecord[] = []
-    let expect: 'BREAK OUT' | 'BREAK IN' = 'BREAK OUT' // Always expect OUT first
-
-    for (let i = 0; i < daily.length; i++) {
-      const p = daily[i]
-      if (used.has(i)) continue
-
-      if (p.status === expect) {
-        valid.push(p)
-        used.add(i)
-        expect = expect === 'BREAK OUT' ? 'BREAK IN' : 'BREAK OUT'
-      } else {
-        // ❌ Misordered or duplicate, considered noise and skipped
-        continue
-      }
-    }
-
-    finalBreaks.push(...valid)
-  }
-
-  // ✅ Merge final break punches with all others and sort again
-  return [...otherPunches, ...finalBreaks].sort((a, b) => {
-    if (a.date === b.date) return a.time.localeCompare(b.time)
-    return a.date.localeCompare(b.date)
-  })
-}
-
-
-
 

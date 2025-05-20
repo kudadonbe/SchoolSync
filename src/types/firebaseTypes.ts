@@ -60,3 +60,6 @@ export interface UserActivityMetadata {
   description?: string           // Additional explanation
   [key: string]: string | undefined // Allow custom tags
 }
+
+
+

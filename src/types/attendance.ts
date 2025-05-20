@@ -82,3 +82,9 @@ export interface ProcessedAttendance {
     [time: string]: boolean
   }
 }
+
+export type RemovedPunchLog = {
+  source: 'iclock' | 'correction'
+  reason: 'duplicate' | 'cancellation' | 'noise'
+  record: DisplayAttendanceRecord
+}

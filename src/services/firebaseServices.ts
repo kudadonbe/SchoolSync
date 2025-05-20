@@ -185,3 +185,19 @@ export async function submitAttendanceCorrection(data: {
     status: 'pending'
   })
 }
+
+
+
+// Approve or reject an existing attendance correction
+export async function updateAttendanceCorrectionStatus(
+  docId: string,
+  status: 'approved' | 'rejected',
+  reviewedBy: string
+) {
+  const docRef = doc(db, 'attendanceCorrectionLog', docId)
+  await updateDoc(docRef, {
+    status,
+    reviewedBy,
+    reviewedAt: new Date()
+  })
+}

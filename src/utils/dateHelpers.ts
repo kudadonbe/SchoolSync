@@ -110,4 +110,30 @@ export function extractHHMM(time: string): string {
   return time.split(':').slice(0, 2).join(':');
 }
 
+export function formatDateDDMMYYYY(dateStr: string): string {
+  const [yyyy, mm, dd] = dateStr.split('-')
+  return `${dd}-${mm}-${yyyy}`
+}
+
+
+
+/**
+ * Format a Date object into "HH:mm:ss" in **UTC**
+ */
+export function formatTimeUTC(date: Date): string {
+  const hours = String(date.getUTCHours()).padStart(2, '0')
+  const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+  const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
+
+export function formatDateUTC(date: Date): string {
+  const year = date.getUTCFullYear()
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+  const day = String(date.getUTCDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+
+
 

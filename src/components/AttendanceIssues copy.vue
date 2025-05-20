@@ -5,7 +5,6 @@ import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
 import type { DisplayAttendanceRecord } from '@/types'
 import { submitAttendanceCorrection } from '@/services/firebaseServices'
-import { formatDateDDMMYYYY } from '@/utils'
 
 
 const props = defineProps<{
@@ -65,7 +64,7 @@ function getCorrections(userId: string, date: string): string[] {
       c.date === date &&
       c.status !== 'approved'
     )
-    .map(c => `CORRECTION - ${c.status} - (${c.correctionType} - ${c.requestedTime})  - ${c.reason}`)
+    .map(c => `CORRECTION - ${c.status} - (${c.correctionType} @ ${c.requestedTime})  - ${c.reason}`)
 }
 
 function getWeekday(dateStr: string): string {
@@ -144,7 +143,7 @@ const groupedByDate = computed(() => {
 
   for (const [date, records] of Object.entries(byDate)) {
     const sorted = records.sort((a, b) => a.time.localeCompare(b.time))
-    const recordSummary = [...new Set(sorted.map(r => `${r.time} - ${r.status}`))]
+    const recordSummary = [...new Set(sorted.map(r => `${r.status} @ ${r.time}`))]
     const issues: string[] = []
 
     const checkIn = sorted.some(r => r.status === 'CHECK IN')
@@ -210,7 +209,7 @@ const groupedByDate = computed(() => {
       </thead>
       <tbody>
         <tr v-for="item in groupedByDate" :key="item.date">
-          <td class="border px-2 py-1 align-top">{{ formatDateDDMMYYYY(item.date) }}</td>
+          <td class="border px-2 py-1 align-top">{{ item.date }}</td>
           <td class="border px-2 py-1 align-top">{{ item.weekday }}</td>
           <td class="border px-2 py-1 align-top">
             <ul>

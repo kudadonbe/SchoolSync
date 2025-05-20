@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// src/components/AttendanceSheet.vue
+// src/components/StaffAttendance.vue
 import { ref, computed, watch, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
@@ -9,7 +9,7 @@ import {
   normalizePunchStatus,
   calculateLateMinutes,
   isHoliday,
-  // toMinutes,
+  toMinutes,
   sortPunchRecords,
   newAttendanceRecord,
   formatDateLocal,
@@ -20,17 +20,14 @@ import {
   getPaidPeriod,
   formatTimeHHMMSS,
   extractHHMM,
-  cleanDisplayAttendanceLogs,
-  formatDateDDMMYYYY,
 } from '@/utils'
-import type { ProcessedAttendance, AttendanceCorrectionLog, DisplayAttendanceRecord, RemovedPunchLog } from '@/types'
+import type { ProcessedAttendance, AttendanceCorrectionLog } from '@/types'
 
 const props = defineProps<{ selectedUserId: string | null }>()
 const today = new Date()
 
 const dataStore = useDataStore()
 const { staffList, dutyRoster, attendancePolicies, attendanceCorrectionLog } = storeToRefs(dataStore)
-
 
 const correctionsMap = computed(() => {
   const map = new Map<string, AttendanceCorrectionLog[]>()
@@ -85,22 +82,13 @@ const load = async () => {
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
   await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 }
-let hasLogged = false
 onMounted(() => {
   load()
   setCurrentWeek()
 })
+watch([() => props.selectedUserId, startDate, endDate], load)
 
-watch(
-  [() => props.selectedUserId, startDate, endDate],
-  () => {
-    hasLogged = false
-    load() // if you want to re-fetch too (optional, already handled elsewhere)
-  }
-)
-
-
-
+const threshold = attendancePolicies.value.punch.duplicate_threshold_minutes
 
 const refreshCorrections = async () => {
   if (!props.selectedUserId) return
@@ -108,57 +96,23 @@ const refreshCorrections = async () => {
     props.selectedUserId,
     startDate.value,
     endDate.value,
-    true
+    true // force = true
   )
-  console.log('Attendance corrections refreshed')
+  console.log('Staff ID:', props.selectedUserId);
+  console.log('Start Date:', startDate.value);
+  console.log('End Date:', endDate.value);
+  console.log('Attendance corrections refreshed');
+  console.log('Attendance corrections:', attendanceCorrectionLog.value);
+
+
 }
 
 
-const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; removed: RemovedPunchLog[] } => {
-  const userId = props.selectedUserId
-  if (!userId) {
-    return {
-      records: [],
-      removed: [],
-    }
-  }
-
-  const rawDisplayRecords = attendanceRecords.value
-  const corrections = attendanceCorrectionLog.value.filter(c => c.staffId === userId)
-
-  const { iClockLog, correctionLog, removed } = cleanDisplayAttendanceLogs(rawDisplayRecords, corrections, 60)
-  const finalDisplayRecords = [...iClockLog, ...correctionLog]
-
-  if (!hasLogged && finalDisplayRecords.length > 0) {
-    console.groupCollapsed('🧹 Cleaned Attendance Logs')
-    console.log('✅ iClock:', iClockLog)
-    console.log('✅ Corrections:', correctionLog)
-    console.log('🗑️ Removed:', removed)
-    console.groupEnd()
-    hasLogged = true
-  }
-
-  return {
-    records: sortPunchRecords(finalDisplayRecords),
-    removed,
-  }
-})
-
-
-
 const filteredRecords = computed<ProcessedAttendance[]>(() => {
-  const cleaned = cleanedAttendance.value as { records: DisplayAttendanceRecord[]; removed: RemovedPunchLog[] }
-
-  const userRecords = sortPunchRecords(cleaned.records)
-
-  const removedKeys = new Set(
-    cleaned.removed.map(r => `${r.record.date}_${formatTimeHHMMSS(r.record.time)}_${r.record.status}`)
-  )
-
   const recordsMap = new Map<string, ProcessedAttendance>()
+  const userRecords = sortPunchRecords(attendanceRecords.value)
 
   userRecords.forEach((record) => {
-    const originalStatus = record.status
     record.time = formatTimeHHMMSS(record.time)
     if (!recordsMap.has(record.date)) {
       recordsMap.set(record.date, newAttendanceRecord(record.date))
@@ -183,7 +137,6 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
 
     if (record.status === 'CHECK IN' && !dayRecord.firstCheckIn)
       dayRecord.firstCheckIn = record.time
-
     if (
       dayRecord.firstCheckIn &&
       !dayRecord.isWeekend &&
@@ -198,12 +151,19 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
 
     if (record.status === 'CHECK OUT') dayRecord.lastCheckOut = record.time
 
-    if (originalStatus === 'BREAK IN' || originalStatus === 'BREAK OUT') {
-      dayRecord.breaks.push({
-        time: record.time,
-        type: originalStatus === 'BREAK IN' ? '(IN)' : '(OUT)',
-        missing: false,
-      })
+    if (record.status === 'BREAK IN' || record.status === 'BREAK OUT') {
+      const lastTime = dayRecord.lastBreakTimes[record.status]
+      const currentMin = toMinutes(record.time)
+      const lastMin = lastTime ? toMinutes(lastTime) : -Infinity
+
+      if (currentMin - lastMin >= threshold) {
+        dayRecord.lastBreakTimes[record.status] = record.time
+        dayRecord.breaks.push({
+          time: record.time,
+          type: record.status === 'BREAK IN' ? '(IN)' : '(OUT)',
+          missing: false,
+        })
+      }
     }
   })
 
@@ -222,6 +182,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     )
 
     const record = recordsMap.get(dateStr) || newAttendanceRecord(dateStr)
+
     record.isHoliday = isHolidayDate
     record.day = dayName
     record.isWeekend = isWeekend
@@ -247,14 +208,9 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     const breakInCorrections = correctionsMap.value.get(`${dateStr}_breakIn`) || []
     const breakOutCorrections = correctionsMap.value.get(`${dateStr}_breakOut`) || []
 
-    const corrections = [...breakInCorrections, ...breakOutCorrections]
     const correctedHHMMs = new Set<string>()
-    corrections.forEach(c => {
-      const fullKey = `${c.date}_${formatTimeHHMMSS(c.requestedTime)}_${c.correctionType}`
-      if (!removedKeys.has(fullKey)) {
-        correctedHHMMs.add(extractHHMM(c.requestedTime))
-      }
-    })
+    const corrections = [...breakInCorrections, ...breakOutCorrections]
+    corrections.forEach(c => correctedHHMMs.add(extractHHMM(c.requestedTime)))
 
     record.breaks = record.breaks.map(b => {
       const hhmm = extractHHMM(b.time)
@@ -265,21 +221,15 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     })
 
     breakInCorrections.forEach((c) => {
-      const fullKey = `${c.date}_${formatTimeHHMMSS(c.requestedTime)}_breakIn`
-      if (removedKeys.has(fullKey)) return
       const fullTime = record.breaks.find(b => extractHHMM(b.time) === extractHHMM(c.requestedTime))?.time
       const timeToUse = fullTime || formatTimeHHMMSS(c.requestedTime)
       if (!record.correctedBreaks![timeToUse]) {
         record.breaks.push({ time: timeToUse, type: '(IN)', missing: false })
         record.correctedBreaks![timeToUse] = true
       }
-      console.log('⛔️ adding breakOut', fullKey, removedKeys.has(fullKey) ? 'REMOVED (SKIP)' : 'ADDED')
-
     })
 
     breakOutCorrections.forEach((c) => {
-      const fullKey = `${c.date}_${formatTimeHHMMSS(c.requestedTime)}_breakOut`
-      if (removedKeys.has(fullKey)) return
       const fullTime = record.breaks.find(b => extractHHMM(b.time) === extractHHMM(c.requestedTime))?.time
       const timeToUse = fullTime || formatTimeHHMMSS(c.requestedTime)
       if (!record.correctedBreaks![timeToUse]) {
@@ -300,14 +250,12 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       if (!isCorrected) lastBreak.missing = true
     }
 
-    record.breaks.sort((a, b) => a.time.localeCompare(b.time))
     daysArray.push(record)
     currentDate.setDate(currentDate.getDate() + 1)
   }
 
   return daysArray
 })
-
 
 const btnMouseOver =
   'text-sm md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-4 py-2 transition-colors duration-200 ease-in-out'
@@ -330,12 +278,19 @@ const btnMouseOver =
       <div class="flex gap-2 md:gap-4 mt-2 md:mt-0">
         <div>
           <label class="text-[10px] md:text-lg font-semibold text-green-700">FROM: </label>
-          <input type="date" v-model="startDate"
-            class="p-1 md:p-2 text-[10px] md:text-lg font-semibold text-green-500" />
+          <input
+            type="date"
+            v-model="startDate"
+            class="p-1 md:p-2 text-[10px] md:text-lg font-semibold text-green-500"
+          />
         </div>
         <div>
           <label class="text-[10px] md:text-lg font-semibold text-green-700">TO: </label>
-          <input type="date" v-model="endDate" class="p-1 md:p-2 text-[10px] md:text-lg font-semibold text-green-500" />
+          <input
+            type="date"
+            v-model="endDate"
+            class="p-1 md:p-2 text-[10px] md:text-lg font-semibold text-green-500"
+          />
         </div>
       </div>
     </div>
@@ -354,41 +309,64 @@ const btnMouseOver =
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(record, index) in filteredRecords" :key="index" class="border-b border-gray-200">
-            <td class="p-1 md:p-3 text-center"
-              :class="{ 'bg-gray-100 text-red-600': record.isWeekend || record.isHoliday }">
-              {{ formatDateDDMMYYYY(record.date) }}
+          <tr
+            v-for="(record, index) in filteredRecords"
+            :key="index"
+            class="border-b border-gray-200"
+          >
+            <td
+              class="p-1 md:p-3 text-center"
+              :class="{ 'bg-gray-100 text-red-600': record.isWeekend || record.isHoliday }"
+            >
+              {{ record.date }}
             </td>
-            <td class="p-1 md:p-3 text-left hidden md:table-cell"
-              :class="{ 'bg-gray-100 text-red-600': record.isWeekend || record.isHoliday }">
+            <td
+              class="p-1 md:p-3 text-left hidden md:table-cell"
+              :class="{ 'bg-gray-100 text-red-600': record.isWeekend || record.isHoliday }"
+            >
               {{ record.day }}
             </td>
-            <td class="p-1 md:p-3 text-center" :class="{
-              'bg-red-200 text-red-700': record.missingCheckIn,
-              'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,
-            }">
+            <td
+              class="p-1 md:p-3 text-center"
+              :class="{
+                'bg-red-200 text-red-700': record.missingCheckIn,
+                'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,
+              }"
+            >
               <span :class="record.correctedCheckIn ? 'text-yellow-600 font-semibold' : ''">
                 {{ record.firstCheckIn || '--' }}
               </span>
             </td>
-            <td class="p-1 md:p-3 text-center text-red-700"
-              :class="{ 'bg-gray-100': record.isWeekend || record.isHoliday }">
+            <td
+              class="p-1 md:p-3 text-center text-red-700"
+              :class="{ 'bg-gray-100': record.isWeekend || record.isHoliday }"
+            >
               {{ record.lateMinutes > 0 ? `${record.lateMinutes} min` : '' }}
             </td>
-            <td class="p-1 md:p-3 text-left whitespace-normal"
-              :class="{ 'bg-gray-100': record.isWeekend || record.isHoliday }">
-              <span v-for="(b, i) in record.breaks" :key="i" class="inline-block px-1" :class="{
-                'bg-red-100 text-red-700': b.missing,
-                'text-yellow-600 font-semibold': record.correctedBreaks?.[b.time]
-              }">
+            <td
+              class="p-1 md:p-3 text-left whitespace-normal"
+              :class="{ 'bg-gray-100': record.isWeekend || record.isHoliday }"
+            >
+              <span
+                v-for="(b, i) in record.breaks"
+                :key="i"
+                class="inline-block px-1"
+                :class="{
+                  'bg-red-100 text-red-700': b.missing,
+                  'text-yellow-600 font-semibold': record.correctedBreaks?.[b.time]
+                }"
+              >
                 {{ b.time }} {{ b.type }}
               </span>
 
             </td>
-            <td class="p-1 md:p-3 text-center" :class="{
-              'bg-red-200 text-red-700': record.missingCheckOut,
-              'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,
-            }">
+            <td
+              class="p-1 md:p-3 text-center"
+              :class="{
+                'bg-red-200 text-red-700': record.missingCheckOut,
+                'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,
+              }"
+            >
               <span :class="record.correctedCheckOut ? 'text-yellow-600 font-semibold' : ''">
                 {{ record.lastCheckOut || '--' }}
               </span>

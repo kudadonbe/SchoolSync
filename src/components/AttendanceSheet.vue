@@ -126,7 +126,7 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
   const rawDisplayRecords = attendanceRecords.value
   const corrections = attendanceCorrectionLog.value.filter(c => c.staffId === userId)
 
-  const { iClockLog, correctionLog, removed } = cleanDisplayAttendanceLogs(rawDisplayRecords, corrections, 60)
+  const { iClockLog, correctionLog, removed } = cleanDisplayAttendanceLogs(rawDisplayRecords, corrections, 2)
   const finalDisplayRecords = [...iClockLog, ...correctionLog]
 
   if (!hasLogged && finalDisplayRecords.length > 0) {
@@ -273,7 +273,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
         record.breaks.push({ time: timeToUse, type: '(IN)', missing: false })
         record.correctedBreaks![timeToUse] = true
       }
-      console.log('⛔️ adding breakOut', fullKey, removedKeys.has(fullKey) ? 'REMOVED (SKIP)' : 'ADDED')
+      console.log('adding breakOut', fullKey, removedKeys.has(fullKey) ? 'REMOVED (SKIP)' : 'ADDED')
 
     })
 

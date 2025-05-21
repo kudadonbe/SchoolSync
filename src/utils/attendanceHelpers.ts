@@ -553,12 +553,23 @@ export function filterNoisyBreakPunches(
       const p = daily[i]
       if (used.has(i)) continue
 
+      // ✅ Accept punch if it matches the expectation
       if (p.status === expect) {
         valid.push(p)
         used.add(i)
         expect = expect === 'BREAK OUT' ? 'BREAK IN' : 'BREAK OUT'
-      } else {
-        // ❌ Misordered or duplicate, considered noise and skipped
+      }
+      // ✅ Also allow unexpected but standalone punch (e.g., lone BREAK OUT or BREAK IN)
+      else if (
+        (p.status === 'BREAK OUT' && expect === 'BREAK IN') ||
+        (p.status === 'BREAK IN' && expect === 'BREAK OUT')
+      ) {
+        valid.push(p)
+        used.add(i)
+        // Don't toggle expectation — keep trying to match original pattern
+      }
+      // ❌ Repeated or misordered (e.g., BREAK IN after BREAK IN)
+      else {
         continue
       }
     }
@@ -572,3 +583,4 @@ export function filterNoisyBreakPunches(
     return a.date.localeCompare(b.date)
   })
 }
+

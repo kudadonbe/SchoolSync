@@ -103,7 +103,7 @@ const groupedByDate = computed<DaySummary[]>(() => {
   )
 
   // Clean and sort records with threshold of 60 minutes
-  const { iClockLog, correctionLog } = cleanDisplayAttendanceLogs(raw, corrections, 60)
+  const { iClockLog, correctionLog } = cleanDisplayAttendanceLogs(raw, corrections, 2)
   const records = sortPunchRecords([...iClockLog, ...correctionLog])
 
   // Group records by date
@@ -179,7 +179,7 @@ const groupedByDate = computed<DaySummary[]>(() => {
           <td class="border px-2 py-1 align-top">
             <ul>
               <li v-for="i in item.issues" :key="i">
-                <button v-if="i !== 'Unpaired Break Punch'" @click="openCorrectionForm(item.date)"
+                <button @click="openCorrectionForm(item.date)"
                   class="text-blue-600 underline hover:text-blue-800">
                   Apply
                 </button>

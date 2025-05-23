@@ -22,6 +22,7 @@ import {
   extractHHMM,
   cleanDisplayAttendanceLogs,
   formatDateDDMMYYYY,
+  formatBreakPairs,
 } from '@/utils'
 import type { ProcessedAttendance, AttendanceCorrectionLog, DisplayAttendanceRecord, RemovedPunchLog } from '@/types'
 
@@ -313,6 +314,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
 })
 
 
+
 const btnMouseOver =
   'text-sm md:text-lg font-semibold text-gray-200 hover:text-white hover:bg-green-700 rounded-md px-4 py-2 transition-colors duration-200 ease-in-out'
 </script>
@@ -381,13 +383,12 @@ const btnMouseOver =
             </td>
             <td class="p-1 md:p-3 text-left whitespace-normal"
               :class="{ 'bg-gray-100': record.isWeekend || record.isHoliday }">
-              <span v-for="(b, i) in record.breaks" :key="i" class="inline-block px-1" :class="{
-                'bg-red-100 text-red-700': b.missing,
-                'text-yellow-600 font-semibold': record.correctedBreaks?.[b.time]
-              }">
-                {{ b.time }} {{ b.type }}
-              </span>
-
+              <template v-for="(pair, idx) in formatBreakPairs(record.breaks)" :key="idx">
+                <span class="inline-block mr-2">
+                  [ {{ pair[0] }} | {{ pair[1] }} ]
+                  <span v-if="idx < formatBreakPairs(record.breaks).length - 1">,</span>
+                </span>
+              </template>
             </td>
             <td class="p-1 md:p-3 text-center" :class="{
               'bg-red-200 text-red-700': record.missingCheckOut,

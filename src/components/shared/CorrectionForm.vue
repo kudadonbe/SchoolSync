@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { ref, toRefs, watch, computed } from 'vue'
-import { submitAttendanceCorrection } from '@/services/firebaseServices'
+import { submitAttendanceCorrection, updateAttendanceCorrection, deleteAttendanceCorrection } from '@/services/firebaseServices'
 import { useDataStore } from '@/stores/dataStore'
+import type { AttendanceCorrectionLog } from '@/types'
 
 const props = defineProps<{
   show: boolean
@@ -9,10 +10,10 @@ const props = defineProps<{
   startDate: string
   endDate: string
   date: string
+  correction?: AttendanceCorrectionLog
 }>()
-const { show, staffId, startDate, endDate, date } = toRefs(props)
+const { show, staffId, startDate, endDate, date, correction } = toRefs(props)
 
-// Internal form state
 const correctionType = ref('')
 const correctionTime = ref('')
 const correctionReason = ref('')
@@ -23,30 +24,47 @@ const emit = defineEmits<{
   (e: 'submitted'): void
 }>()
 
-// Reset form fields on open
-watch(show, (visible) => {
+// Initialize form on open or when editing
+watch([show, correction], ([visible]) => {
   if (visible) {
-    correctionType.value = ''
-    correctionTime.value = ''
-    correctionReason.value = ''
+    if (correction.value) {
+      correctionType.value = correction.value.correctionType
+      correctionTime.value = correction.value.requestedTime
+      correctionReason.value = correction.value.reason
+    } else {
+      correctionType.value = ''
+      correctionTime.value = ''
+      correctionReason.value = ''
+    }
   }
 })
 
-// Computed validation
+const isEditing = computed(() => !!correction.value)
 const isValid = computed(() =>
   !!staffId.value && !!correctionType.value && !!correctionTime.value && !!correctionReason.value
 )
 
-async function onSubmit() {
+async function onSave() {
   if (!isValid.value) return
   try {
-    await submitAttendanceCorrection({
-      staffId: staffId.value!,
-      date: date.value,
-      correctionType: correctionType.value,
-      requestedTime: correctionTime.value,
-      reason: correctionReason.value,
-    })
+    if (isEditing.value && correction.value?.id) {
+      await updateAttendanceCorrection({
+        id: correction.value.id,
+        data: {
+          correctionType: correctionType.value,
+          requestedTime: correctionTime.value,
+          reason: correctionReason.value,
+        },
+      })
+    } else {
+      await submitAttendanceCorrection({
+        staffId: staffId.value!,
+        date: date.value,
+        correctionType: correctionType.value,
+        requestedTime: correctionTime.value,
+        reason: correctionReason.value,
+      })
+    }
     await dataStore.loadAttendanceCorrections(
       staffId.value!,
       startDate.value,
@@ -55,8 +73,27 @@ async function onSubmit() {
     emit('submitted')
     emit('update:show', false)
   } catch (err) {
-    console.error('❌ Failed to submit correction:', err)
-    alert('Submission failed—please try again.')
+    console.error('❌ Failed to save correction:', err)
+    alert('Operation failed—please try again.')
+  }
+}
+
+async function onDelete() {
+  if (!correction.value?.id) return
+  const confirmDelete = confirm('Are you sure you want to delete this correction?')
+  if (!confirmDelete) return
+  try {
+    await deleteAttendanceCorrection(correction.value.id)
+    await dataStore.loadAttendanceCorrections(
+      staffId.value!,
+      startDate.value,
+      endDate.value
+    )
+    emit('submitted')
+    emit('update:show', false)
+  } catch (err) {
+    console.error('❌ Failed to delete correction:', err)
+    alert('Deletion failed—please try again.')
   }
 }
 
@@ -70,8 +107,10 @@ function onCancel() {
     <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog"
       aria-modal="true">
       <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
-        <h3 class="text-lg font-bold mb-4">Apply for Correction</h3>
-        <form @submit.prevent="onSubmit" class="space-y-4">
+        <h3 class="text-lg font-bold mb-4">
+          {{ isEditing ? 'Edit Correction' : 'Apply for Correction' }}
+        </h3>
+        <form @submit.prevent="onSave" class="space-y-4">
           <div>
             <label class="block text-sm font-medium">Date</label>
             <input type="text" :value="date" disabled class="border rounded px-2 py-1 w-full bg-gray-100" />
@@ -98,9 +137,13 @@ function onCancel() {
             <button type="button" @click="onCancel" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
               Cancel
             </button>
+            <button v-if="isEditing" type="button" @click="onDelete"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+              Delete
+            </button>
             <button type="submit" :disabled="!isValid"
               class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
-              Submit
+              {{ isEditing ? 'Update' : 'Submit' }}
             </button>
           </div>
         </form>

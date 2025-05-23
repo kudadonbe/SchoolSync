@@ -553,3 +553,24 @@ export function cleanDisplayAttendanceLogs(
     removed,
   }
 }
+
+export function formatBreakPairs(
+  breaks: { time: string; type: string; missing: boolean }[],
+): Array<[string, string]> {
+  const pairs: Array<[string, string]> = []
+
+  for (let i = 0; i + 1 < breaks.length; i += 2) {
+    const outRec = breaks[i]
+    const inRec = breaks[i + 1]
+
+    const out = outRec.type === '(OUT)' ? outRec.time : '--'
+    const inn = inRec.type === '(IN)' ? inRec.time : '--'
+
+    // skip if both ended up empty
+    if (out === '--' && inn === '--') continue
+
+    pairs.push([out, inn])
+  }
+
+  return pairs
+}

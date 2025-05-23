@@ -79,7 +79,7 @@ const groupedByDate = computed<DaySummary[]>(() => {
   )
 
   // Clean and sort records with threshold of 2 minutes
-  const { iClockLog, correctionLog } = cleanDisplayAttendanceLogs(raw, corrections, 2)
+  const { iClockLog, correctionLog } = cleanDisplayAttendanceLogs(raw, corrections, 10, false, false)
   const records = sortPunchRecords([...iClockLog, ...correctionLog])
 
   // Group records by date
@@ -104,12 +104,18 @@ const groupedByDate = computed<DaySummary[]>(() => {
       issues.push('Missing Check-Out')
     }
 
-    // Break pairing check: ensure equal counts or skip if a correction covers it
     const inCount = recs.filter(r => r.status === 'BREAK IN').length
     const outCount = recs.filter(r => r.status === 'BREAK OUT').length
-    if (inCount !== outCount && !hasCorrection(date, 'breakIn') && !hasCorrection(date, 'breakOut')) {
-      issues.push('Unpaired Break Punch')
+
+    const hasBreakInCorrection = hasCorrection(date, 'breakIn')
+    const hasBreakOutCorrection = hasCorrection(date, 'breakOut')
+
+    if (inCount > outCount && !hasBreakOutCorrection) {
+      issues.push('Missing Break-Out')
+    } else if (outCount > inCount && !hasBreakInCorrection) {
+      issues.push('Missing Break-In')
     }
+
 
     if (issues.length) {
       summaries.push({

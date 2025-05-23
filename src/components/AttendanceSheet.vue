@@ -126,7 +126,11 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
   const rawDisplayRecords = attendanceRecords.value
   const corrections = attendanceCorrectionLog.value.filter(c => c.staffId === userId)
 
-  const { iClockLog, correctionLog, removed } = cleanDisplayAttendanceLogs(rawDisplayRecords, corrections, 2)
+  const thresholdSeconds = 10
+  const skipCancellation = false
+  const skipNoiseFilter = false
+
+  const { iClockLog, correctionLog, removed } = cleanDisplayAttendanceLogs(rawDisplayRecords, corrections, thresholdSeconds, skipCancellation, skipNoiseFilter)
   const finalDisplayRecords = [...iClockLog, ...correctionLog]
 
   if (!hasLogged && finalDisplayRecords.length > 0) {

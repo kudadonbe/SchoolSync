@@ -4,9 +4,9 @@ import { watch } from 'vue'
 import type { RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 
-import HomeView from '@/views/HomeView.vue'
-import NoticeBoardView from '@/views/NoticeBoardView.vue'
-import LoginView from '@/views/LoginView.vue'
+import HomeView from '@/views/public/HomeView.vue'
+import NoticeBoardView from '@/views/public/NoticeBoardView.vue'
+import LoginView from '@/views/public/LoginView.vue'
 
 import AdminDashboardView from '@/views/admin/AdminDashboardView.vue'
 
@@ -19,7 +19,7 @@ import AttendanceDayView from '@/views/admin/AttendanceDayView.vue'
 const routes: RouteRecordRaw[] = [
   // Public Routes
   { path: '/', name: 'home', component: HomeView },
-  { path: '/about', name: 'about', component: () => import('@/views/AboutView.vue') },
+  { path: '/about', name: 'about', component: () => import('@/views/public/AboutView.vue') },
   { path: '/notice-board', name: 'notice-board', component: NoticeBoardView },
   { path: '/login', name: 'login', component: LoginView },
 
@@ -131,7 +131,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',
-    component: () => import('@/views/NotFoundView.vue'),
+    component: () => import('@/views/public/NotFoundView.vue'),
   },
 ]
 

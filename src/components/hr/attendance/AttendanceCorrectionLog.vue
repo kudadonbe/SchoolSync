@@ -5,7 +5,7 @@ import { useDataStore } from '@/stores/dataStore'
 import type { AttendanceCorrectionLog } from '@/types'
 import { updateAttendanceCorrectionStatus, deleteAttendanceCorrection } from '@/services/firebaseServices'
 import { useAuthStore } from '@/stores/authStore'
-import CorrectionForm from './shared/CorrectionForm.vue'
+import CorrectionForm from '@/components/shared/CorrectionForm.vue'
 
 // Auth and privileges
 const authStore = useAuthStore()

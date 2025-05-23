@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useAuthStore } from '@/stores/authStore';
-import AttendanceDayDetails from '@/components/AttendanceDayDetails.vue';
+import AttendanceDayDetails from '@/components/hr/attendance/AttendanceDayDetails.vue';
 
 const authStore = useAuthStore()
 

@@ -2,9 +2,9 @@
 // src/views/admin/AttendanceIssuesView.vue
 import { ref, computed } from "vue";
 import { useAuthStore } from '@/stores/authStore';
-import AttendanceIssues from '@/components/AttendanceIssues.vue'
+import AttendanceIssues from '@/components/hr/attendance/AttendanceIssues.vue'
 import StaffInfo from '@/components/StaffInfo.vue';
-import AttendanceCorrectionLog from "@/components/AttendanceCorrectionLog.vue";
+import AttendanceCorrectionLog from "@/components/hr/attendance/AttendanceCorrectionLog.vue";
 import {
   formatDateLocal,
   getCurrentWeek,

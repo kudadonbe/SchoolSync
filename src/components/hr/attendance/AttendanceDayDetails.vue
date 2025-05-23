@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch, ref } from 'vue'
 import { useDataStore } from '@/stores/dataStore'
-import CorrectionForm from './shared/CorrectionForm.vue';
+import CorrectionForm from '@/components/shared/CorrectionForm.vue';
 
 const props = defineProps<{
   selectedUserId: string | null

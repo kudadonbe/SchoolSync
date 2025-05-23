@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/authStore';
 import AttendanceIssues from '@/components/AttendanceIssues.vue'
 import StaffInfo from '@/components/StaffInfo.vue';
 import AttendanceCorrectionLog from "@/components/AttendanceCorrectionLog.vue";
-import AttendanceDayDetails from "@/components/AttendanceDayDetails.vue";
 import {
   formatDateLocal,
   getCurrentWeek,
@@ -112,24 +111,12 @@ const btnMouseOver =
 
     <!-- Issues -->
     <div class="mt-6">
-      <AttendanceIssues
-        :selected-user-id="selectedUserId"
-        :start-date="startDate"
-        :end-date="endDate"
-      />
+      <AttendanceIssues :selected-user-id="selectedUserId" :start-date="startDate" :end-date="endDate" />
     </div>
 
     <!-- Corrections -->
     <div class="mt-6">
-      <AttendanceCorrectionLog
-        :selected-user-id="selectedUserId"
-        :start-date="startDate"
-        :end-date="endDate"
-      />
-    </div>
-    <div class="mt-6">
-      <AttendanceDayDetails :selected-user-id="selectedUserId" />
+      <AttendanceCorrectionLog :selected-user-id="selectedUserId" :start-date="startDate" :end-date="endDate" />
     </div>
   </div>
 </template>
-

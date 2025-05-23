@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import HeroSlideTwo from './HeroSlideTwo.vue'
-import HeroSlideThree from './HeroSlideThree.vue'
-import HeroSlideOne from '@/components/HeroSlideOne.vue'
+import HeroSlideTwo from '@/components/slids/HeroSlideTwo.vue'
+import HeroSlideThree from '@/components/slids/HeroSlideThree.vue'
+import HeroSlideOne from '@/components/slids/HeroSlideOne.vue'
 
 // Register the HeroTextSlide component
 

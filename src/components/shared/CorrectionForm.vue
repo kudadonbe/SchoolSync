@@ -12,7 +12,15 @@ const props = defineProps<{
   date: string
   correction?: AttendanceCorrectionLog
 }>()
+
 const { show, staffId, startDate, endDate, date, correction } = toRefs(props)
+
+const editableDate = ref(false)
+const selectedDate = ref(date.value)
+
+watch([date, editableDate], ([newDate, editable]) => {
+  if (!editable) selectedDate.value = newDate
+})
 
 const correctionType = ref('')
 const correctionTime = ref('')
@@ -24,17 +32,20 @@ const emit = defineEmits<{
   (e: 'submitted'): void
 }>()
 
-// Initialize form on open or when editing
 watch([show, correction], ([visible]) => {
   if (visible) {
     if (correction.value) {
       correctionType.value = correction.value.correctionType
       correctionTime.value = correction.value.requestedTime
       correctionReason.value = correction.value.reason
+      selectedDate.value = correction.value.date
+      editableDate.value = false
     } else {
       correctionType.value = ''
       correctionTime.value = ''
       correctionReason.value = ''
+      selectedDate.value = date.value
+      editableDate.value = false
     }
   }
 })
@@ -59,7 +70,7 @@ async function onSave() {
     } else {
       await submitAttendanceCorrection({
         staffId: staffId.value!,
-        date: date.value,
+        date: selectedDate.value,
         correctionType: correctionType.value,
         requestedTime: correctionTime.value,
         reason: correctionReason.value,
@@ -104,8 +115,7 @@ function onCancel() {
 
 <template>
   <transition name="fade">
-    <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog"
-      aria-modal="true">
+    <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true">
       <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
         <h3 class="text-lg font-bold mb-4">
           {{ isEditing ? 'Edit Correction' : 'Apply for Correction' }}
@@ -113,7 +123,28 @@ function onCancel() {
         <form @submit.prevent="onSave" class="space-y-4">
           <div>
             <label class="block text-sm font-medium">Date</label>
-            <input type="text" :value="date" disabled class="border rounded px-2 py-1 w-full bg-gray-100" />
+            <div class="flex items-center gap-2">
+              <input
+                v-if="editableDate"
+                type="date"
+                v-model="selectedDate"
+                class="border rounded px-2 py-1 w-full"
+              />
+              <input
+                v-else
+                type="text"
+                :value="selectedDate"
+                disabled
+                class="border rounded px-2 py-1 w-full bg-gray-100"
+              />
+              <button
+                type="button"
+                @click="editableDate = !editableDate"
+                class="text-xs text-blue-600 underline"
+              >
+                {{ editableDate ? 'Use original date' : 'Edit date' }}
+              </button>
+            </div>
           </div>
           <div>
             <label class="block text-sm font-medium">Correction Type</label>
@@ -137,12 +168,10 @@ function onCancel() {
             <button type="button" @click="onCancel" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
               Cancel
             </button>
-            <button v-if="isEditing" type="button" @click="onDelete"
-              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+            <button v-if="isEditing" type="button" @click="onDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
               Delete
             </button>
-            <button type="submit" :disabled="!isValid"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" :disabled="!isValid" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
               {{ isEditing ? 'Update' : 'Submit' }}
             </button>
           </div>

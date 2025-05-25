@@ -6,6 +6,7 @@ import type { AttendanceCorrectionLog } from '@/types'
 import { updateAttendanceCorrectionStatus, deleteAttendanceCorrection } from '@/services/firebaseServices'
 import { useAuthStore } from '@/stores/authStore'
 import CorrectionForm from '@/components/shared/CorrectionForm.vue'
+import { formatDateDDMMYYYY } from '@/utils'
 
 // Auth and privileges
 const authStore = useAuthStore()
@@ -146,7 +147,7 @@ const reviewed = computed(() => correctionsForUser.value.filter(c => ['approved'
         </thead>
         <tbody>
           <tr v-for="log in pending" :key="log.id" class="border-t">
-            <td class="p-2 border">{{ log.date }}</td>
+            <td class="p-2 border">{{ formatDateDDMMYYYY(log.date) }}</td>
             <td class="p-2 border">{{ getWeekday(log.date) }}</td>
             <td class="p-2 border">{{ log.requestedTime }} – {{ log.correctionType }}</td>
             <td class="p-2 border">{{ log.reason }}</td>
@@ -186,7 +187,7 @@ const reviewed = computed(() => correctionsForUser.value.filter(c => ['approved'
         </thead>
         <tbody>
           <tr v-for="log in reviewed" :key="log.id" class="border-t">
-            <td class="p-2 border">{{ log.date }}</td>
+            <td class="p-2 border">{{ formatDateDDMMYYYY(log.date) }}</td>
             <td class="p-2 border">{{ getWeekday(log.date) }}</td>
             <td class="p-2 border">{{ log.requestedTime }} – {{ log.correctionType }}</td>
             <td class="p-2 border">{{ log.reason }}</td>

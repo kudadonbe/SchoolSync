@@ -555,22 +555,33 @@ export function cleanDisplayAttendanceLogs(
 }
 
 export function formatBreakPairs(
-  breaks: { time: string; type: string; missing: boolean }[],
+  breaks: { time: string; type: '(OUT)' | '(IN)'; missing?: boolean }[],
 ): Array<[string, string]> {
   const pairs: Array<[string, string]> = []
+  let tempOut: string | null = null
 
-  for (let i = 0; i + 1 < breaks.length; i += 2) {
-    const outRec = breaks[i]
-    const inRec = breaks[i + 1]
+  for (const b of breaks) {
+    if (b.type === '(OUT)') {
+      if (tempOut !== null) {
+        // Previous OUT had no matching IN
+        pairs.push([tempOut, '--'])
+      }
+      tempOut = b.time
+    } else if (b.type === '(IN)') {
+      if (tempOut !== null) {
+        pairs.push([tempOut, b.time])
+        tempOut = null
+      } else {
+        pairs.push(['--', b.time])
+      }
+    }
+  }
 
-    const out = outRec.type === '(OUT)' ? outRec.time : '--'
-    const inn = inRec.type === '(IN)' ? inRec.time : '--'
-
-    // skip if both ended up empty
-    if (out === '--' && inn === '--') continue
-
-    pairs.push([out, inn])
+  // Any final OUT left unmatched
+  if (tempOut !== null) {
+    pairs.push([tempOut, '--'])
   }
 
   return pairs
 }
+

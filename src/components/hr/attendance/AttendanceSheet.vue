@@ -127,7 +127,7 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
   const rawDisplayRecords = attendanceRecords.value
   const corrections = attendanceCorrectionLog.value.filter(c => c.staffId === userId)
 
-  const thresholdSeconds = 10
+  const thresholdSeconds = 60
   const skipCancellation = false
   const skipNoiseFilter = false
 

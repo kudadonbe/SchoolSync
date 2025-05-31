@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // src/views/admin/StaffView.vue
 
-import AttendanceSummary from "@/components/AttendanceSummary.vue";
+import AttendanceSummary from "@/components/hr/attendance/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
-import AttendanceSheet from "@/components/AttendanceSheet.vue";
+import AttendanceSheet from "@/components/hr/attendance/AttendanceSheet.vue";
 import { ref, computed } from "vue";
 
 

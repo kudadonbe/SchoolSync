@@ -1,5 +1,15 @@
 // src/services/firebaseServices.ts
-import { collection, query, where, getDocs, Timestamp, updateDoc, doc, addDoc } from 'firebase/firestore'
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  Timestamp,
+  updateDoc,
+  doc,
+  addDoc,
+  deleteDoc,
+} from 'firebase/firestore'
 import { db } from '@/firebase' // Adjust the path if needed
 
 import type { StaffAttendanceLog, User, Staff, AttendanceCorrectionLog } from '@/types' // Adjust path if needed
@@ -160,13 +170,11 @@ export const fetchStaff = async (staffId: string): Promise<Staff | null> => {
       console.warn('No staff found with user_id:', staffId)
       return null
     }
-    console.log('Staff fetched from Firestore:', staffId)
   } catch (error) {
     console.error('Error fetching staff by user_id:', error)
     throw error
   }
 }
-
 
 export async function submitAttendanceCorrection(data: {
   staffId: string
@@ -182,22 +190,48 @@ export async function submitAttendanceCorrection(data: {
     correctionType: data.correctionType,
     requestedTime: data.requestedTime,
     reason: data.reason,
-    status: 'pending'
+    status: 'pending',
   })
 }
-
-
 
 // Approve or reject an existing attendance correction
 export async function updateAttendanceCorrectionStatus(
   docId: string,
   status: 'approved' | 'rejected',
-  reviewedBy: string
+  reviewedBy: string,
 ) {
   const docRef = doc(db, 'attendanceCorrectionLog', docId)
   await updateDoc(docRef, {
     status,
     reviewedBy,
-    reviewedAt: new Date()
+    reviewedAt: new Date(),
   })
+}
+
+/**
+ * Update an existing attendance‐correction’s fields.
+ */
+export async function updateAttendanceCorrection(params: {
+  id: string
+  data: {
+    correctionType?: string
+    requestedTime?: string
+    reason?: string
+    status?: string
+  }
+}) {
+  const { id, data } = params
+  const docRef = doc(db, 'attendanceCorrectionLog', id)
+  await updateDoc(docRef, {
+    ...data,
+    // optionally: reviewedAt: new Date() if you want timestamps
+  })
+}
+
+/**
+ * Delete an attendance‐correction by its document ID.
+ */
+export async function deleteAttendanceCorrection(id: string) {
+  const docRef = doc(db, 'attendanceCorrectionLog', id)
+  await deleteDoc(docRef)
 }

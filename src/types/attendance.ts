@@ -1,5 +1,5 @@
 // ========== Punch Types ==========
-export type PunchStatus = 0 | 1 | 2 | 3
+export type PunchStatus = 0 | 1 | 2 | 3 | 4 | 5
 // 0 = IN, 1 = OUT, 2 = Break OUT, 3 = Break IN
 
 // ========== Raw Device Record ==========
@@ -17,6 +17,8 @@ export type DisplayAttendanceStatus =
   | 'CHECK OUT'
   | 'BREAK IN'
   | 'BREAK OUT'
+  | 'OVERTIME IN'
+  | 'OVERTIME OUT'
   | 'UNKNOWN'
 
 export interface DisplayAttendanceRecord {

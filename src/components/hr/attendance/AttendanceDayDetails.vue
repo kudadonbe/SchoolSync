@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, watch, ref } from 'vue'
 import { useDataStore } from '@/stores/dataStore'
+import CorrectionForm from '@/components/shared/CorrectionForm.vue';
 
 const props = defineProps<{
   selectedUserId: string | null
 }>()
 
 const selectedDate = ref<string>(new Date().toISOString().slice(0, 10))
+
+const showForm = ref(false)
+
 
 const dataStore = useDataStore()
 
@@ -47,13 +51,22 @@ const combinedRecords = computed(() => {
 
 const load = async () => {
   if (props.selectedUserId && selectedDate.value) {
-    await dataStore.loadAttendance(props.selectedUserId, selectedDate.value, selectedDate.value, true)
+    await dataStore.loadAttendance(props.selectedUserId, selectedDate.value, selectedDate.value)
     await dataStore.loadAttendanceCorrections(props.selectedUserId, selectedDate.value, selectedDate.value, true)
   }
 }
 
+
+
 onMounted(load)
 watch([() => props.selectedUserId, () => selectedDate.value], load)
+
+
+// opens the form for this date
+function openCorrectionForm() {
+  showForm.value = true
+}
+
 </script>
 
 <template>
@@ -94,5 +107,15 @@ watch([() => props.selectedUserId, () => selectedDate.value], load)
         </tbody>
       </table>
     </div>
+    <!-- 1. The “Apply Correction” button -->
+    <div class="mt-4 flex justify-end">
+      <button @click="openCorrectionForm" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+        Apply Correction
+      </button>
+    </div>
+
+    <!-- 2. The modal form -->
+    <CorrectionForm v-model:show="showForm" :staffId="props.selectedUserId" :startDate="selectedDate"
+      :endDate="selectedDate" :date="selectedDate" />
   </div>
 </template>

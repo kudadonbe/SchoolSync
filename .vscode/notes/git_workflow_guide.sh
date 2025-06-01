@@ -1,3 +1,4 @@
+# //.vscode/notes/git_workflow_guide.sh
 #!/bin/bash
 # ---------------------------------------------
 # Git Workflow Guide – For In-Development Projects

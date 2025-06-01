@@ -22,12 +22,18 @@
   ],
   "publicHolidays": [
     { "name": "New Year's Day", "date": "2025-01-01" },
-    { "name": "Eidul Fitru 1", "date": "2025-03-31" },
-    { "name": "Eidul Fitru 2", "date": "2025-04-01" },
-    { "name": "Eidul Fitru 3", "date": "2025-04-02" },
+    { "name": "Eid al-Fitr – Day 1", "date": "2025-03-31" },
+    { "name": "Eid al-Fitr – Day 2", "date": "2025-04-01" },
+    { "name": "Eid al-Fitr – Day 3", "date": "2025-04-02" },
     { "name": "May Day", "date": "2025-05-01" },
     { "name": "Independence Day", "date": "2025-07-26" },
-    { "name": "On the Ocation of Independence Day", "date": "2025-07-27" }
+    { "name": "On the Ocation of Independence Day", "date": "2025-07-27" },
+    { "name": "Yaum al-Arafah", "date": "2025-07-05" },
+    { "name": "Eid al-Adha - Day 1", "date": "2025-07-06" },
+    { "name": "Eid al-Adha - Day 2", "date": "2025-07-07" },
+    { "name": "Eid al-Adha - Day 3", "date": "2025-07-08" },
+    { "name": "Eid al-Adha - Day 4", "date": "2025-07-09" }
+
   ],
   "specialHolidays": [
     { "name": "School Anniversary", "date": "2025-01-01" },

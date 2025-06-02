@@ -1,4 +1,5 @@
-// src/test/testIndexedDB.ts
+// file: src/dev/test/testIndexedDB.ts
+// Description: Test script for IndexedDB operations
 import { saveToIndexedDB, loadFromIndexedDB } from '@/services/indexeddb/indexedDBService'
 import { STORE_KEYS } from '@/services/indexeddb/indexedDBInit'
 

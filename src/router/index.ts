@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
   { path: '/notice-board', name: 'notice-board', component: NoticeBoardView },
   { path: '/login', name: 'login', component: LoginView },
 
-  { path: '/dev/test', name: 'DevTest', component: () => import('@/views/dev/DevTestView.vue') },
+  { path: '/dev/test', name: 'DevTest', component: () => import('@/dev/view/DevTestView.vue') },
 
   // Admin Routes (No authentication for now)
   {

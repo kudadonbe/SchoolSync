@@ -8,5 +8,6 @@
 </template>
 
 <script setup lang="ts">
-import IndexedDBTest from '@/components/dev/IndexedDBTest.vue'
+// src/views/dev/DevTestView.vue
+import IndexedDBTest from '@/dev/test/IndexedDBTest.vue'
 </script>

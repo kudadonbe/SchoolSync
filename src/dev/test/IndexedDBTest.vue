@@ -13,6 +13,7 @@
 </template>
 
 <script setup lang="ts">
+// file: src/dev/test/IndexedDBTest.vue
 import { ref } from 'vue'
 import { saveToIndexedDB, loadFromIndexedDB, deleteFromIndexedDB } from '@/services/indexeddb/indexedDBService'
 import { STORE_KEYS } from '@/services/indexeddb/indexedDBInit'

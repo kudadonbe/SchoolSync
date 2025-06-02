@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import {
   fetchAttendanceForUser,
   fetchUsers,
-  fetchStaffList,
   fetchStaff,
   fetchAttendanceCorrectionsForUser,
 } from '@/services/firebaseServices'
@@ -23,6 +22,8 @@ import type {
 import attendanceSummaryRecords from '@/data/attendanceSummaryRecords.json'
 import dutyRoster from '@/data/dutyRoster.json'
 import attendancePolicies from '@/data/attendancePolicies.json'
+
+import { getStaffList } from '@/services/dataProviders/staffListProvider'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -131,11 +132,7 @@ export const useDataStore = defineStore('data', {
     },
 
     async loadStaffList(forceRefresh = false): Promise<Staff[]> {
-      if (!forceRefresh && this.staffList.length > 0) {
-        return this.staffList
-      }
-
-      const staff = await fetchStaffList()
+      const staff = await getStaffList(forceRefresh)
       this.staffList = staff
       return staff
     },

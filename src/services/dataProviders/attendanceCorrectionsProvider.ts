@@ -12,38 +12,33 @@ export const getAttendanceCorrections = async (
 ): Promise<AttendanceCorrectionLog[]> => {
   const db = await getDB()
 
+  const startStr = formatDateUTC(startDate)
+  const endStr = formatDateUTC(endDate)
+
   if (!forceRefresh) {
     const index = db.transaction(STORE_KEYS.attendanceCorrections).store.index('staffId')
     const cached = await index.getAll(staffId)
 
-    if (cached.length > 0) {
-      const startStr = formatDateUTC(startDate)
-      const endStr = formatDateUTC(endDate)
+    const filtered = cached.filter((log) => {
+      return log.date >= startStr && log.date <= endStr
+    })
 
-      const filtered = cached.filter((log) => {
-        return log.date >= startStr && log.date <= endStr
-      })
-
-      if (filtered.length > 0) return filtered
-    }
+    console.log(`[IndexedDB] Corrections for ${staffId} → ${filtered.length} entries`)
+    return filtered
   }
 
-  const freshLogs = await fetchAttendanceCorrectionsForUser(
-    staffId,
-    formatDateUTC(startDate),
-    formatDateUTC(endDate),
-  )
+  const freshLogs = await fetchAttendanceCorrectionsForUser(staffId, startStr, endStr)
 
   const tx = db.transaction(STORE_KEYS.attendanceCorrections, 'readwrite')
   const store = tx.objectStore(STORE_KEYS.attendanceCorrections)
   for (const log of freshLogs) {
-    if (!log.id) {
-      console.warn('Skipping log with no ID:', log)
-      continue
-    }
-    await store.put(log)
+    const id = log.id || `${log.staffId}_${log.date}_${log.requestedTime}_${log.status}`
+    await store.put({ ...log, id })
   }
   await tx.done
 
+  console.log(
+    `[Firestore] Corrections fetched & stored for ${staffId} → ${freshLogs.length} entries`,
+  )
   return freshLogs
 }

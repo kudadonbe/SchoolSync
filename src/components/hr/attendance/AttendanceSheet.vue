@@ -79,7 +79,7 @@ const attendanceRecords = dataStore.attendanceLogs
 const load = async () => {
   if (!props.selectedUserId) return
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
-  console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
+  // console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
   await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 }
 let hasLogged = false

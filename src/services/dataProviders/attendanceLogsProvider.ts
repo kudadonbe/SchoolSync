@@ -1,55 +1,53 @@
 // file: src/services/dataProviders/attendanceLogsProvider.ts
 import { getDB, STORE_KEYS } from '@/services/indexeddb/indexedDBInit'
 import { fetchAttendanceForUser as fetchFromFirestore } from '@/services/firebaseServices'
-import type { StaffAttendanceLog } from '@/types'
+import { convertToDisplayRecords, formatDateUTC } from '@/utils'
+import type { DisplayAttendanceRecord } from '@/types'
 
 /**
  * Loads attendance logs for a given user and date range from IndexedDB,
  * or fetches from Firestore and caches in IndexedDB if not available.
+ * Always returns converted display-ready logs.
  */
 export async function getAttendanceLogs(
   staffId: string,
   startDate: Date,
   endDate: Date,
   forceRefresh = false,
-): Promise<StaffAttendanceLog[]> {
+): Promise<DisplayAttendanceRecord[]> {
   const db = await getDB()
 
-  // IndexedDB always stores by doc.id, not date ranges
   if (!forceRefresh) {
-    const index = db.transaction(STORE_KEYS.attendanceLogs).store.index('staffId')
+    const index = db.transaction(STORE_KEYS.attendanceLogs).store.index('user_id')
     const cached = await index.getAll(staffId)
 
     if (cached.length > 0) {
-      // Filter by date range manually
-      const start = startDate.getTime()
-      const end = endDate.getTime()
-      const filtered = cached.filter((log) => {
-        const time =
-          typeof log.timestamp === 'number'
-            ? log.timestamp
-            : typeof log.timestamp?.toMillis === 'function'
-              ? log.timestamp.toMillis()
-              : new Date(log.timestamp).getTime() // fallback for JS Date
-        return time >= start && time <= end
-      })
-      if (filtered.length > 0) return filtered
+      const startStr = formatDateUTC(startDate)
+      const endStr = formatDateUTC(endDate)
+      const filtered = cached.filter((log) => log.date >= startStr && log.date <= endStr)
+      console.log(`[IndexedDB] Logs for ${staffId} → ${filtered.length} entries`)
+      return filtered // Already in display format
     }
   }
 
-  // Otherwise fetch from Firestore and cache in IndexedDB
+  // Otherwise fetch from Firestore and cache converted logs
   const freshLogs = await fetchFromFirestore(staffId, startDate, endDate)
+  const convertedLogs = convertToDisplayRecords(freshLogs)
 
   const tx = db.transaction(STORE_KEYS.attendanceLogs, 'readwrite')
   const store = tx.objectStore(STORE_KEYS.attendanceLogs)
-  for (const log of freshLogs) {
-    if (!log.id) {
-      console.warn('Missing ID in attendance log, skipping:', log)
-      continue
-    }
-    await store.put(log)
+  for (const log of convertedLogs) {
+    if (!log.user_id) continue
+    const id = `${log.user_id}_${log.date}_${log.time}_${log.status}`
+    await store.put({
+      id,
+      user_id: log.user_id,
+      date: log.date,
+      time: log.time,
+      status: log.status,
+    })
   }
   await tx.done
-
-  return freshLogs
+  console.log(`[Firestore] Logs fetched & stored for ${staffId} → ${freshLogs.length} entries`)
+  return convertedLogs
 }

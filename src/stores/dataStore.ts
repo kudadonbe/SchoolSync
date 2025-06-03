@@ -1,14 +1,12 @@
 // src/stores/dataStore.ts
 import { defineStore } from 'pinia'
 import { fetchUsers } from '@/services/firebaseServices'
-import { convertToDisplayRecords } from '@/utils/attendanceHelpers'
 
 import type {
   Staff,
   DutyRoster,
   AttendancePolicyGrouped,
   AttendanceSummaryRecord,
-  StaffAttendanceLog,
   DisplayAttendanceRecord,
   User,
   AttendanceCorrectionLog,
@@ -42,13 +40,13 @@ export const useDataStore = defineStore('data', {
 
   actions: {
     async loadAttendance(userId: string, start: string, end: string, force = false) {
-      const logs: StaffAttendanceLog[] = await getAttendanceLogs(
+      const logs: DisplayAttendanceRecord[] = await getAttendanceLogs(
         userId,
         new Date(start),
         new Date(end),
         force,
       )
-      this.attendanceLogs = convertToDisplayRecords(logs)
+      this.attendanceLogs = logs
     },
 
     async loadAttendanceCorrections(userId: string, start: string, end: string, force = false) {

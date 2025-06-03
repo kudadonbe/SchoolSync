@@ -42,7 +42,6 @@ export async function fetchAttendanceForUser(
     } as StaffAttendanceLog)
   })
   console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
-
   return records
 }
 
@@ -61,15 +60,7 @@ export const fetchAttendanceCorrectionsForUser = async (
       where('date', '<=', endDate),
     )
 
-    // console.log('fetching attendance corrections for user:', q)
-
     const querySnapshot = await getDocs(q)
-
-    // if (querySnapshot.empty) {
-    //   console.warn(`⚠️ No correction logs found for`, { staffId, startDate, endDate })
-    // } else {
-    //   console.log(`✅ Found ${querySnapshot.size} correction logs`)
-    // }
 
     const records: AttendanceCorrectionLog[] = []
 

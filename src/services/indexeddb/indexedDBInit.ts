@@ -21,11 +21,11 @@ export function getDB() {
       // Logs: each log = 1 document, key = id
       if (!db.objectStoreNames.contains(STORE_KEYS.attendanceLogs)) {
         const store = db.createObjectStore(STORE_KEYS.attendanceLogs, { keyPath: 'id' })
-        store.createIndex('staffId', 'staffId')
-        store.createIndex('timestamp', 'timestamp')
+        store.createIndex('user_id', 'user_id')
+        store.createIndex('date', 'date')
+        store.createIndex('time', 'time')
         store.createIndex('status', 'status')
-        store.createIndex('workCode', 'workCode')
-        store.createIndex('staffId_timestamp', ['staffId', 'timestamp'])
+        store.createIndex('user_date', ['user_id', 'date'])
       }
 
       // Corrections: key = id

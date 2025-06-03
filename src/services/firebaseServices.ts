@@ -41,7 +41,7 @@ export async function fetchAttendanceForUser(
       ...doc.data(),
     } as StaffAttendanceLog)
   })
-  // console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
+  console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
 
   return records
 }
@@ -80,14 +80,15 @@ export const fetchAttendanceCorrectionsForUser = async (
       } as AttendanceCorrectionLog)
     })
 
-    // console.log(
-    //   '✅ fetched attendance corrections for user:',
-    //   staffId,
-    //   '→',
-    //   startDate,
-    //   'to',
-    //   endDate,
-    // )
+    console.log(
+      `✅ Fetched ${records.length} attendance corrections for user:`,
+      staffId,
+      'from',
+      startDate,
+      'to',
+      endDate,
+    )
+
     return records
   } catch (error) {
     console.error('❌ Failed to fetch attendance corrections:', {
@@ -115,6 +116,7 @@ export async function fetchUsers(): Promise<User[]> {
     } as User)
   })
 
+  console.log(`Fetched ${users.length} users from Firestore`)
   return users
 }
 
@@ -125,7 +127,7 @@ export async function updateUserInFirestore(user: User) {
       staffId: user.staffId ?? null,
       role: user.role,
     })
-    // console.log('User updated in Firestore:', user.uid)
+    console.log('User updated in Firestore:', user.email)
   } catch (error) {
     console.error('❌ Failed to update user:', error)
     throw error
@@ -148,9 +150,7 @@ export const fetchStaffList = async (): Promise<Staff[]> => {
       staffList.push(data as Staff)
     })
 
-    console.log('Staff list fetched from Firestore')
-    // console.log(staffList)
-
+    console.log(`Fetched ${staffList.length} staff members from Firestore`)
     return staffList
   } catch (error) {
     console.error('Error fetching staff list:', error)
@@ -166,6 +166,7 @@ export const fetchStaff = async (staffId: string): Promise<Staff | null> => {
     const querySnapshot = await getDocs(q)
     if (!querySnapshot.empty) {
       const docSnap = querySnapshot.docs[0]
+      console.log(`Fetched staff member by user_id: ${docSnap.data().name}`)
       return docSnap.data() as Staff
     } else {
       console.warn('No staff found with user_id:', staffId)

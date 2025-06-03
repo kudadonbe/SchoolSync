@@ -3,7 +3,6 @@ import { defineStore } from 'pinia'
 import {
   fetchAttendanceForUser,
   fetchUsers,
-  fetchStaff,
   fetchAttendanceCorrectionsForUser,
 } from '@/services/firebaseServices'
 import { convertToDisplayRecords } from '@/utils/attendanceHelpers'
@@ -23,7 +22,7 @@ import attendanceSummaryRecords from '@/data/attendanceSummaryRecords.json'
 import dutyRoster from '@/data/dutyRoster.json'
 import attendancePolicies from '@/data/attendancePolicies.json'
 
-import { getStaffList } from '@/services/dataProviders/staffListProvider'
+import { getStaffList, getStaffById } from '@/services/dataProviders/staffListProvider'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -141,12 +140,15 @@ export const useDataStore = defineStore('data', {
       return await this.loadStaffList(true)
     },
 
+    // NOTE: This uses IndexedDB only. If staff can be added by other HR users,
+    // consider falling back to `fetchStaff(userId)` from Firestore if not found.
     async loadCurrentStaff(userId: string): Promise<void> {
       if (this.currentStaff && this.currentStaff.user_id === userId) {
         return
       }
 
-      const staff = await fetchStaff(userId)
+      const staff = await getStaffById(userId)
+
       if (staff) {
         this.currentStaff = staff
       } else {

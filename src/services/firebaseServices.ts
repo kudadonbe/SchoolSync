@@ -142,13 +142,14 @@ export const fetchStaffList = async (): Promise<Staff[]> => {
     const staffList: Staff[] = []
 
     querySnapshot.forEach((doc) => {
-      staffList.push({
-        user_id: doc.id,
-        ...doc.data(),
-      } as Staff)
+      const data = doc.data()
+      if (!data.user_id) data.user_id = doc.id // Ensure user_id is set
+      console.log(`Fetched staff member: ${doc.id}`, data)
+      staffList.push(data as Staff)
     })
 
     console.log('Staff list fetched from Firestore')
+    // console.log(staffList)
 
     return staffList
   } catch (error) {

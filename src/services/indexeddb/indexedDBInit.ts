@@ -18,7 +18,43 @@ export const STORE_KEYS = {
 export function getDB() {
   return openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
-      Object.values(STORE_KEYS).forEach((store) => {
+      // Logs: each log = 1 document, key = id
+      if (!db.objectStoreNames.contains(STORE_KEYS.attendanceLogs)) {
+        const store = db.createObjectStore(STORE_KEYS.attendanceLogs, { keyPath: 'id' })
+        store.createIndex('staffId', 'staffId')
+        store.createIndex('timestamp', 'timestamp')
+        store.createIndex('status', 'status')
+        store.createIndex('workCode', 'workCode')
+        store.createIndex('staffId_timestamp', ['staffId', 'timestamp'])
+      }
+
+      // Corrections: key = id
+      if (!db.objectStoreNames.contains(STORE_KEYS.attendanceCorrections)) {
+        const store = db.createObjectStore(STORE_KEYS.attendanceCorrections, { keyPath: 'id' })
+        store.createIndex('staffId', 'staffId')
+        store.createIndex('date', 'date')
+        store.createIndex('staffId_date', ['staffId', 'date'])
+      }
+
+      // Staff: key = user_id (from Firestore doc.id)
+      if (!db.objectStoreNames.contains(STORE_KEYS.staffList)) {
+        const store = db.createObjectStore(STORE_KEYS.staffList, { keyPath: 'user_id' })
+        store.createIndex('user_id', 'user_id')
+      }
+
+      // Users: key = uid
+      if (!db.objectStoreNames.contains(STORE_KEYS.users)) {
+        db.createObjectStore(STORE_KEYS.users, { keyPath: 'uid' })
+      }
+
+      // All other flat data stores (e.g. summary blobs, timestamps)
+      const flatStores = [
+        STORE_KEYS.attendanceSummaries,
+        STORE_KEYS.dutyRosters,
+        STORE_KEYS.attendancePolicies,
+        STORE_KEYS.viewTimestamps,
+      ]
+      flatStores.forEach((store) => {
         if (!db.objectStoreNames.contains(store)) {
           db.createObjectStore(store)
         }

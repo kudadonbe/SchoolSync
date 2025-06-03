@@ -13,6 +13,7 @@ import type {
   PunchStatus,
   AttendanceCorrectionLog,
   RemovedPunchLog,
+  BreakPunch,
 } from '@/types'
 
 import type { Timestamp } from 'firebase/firestore'
@@ -554,9 +555,7 @@ export function cleanDisplayAttendanceLogs(
   }
 }
 
-export function formatBreakPairs(
-  breaks: { time: string; type: '(OUT)' | '(IN)'; missing?: boolean }[],
-): Array<[string, string]> {
+export function formatBreakPairs(breaks: BreakPunch[]): Array<[string, string]> {
   const pairs: Array<[string, string]> = []
   let tempOut: string | null = null
 
@@ -584,4 +583,3 @@ export function formatBreakPairs(
 
   return pairs
 }
-

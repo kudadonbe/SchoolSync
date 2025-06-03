@@ -68,7 +68,7 @@ export interface ProcessedAttendance {
   day: string
   firstCheckIn: string
   lastCheckOut: string
-  breaks: { time: string; type: string; missing: boolean }[]
+  breaks: { time: string; type: BreakType; missing: boolean }[]
   missingCheckIn: boolean
   missingCheckOut: boolean
   isWeekend: boolean
@@ -89,4 +89,11 @@ export type RemovedPunchLog = {
   source: 'iclock' | 'correction'
   reason: 'duplicate' | 'cancellation' | 'noise'
   record: DisplayAttendanceRecord
+}
+
+export type BreakType = '(IN)' | '(OUT)'
+export type BreakPunch = {
+  time: string
+  type: BreakType
+  missing: boolean
 }

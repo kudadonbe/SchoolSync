@@ -24,7 +24,7 @@ import {
   formatDateDDMMYYYY,
   formatBreakPairs,
 } from '@/utils'
-import type { ProcessedAttendance, AttendanceCorrectionLog, DisplayAttendanceRecord, RemovedPunchLog } from '@/types'
+import type { ProcessedAttendance, AttendanceCorrectionLog, DisplayAttendanceRecord, RemovedPunchLog, BreakType, BreakPunch } from '@/types'
 
 const props = defineProps<{ selectedUserId: string | null }>()
 const today = new Date()
@@ -201,7 +201,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
     if (originalStatus === 'BREAK IN' || originalStatus === 'BREAK OUT') {
       dayRecord.breaks.push({
         time: record.time,
-        type: originalStatus === 'BREAK IN' ? '(IN)' : '(OUT)',
+        type: originalStatus === 'BREAK IN' ? '(IN)' : '(OUT)' as BreakType,
         missing: false,
       })
     }
@@ -256,12 +256,27 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       }
     })
 
-    record.breaks = record.breaks.map(b => {
+    record.breaks = record.breaks.map<BreakPunch>((b) => {
       const hhmm = extractHHMM(b.time)
       if (correctedHHMMs.has(hhmm)) {
         record.correctedBreaks![b.time] = true
       }
-      return b
+      // Ensure type is strictly "(IN)" or "(OUT)"
+      let breakType: BreakType
+      if (b.type === '(IN)' || b.type === '(OUT)') {
+        breakType = b.type
+      } else if (b.type === 'BREAK IN') {
+        breakType = '(IN)'
+      } else if (b.type === 'BREAK OUT') {
+        breakType = '(OUT)'
+      } else {
+        breakType = '(IN)' // fallback, should not happen
+      }
+      return {
+        time: b.time,
+        type: breakType,
+        missing: b.missing,
+      }
     })
 
     breakInCorrections.forEach((c) => {
@@ -270,7 +285,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       const fullTime = record.breaks.find(b => extractHHMM(b.time) === extractHHMM(c.requestedTime))?.time
       const timeToUse = fullTime || formatTimeHHMMSS(c.requestedTime)
       if (!record.correctedBreaks![timeToUse]) {
-        record.breaks.push({ time: timeToUse, type: '(IN)', missing: false })
+        record.breaks.push({ time: timeToUse, type: '(IN)' as BreakType, missing: false })
         record.correctedBreaks![timeToUse] = true
       }
       console.log('adding breakOut', fullKey, removedKeys.has(fullKey) ? 'REMOVED (SKIP)' : 'ADDED')
@@ -283,7 +298,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
       const fullTime = record.breaks.find(b => extractHHMM(b.time) === extractHHMM(c.requestedTime))?.time
       const timeToUse = fullTime || formatTimeHHMMSS(c.requestedTime)
       if (!record.correctedBreaks![timeToUse]) {
-        record.breaks.push({ time: timeToUse, type: '(OUT)', missing: false })
+        record.breaks.push({ time: timeToUse, type: '(OUT)' as BreakType, missing: false })
         record.correctedBreaks![timeToUse] = true
       }
     })

@@ -1,6 +1,6 @@
 // src/stores/dataStore.ts
 import { defineStore } from 'pinia'
-import { fetchUsers, fetchAttendanceCorrectionsForUser } from '@/services/firebaseServices'
+import { fetchUsers } from '@/services/firebaseServices'
 import { convertToDisplayRecords } from '@/utils/attendanceHelpers'
 
 import type {
@@ -20,6 +20,7 @@ import attendancePolicies from '@/data/attendancePolicies.json'
 
 import { getStaffList, getStaffById } from '@/services/dataProviders/staffListProvider'
 import { getAttendanceLogs } from '@/services/dataProviders/attendanceLogsProvider.ts'
+import { getAttendanceCorrections } from '@/services/dataProviders/attendanceCorrectionsProvider.ts'
 
 export const useDataStore = defineStore('data', {
   state: () => ({
@@ -28,18 +29,15 @@ export const useDataStore = defineStore('data', {
     dutyRoster: dutyRoster as DutyRoster,
     attendancePolicies: attendancePolicies as AttendancePolicyGrouped,
 
-    // Dynamic attendance caches
-    attendanceLogs: [] as DisplayAttendanceRecord[],
-    attendanceCorrectionCache: {} as Record<string, AttendanceCorrectionLog[]>,
-
     // Cache sync tracking
     lastFetchedEndDate: {} as Record<string, string>,
 
     // Dynamic data
+    attendanceLogs: [] as DisplayAttendanceRecord[],
+    attendanceCorrections: [] as AttendanceCorrectionLog[],
     staffList: [] as Staff[],
     staffListLastFetched: '' as string,
     currentStaff: null as Staff | null,
-    attendanceCorrectionLog: [] as AttendanceCorrectionLog[],
   }),
 
   actions: {
@@ -54,56 +52,13 @@ export const useDataStore = defineStore('data', {
     },
 
     async loadAttendanceCorrections(userId: string, start: string, end: string, force = false) {
-      const key = `${userId}_${start}_${end}`
-
-      if (!force) {
-        const cached = this.attendanceCorrectionCache[key]
-        const hasEndDate = cached?.some((r) => r.date === end)
-        const lastDate = this.lastFetchedEndDate[userId]
-        if (hasEndDate && lastDate && lastDate >= end) {
-          return // Skip fetch unless forced
-        }
-      } else {
-        // Clear all previous correction ranges for this user
-        Object.keys(this.attendanceCorrectionCache).forEach((k) => {
-          if (k.startsWith(`${userId}_`)) delete this.attendanceCorrectionCache[k]
-        })
-        delete this.lastFetchedEndDate[userId]
-      }
-
-      const logs: AttendanceCorrectionLog[] = await fetchAttendanceCorrectionsForUser(
+      const corrections: AttendanceCorrectionLog[] = await getAttendanceCorrections(
         userId,
-        start,
-        end,
+        new Date(start),
+        new Date(end),
+        force,
       )
-
-      this.attendanceCorrectionCache[key] = logs
-      this.attendanceCorrectionLog = logs
-
-      if (!force) {
-        this.lastFetchedEndDate[userId] = end
-      }
-    },
-
-    getAttendanceCorrections(
-      userId: string,
-      start: string,
-      end: string,
-    ): AttendanceCorrectionLog[] {
-      const key = `${userId}_${start}_${end}`
-      return this.attendanceCorrectionCache[key] ?? []
-    },
-
-    /**
-     * Remove a single correction from cache and flat list.
-     */
-    removeAttendanceCorrection(userId: string, start: string, end: string, logId: string) {
-      const key = `${userId}_${start}_${end}`
-      const existing = this.attendanceCorrectionCache[key]
-      if (existing) {
-        this.attendanceCorrectionCache[key] = existing.filter((l) => l.id !== logId)
-      }
-      this.attendanceCorrectionLog = this.attendanceCorrectionLog.filter((l) => l.id !== logId)
+      this.attendanceCorrections = corrections
     },
 
     async getUserList(): Promise<User[]> {

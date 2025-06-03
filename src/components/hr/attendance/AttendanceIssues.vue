@@ -26,10 +26,10 @@ const formDate = ref('')
 
 
 const dataStore = useDataStore()
-const { attendanceCache, attendanceCorrectionCache } = storeToRefs(dataStore)
+const { attendanceLogs, attendanceCorrections } = storeToRefs(dataStore)
 
 const allCorrections = computed(() =>
-  Object.values(attendanceCorrectionCache.value).flat()
+  Object.values(attendanceCorrections.value).flat()
 )
 
 async function load() {
@@ -60,7 +60,7 @@ function openCorrectionForm(date: string) {
 
 
 const allAttendanceRecords = computed(() =>
-  Object.values(attendanceCache.value).flat()
+  Object.values(attendanceLogs.value).flat()
 )
 
 const groupedByDate = computed<DaySummary[]>(() => {

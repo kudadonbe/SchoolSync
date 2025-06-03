@@ -34,14 +34,14 @@ export interface AttendanceCorrectionLog {
   date: string // Affected date, format: YYYY-MM-DD
   correctionType: // Type of correction being requested
   'checkIn' | 'checkOut' | 'breakIn' | 'breakOut' | 'otIn' | 'otOut' | 'wrongWorkcode'
-  requestedTime: string // Requested time (HH:mm format)
+  requestedTime: string // Requested time (HH:MM:SS format)
   requestedWorkCode?: number // Optional: 0 = IN, 1 = OUT, 2 = BREAK OUT, 3 = BREAK IN
   reason: string // User-provided reason for the correction
   originalPunchId?: string // Optional: reference to the original log if exists
   status: 'pending' | 'approved' | 'rejected' // Admin review status
   reviewedBy?: string // UID of the admin who reviewed
-  reviewedAt?: Timestamp | UnixTimestamp // When the review was made
-  createdAt?: Timestamp | UnixTimestamp // When the request was submitted
+  reviewedAt?: Timestamp | UnixTimestamp | Date // When the review was made
+  createdAt?: Timestamp | UnixTimestamp | Date // When the request was submitted
 }
 
 /**

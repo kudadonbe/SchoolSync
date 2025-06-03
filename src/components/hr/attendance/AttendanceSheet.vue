@@ -30,12 +30,12 @@ const props = defineProps<{ selectedUserId: string | null }>()
 const today = new Date()
 
 const dataStore = useDataStore()
-const { staffList, dutyRoster, attendancePolicies, attendanceCorrectionLog } = storeToRefs(dataStore)
+const { staffList, dutyRoster, attendancePolicies, attendanceCorrections } = storeToRefs(dataStore)
 
 
 const correctionsMap = computed(() => {
   const map = new Map<string, AttendanceCorrectionLog[]>()
-  attendanceCorrectionLog.value
+  attendanceCorrections.value
     .filter((c) => c.staffId === props.selectedUserId)
     .forEach((c) => {
       const key = `${c.date}_${c.correctionType}`
@@ -120,7 +120,7 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
   }
 
   const rawDisplayRecords = attendanceRecords
-  const corrections = attendanceCorrectionLog.value.filter(c => c.staffId === userId)
+  const corrections = attendanceCorrections.value.filter(c => c.staffId === userId)
 
   const thresholdSeconds = 60
   const skipCancellation = false
@@ -321,7 +321,6 @@ const btnMouseOver =
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
       <h2 @click="refreshCorrections" class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
-      <button @click="setToday" :class="btnMouseOver">Today</button>
       <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
       <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
       <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>

@@ -48,10 +48,6 @@ const correctionsMap = computed(() => {
 const startDate = ref(formatDateLocal(today))
 const endDate = ref(formatDateLocal(today))
 
-const setToday = () => {
-  startDate.value = formatDateLocal(today)
-  endDate.value = formatDateLocal(today)
-}
 const setCurrentWeek = () => {
   const { start, end } = getCurrentWeek()
   startDate.value = formatDateLocal(start)
@@ -78,18 +74,17 @@ const setPaidPeriod = () => {
   endDate.value = formatDateLocal(end)
 }
 
-const attendanceRecords = computed(() =>
-  dataStore.getAttendance(props.selectedUserId as string, startDate.value, endDate.value),
-)
+const attendanceRecords = dataStore.attendanceLogs
 
 const load = async () => {
+  if (!props.selectedUserId) return
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
   await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 }
 let hasLogged = false
 onMounted(() => {
-  load()
   setCurrentWeek()
+  if (props.selectedUserId) load()
 })
 
 watch(
@@ -124,7 +119,7 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
     }
   }
 
-  const rawDisplayRecords = attendanceRecords.value
+  const rawDisplayRecords = attendanceRecords
   const corrections = attendanceCorrectionLog.value.filter(c => c.staffId === userId)
 
   const thresholdSeconds = 60

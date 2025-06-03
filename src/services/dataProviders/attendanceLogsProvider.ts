@@ -25,7 +25,12 @@ export async function getAttendanceLogs(
       const start = startDate.getTime()
       const end = endDate.getTime()
       const filtered = cached.filter((log) => {
-        const time = typeof log.timestamp === 'number' ? log.timestamp : log.timestamp.toMillis()
+        const time =
+          typeof log.timestamp === 'number'
+            ? log.timestamp
+            : typeof log.timestamp?.toMillis === 'function'
+              ? log.timestamp.toMillis()
+              : new Date(log.timestamp).getTime() // fallback for JS Date
         return time >= start && time <= end
       })
       if (filtered.length > 0) return filtered
@@ -47,12 +52,4 @@ export async function getAttendanceLogs(
   await tx.done
 
   return freshLogs
-}
-
-/**
- * Retrieves a single attendance log by its ID.
- */
-export async function getAttendanceLogById(id: string): Promise<StaffAttendanceLog | undefined> {
-  const db = await getDB()
-  return await db.get(STORE_KEYS.attendanceLogs, id)
 }

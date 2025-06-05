@@ -4,11 +4,6 @@ import { fetchAttendanceForUser as fetchFromFirestore } from '@/services/firebas
 import { convertToDisplayRecords, formatDateUTC } from '@/utils'
 import type { DisplayAttendanceRecord } from '@/types'
 
-/**
- * Loads attendance logs for a given user and date range from IndexedDB,
- * or fetches from Firestore and caches in IndexedDB if not available.
- * Always returns converted display-ready logs.
- */
 export async function getAttendanceLogs(
   staffId: string,
   startDate: Date,

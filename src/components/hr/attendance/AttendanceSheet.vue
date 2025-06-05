@@ -1,36 +1,20 @@
 <script setup lang="ts">
 // src/components/AttendanceSheet.vue
-import { ref, computed, watch, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useDataStore } from '@/stores/dataStore'
-import {
-  getScheduledInTime,
-  getScheduledOutTime,
-  normalizePunchStatus,
-  calculateLateMinutes,
-  isHoliday,
-  // toMinutes,
-  sortPunchRecords,
-  newAttendanceRecord,
-  formatDateLocal,
-  getCurrentWeek,
-  getCurrentMonth,
-  getCurrentYear,
-  getPayablePeriod,
-  getPaidPeriod,
-  formatTimeHHMMSS,
-  extractHHMM,
-  cleanDisplayAttendanceLogs,
-  formatDateDDMMYYYY,
-  formatBreakPairs,
-} from '@/utils'
 import type { ProcessedAttendance, AttendanceCorrectionLog, DisplayAttendanceRecord, RemovedPunchLog, BreakType, BreakPunch } from '@/types'
+import { ref, computed, watch, onMounted } from 'vue'
+import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday } from '@/utils'
+import { getCurrentWeek, sortPunchRecords, newAttendanceRecord, formatDateLocal, getCurrentMonth } from '@/utils'
+import { getCurrentYear, getPayablePeriod, getPaidPeriod, formatTimeHHMMSS, extractHHMM, cleanDisplayAttendanceLogs } from '@/utils'
+import { formatDateDDMMYYYY, formatBreakPairs } from '@/utils'
+
+import { useDataStore } from '@/stores/dataStore'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps<{ selectedUserId: string | null }>()
 const today = new Date()
 
 const dataStore = useDataStore()
-const { staffList, dutyRoster, attendancePolicies, attendanceCorrections } = storeToRefs(dataStore)
+const { staffList, dutyRoster, attendancePolicies, attendanceCorrections, attendanceLogs } = storeToRefs(dataStore)
 
 
 const correctionsMap = computed(() => {
@@ -74,13 +58,14 @@ const setPaidPeriod = () => {
   endDate.value = formatDateLocal(end)
 }
 
-const attendanceRecords = dataStore.attendanceLogs
+
 
 const load = async () => {
   if (!props.selectedUserId) return
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
-  // console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
+  console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
   await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
+
 }
 let hasLogged = false
 onMounted(() => {
@@ -99,8 +84,14 @@ watch(
 
 
 
-const refreshCorrections = async () => {
+const dataRefersh = async () => {
   if (!props.selectedUserId) return
+  await dataStore.loadAttendance(
+    props.selectedUserId,
+    startDate.value,
+    endDate.value,
+    true
+  )
   await dataStore.loadAttendanceCorrections(
     props.selectedUserId,
     startDate.value,
@@ -118,9 +109,10 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
       records: [],
       removed: [],
     }
+
   }
 
-  const rawDisplayRecords = attendanceRecords
+  const rawDisplayRecords = attendanceLogs.value
   const corrections = attendanceCorrections.value.filter(c => c.staffId === userId)
 
   const thresholdSeconds = 60
@@ -149,6 +141,8 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
 
 const filteredRecords = computed<ProcessedAttendance[]>(() => {
   const cleaned = cleanedAttendance.value as { records: DisplayAttendanceRecord[]; removed: RemovedPunchLog[] }
+  console.log('cleaned records', cleaned);
+
 
   const userRecords = sortPunchRecords(cleaned.records)
 
@@ -336,7 +330,7 @@ const btnMouseOver =
   <div class="bg-white p-4 md:p-6 shadow-md rounded-lg mt-6">
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
-      <h2 @click="refreshCorrections" class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
+      <h2 @click="dataRefersh" class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
       <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
       <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
       <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>

@@ -22,6 +22,7 @@ export type DisplayAttendanceStatus =
   | 'UNKNOWN'
 
 export interface DisplayAttendanceRecord {
+  id?: string
   user_id: string
   date: string
   time: string

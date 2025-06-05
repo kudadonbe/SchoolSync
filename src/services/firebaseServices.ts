@@ -41,7 +41,7 @@ export async function fetchAttendanceForUser(
       ...doc.data(),
     } as StaffAttendanceLog)
   })
-  console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
+  // console.log('fetching attendance for user:', staffId, 'to', endDate.toLocaleDateString())
   return records
 }
 
@@ -137,7 +137,7 @@ export const fetchStaffList = async (): Promise<Staff[]> => {
     querySnapshot.forEach((doc) => {
       const data = doc.data()
       if (!data.user_id) data.user_id = doc.id // Ensure user_id is set
-      console.log(`Fetched staff member: ${doc.id}`, data)
+      // console.log(`Fetched staff member: ${doc.id}`, data)
       staffList.push(data as Staff)
     })
 

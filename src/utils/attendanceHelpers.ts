@@ -17,7 +17,7 @@ import type {
 } from '@/types'
 
 import type { Timestamp } from 'firebase/firestore'
-import { formatTimeHHMMSS, formatDateUTC, formatTimeUTC } from '@/utils'
+import { formatTimeHHMMSS, formatTimeUTC, formatDateLocal } from '@/utils'
 
 /**
  * Get scheduled in time for a user on a specific date.
@@ -213,7 +213,7 @@ export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
 export function convertToAttendanceRecords(logs: StaffAttendanceLog[]): AttendanceRecord[] {
   return logs.map((log) => {
     const dateObj = toDateSafe(log.timestamp)
-    const dateStr = formatDateUTC(dateObj)
+    const dateStr = formatDateLocal(dateObj)
     const timeStr = formatTimeUTC(dateObj)
 
     return {
@@ -247,7 +247,7 @@ export function convertToDisplayRecords(logs: StaffAttendanceLog[]): DisplayAtte
     // console.log('DEBUG:', dateObj, '→', dateObj.toISOString(), '→', formatTimeLocal(dateObj))
     return {
       user_id: log.staffId,
-      date: formatDateUTC(dateObj),
+      date: formatDateLocal(dateObj),
       time: formatTimeUTC(dateObj),
       status: statusMap[log.workCode] ?? 'UNKNOWN',
     }

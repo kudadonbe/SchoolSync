@@ -2,7 +2,7 @@
 import type { AttendanceCorrectionLog } from '@/types'
 import { fetchAttendanceCorrectionsForUser } from '@/services/firebaseServices'
 import { getDB, STORE_KEYS } from '@/services/indexeddb/indexedDBInit'
-import { formatDateUTC } from '@/utils'
+import { formatDateLocal } from '@/utils'
 
 export const getAttendanceCorrections = async (
   staffId: string,
@@ -12,8 +12,8 @@ export const getAttendanceCorrections = async (
 ): Promise<AttendanceCorrectionLog[]> => {
   const db = await getDB()
 
-  const startStr = formatDateUTC(startDate)
-  const endStr = formatDateUTC(endDate)
+  const startStr = formatDateLocal(startDate)
+  const endStr = formatDateLocal(endDate)
 
   if (!forceRefresh) {
     const index = db.transaction(STORE_KEYS.attendanceCorrections).store.index('staffId')

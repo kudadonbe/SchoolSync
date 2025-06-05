@@ -349,11 +349,16 @@ const btnMouseOver =
     <!-- Attendance Sheet Heading -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-2 md:mb-4">
       <h2 @click="dataRefersh" class="text-[10px] md:text-lg font-semibold text-green-700">ATTENDANCE</h2>
-      <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
-      <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
-      <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>
-      <button @click="setPayablePeriod" :class="btnMouseOver">Payble</button>
-      <button @click="setCurrentYear" :class="btnMouseOver">Year</button>
+
+      <!-- Hidden on mobile, visible on md+ -->
+      <div class="hidden md:flex gap-2">
+        <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
+        <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
+        <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>
+        <button @click="setPayablePeriod" :class="btnMouseOver">Payble</button>
+        <button @click="setCurrentYear" :class="btnMouseOver">Year</button>
+      </div>
+
       <!-- Date Range Selection -->
       <div class="flex gap-2 md:gap-4 mt-2 md:mt-0">
         <div>

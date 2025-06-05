@@ -23,7 +23,7 @@ export const getAttendanceCorrections = async (
       return log.date >= startStr && log.date <= endStr
     })
 
-    console.log(`[IndexedDB] Corrections for ${staffId} → ${filtered.length} entries`)
+    // console.log(`[IndexedDB] Corrections for ${staffId} → ${filtered.length} entries`)
     return filtered
   }
 
@@ -37,8 +37,6 @@ export const getAttendanceCorrections = async (
   }
   await tx.done
 
-  console.log(
-    `[Firestore] Corrections fetched & stored for ${staffId} → ${freshLogs.length} entries`,
-  )
+  // console.log(`[Firestore] Corrections fetched & stored for ${staffId} → ${freshLogs.length} entries`)
   return freshLogs
 }

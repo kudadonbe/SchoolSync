@@ -54,18 +54,18 @@ export const useDataStore = defineStore(
       let endDate = new Date(end)
       const today = new Date()
 
-      console.log('Requested Range:', { start, end }) // (DEBUG)
+      // console.log('Requested Range:', { start, end }) // (DEBUG)
 
       // Step 1 – Cap future endDate to today
       if (endDate > today) {
-        console.log('End date is in the future, capping to today') // (DEBUG)
+        // console.log('End date is in the future, capping to today') // (DEBUG)
         endDate = today
       }
 
       const lastFetchedStr = lastFetched.attendanceLogs
       const lastFetchedDate = lastFetchedStr ? new Date(lastFetchedStr) : null
 
-      console.log('Last fetched from Firebase:', lastFetchedStr) // (DEBUG)
+      // console.log('Last fetched from Firebase:', lastFetchedStr) // (DEBUG)
 
       // Step 2 – Decide whether to fetch from Firebase
       const shouldFetchFromFirebase = force || !lastFetchedDate || endDate > lastFetchedDate
@@ -79,25 +79,25 @@ export const useDataStore = defineStore(
           fetchStartDate = new Date(start)
         }
 
-        console.log('Fetching from Firebase:', {
-          from: formatDateLocal(fetchStartDate),
-          to: formatDateLocal(endDate),
-          reason: force ? 'force = true' : 'endDate > lastFetched',
-        }) // (DEBUG)
+        // console.log('Fetching from Firebase:', {
+        //   from: formatDateLocal(fetchStartDate),
+        //   to: formatDateLocal(endDate),
+        //   reason: force ? 'force = true' : 'endDate > lastFetched',
+        // }) // (DEBUG)
 
         const freshLogs = await getAttendanceLogs(userId, fetchStartDate, endDate, true)
         console.log('Fetched from Firebase:', freshLogs.length, 'records') // (DEBUG)
 
         const now = formatDateLocal(new Date())
         lastFetched.attendanceLogs = now
-        console.log('Updated lastFetched.attendanceLogs:', now) // (DEBUG)
+        // console.log('Updated lastFetched.attendanceLogs:', now) // (DEBUG)
       } else {
-        console.log('Skipped Firebase fetch — data is already fresh') // (DEBUG)
+        // console.log('Skipped Firebase fetch — data is already fresh') // (DEBUG)
       }
 
       // Step 4 – Always load full requested range from IndexedDB
       const finalLogs = await getAttendanceLogs(userId, startDate, endDate, false)
-      console.log('Loaded from IndexedDB:', finalLogs.length, 'records') // (DEBUG)
+      // console.log('Loaded from IndexedDB:', finalLogs.length, 'records') // (DEBUG)
 
       // Step 5 – Append or overwrite
       if (force) {
@@ -151,7 +151,7 @@ export const useDataStore = defineStore(
       if (staff) {
         currentStaff.value = staff
       } else {
-        console.warn('Staff not found for userId:', userId)
+        // console.warn('Staff not found for userId:', userId)
       }
     }
 

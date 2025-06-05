@@ -67,7 +67,7 @@ const load = async () => {
   await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 
 }
-let hasLogged = false
+let hasLogged = true
 onMounted(() => {
   setCurrentWeek()
   if (props.selectedUserId) load()
@@ -76,7 +76,7 @@ onMounted(() => {
 watch(
   [() => props.selectedUserId, startDate, endDate],
   () => {
-    hasLogged = false
+    hasLogged = true
     load() // if you want to re-fetch too (optional, already handled elsewhere)
   }
 )
@@ -146,7 +146,7 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
     console.log('Corrections:', correctionLog)
     console.log('Removed:', removed)
     console.groupEnd()
-    hasLogged = false
+    hasLogged = true
   }
 
   return {

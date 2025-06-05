@@ -20,7 +20,7 @@ export async function getAttendanceLogs(
       const startStr = formatDateUTC(startDate)
       const endStr = formatDateUTC(endDate)
       const filtered = cached.filter((log) => log.date >= startStr && log.date <= endStr)
-      console.log(`[IndexedDB] Logs for ${staffId} → ${filtered.length} entries`)
+      // console.log(`[IndexedDB] Logs for ${staffId} → ${filtered.length} entries`)
       return filtered // Already in display format
     }
   }
@@ -43,6 +43,6 @@ export async function getAttendanceLogs(
     })
   }
   await tx.done
-  console.log(`[Firestore] Logs fetched & stored for ${staffId} → ${freshLogs.length} entries`)
+  // console.log(`[Firestore] Logs fetched & stored for ${staffId} → ${freshLogs.length} entries`)
   return convertedLogs
 }

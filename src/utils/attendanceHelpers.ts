@@ -583,3 +583,47 @@ export function formatBreakPairs(breaks: BreakPunch[]): Array<[string, string]> 
 
   return pairs
 }
+
+export function mergeAttendanceLogs(
+  existing: DisplayAttendanceRecord[],
+  incoming: DisplayAttendanceRecord[],
+): DisplayAttendanceRecord[] {
+  const seenKeys = new Set(existing.map((log) => `${log.user_id}-${log.date}-${log.time}`))
+
+  const merged = [...existing]
+  for (const log of incoming) {
+    const key = `${log.user_id}-${log.date}-${log.time}`
+    if (!seenKeys.has(key)) {
+      merged.push(log)
+    }
+  }
+
+  return merged.sort((a, b) => {
+    const aKey = `${a.date}-${a.time}`
+    const bKey = `${b.date}-${b.time}`
+    return aKey.localeCompare(bKey)
+  })
+}
+
+export function mergeAttendanceCorrections(
+  existing: AttendanceCorrectionLog[],
+  incoming: AttendanceCorrectionLog[],
+): AttendanceCorrectionLog[] {
+  const seenKeys = new Set(
+    existing.map((log) => `${log.staffId}-${log.date}-${log.correctionType}-${log.requestedTime}`),
+  )
+
+  const merged = [...existing]
+  for (const log of incoming) {
+    const key = `${log.staffId}-${log.date}-${log.correctionType}-${log.requestedTime}`
+    if (!seenKeys.has(key)) {
+      merged.push(log)
+    }
+  }
+
+  return merged.sort((a, b) => {
+    const aKey = `${a.date}-${a.requestedTime}`
+    const bKey = `${b.date}-${b.requestedTime}`
+    return aKey.localeCompare(bKey)
+  })
+}

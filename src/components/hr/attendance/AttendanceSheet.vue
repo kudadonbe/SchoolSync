@@ -63,7 +63,7 @@ const setPaidPeriod = () => {
 const load = async () => {
   if (!props.selectedUserId) return
   await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
-  console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
+  // console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
   await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 
 }
@@ -101,6 +101,24 @@ const dataRefersh = async () => {
   console.log('Attendance corrections refreshed')
 }
 
+const refeshDayRecords = async (day: string) => {
+  if (!props.selectedUserId) return
+  await dataStore.loadAttendance(
+    props.selectedUserId,
+    day,
+    day,
+    true
+  )
+  console.log('Attendance records refreshed')
+  await dataStore.loadAttendanceCorrections(
+    props.selectedUserId,
+    day,
+    day,
+    true
+  )
+  console.log('Attendance corrections refreshed')
+}
+
 
 const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; removed: RemovedPunchLog[] } => {
   const userId = props.selectedUserId
@@ -124,11 +142,11 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
 
   if (!hasLogged && finalDisplayRecords.length > 0) {
     console.groupCollapsed('🧹 Cleaned Attendance Logs')
-    console.log('✅ iClock:', iClockLog)
-    console.log('✅ Corrections:', correctionLog)
-    console.log('🗑️ Removed:', removed)
+    console.log('iClock:', iClockLog)
+    console.log('Corrections:', correctionLog)
+    console.log('Removed:', removed)
     console.groupEnd()
-    hasLogged = true
+    hasLogged = false
   }
 
   return {
@@ -141,7 +159,7 @@ const cleanedAttendance = computed((): { records: DisplayAttendanceRecord[]; rem
 
 const filteredRecords = computed<ProcessedAttendance[]>(() => {
   const cleaned = cleanedAttendance.value as { records: DisplayAttendanceRecord[]; removed: RemovedPunchLog[] }
-  console.log('cleaned records', cleaned);
+  // console.log('cleaned records', cleaned);
 
 
   const userRecords = sortPunchRecords(cleaned.records)
@@ -283,7 +301,7 @@ const filteredRecords = computed<ProcessedAttendance[]>(() => {
         record.breaks.push({ time: timeToUse, type: '(IN)' as BreakType, missing: false })
         record.correctedBreaks![timeToUse] = true
       }
-      console.log('adding breakOut', fullKey, removedKeys.has(fullKey) ? 'REMOVED (SKIP)' : 'ADDED')
+      // console.log('adding breakOut', fullKey, removedKeys.has(fullKey) ? 'REMOVED (SKIP)' : 'ADDED')
 
     })
 
@@ -365,7 +383,7 @@ const btnMouseOver =
         </thead>
         <tbody>
           <tr v-for="(record, index) in filteredRecords" :key="index" class="border-b border-gray-200">
-            <td class="p-1 md:p-3 text-center"
+            <td @click="refeshDayRecords(record.date)" class="p-1 md:p-3 text-center"
               :class="{ 'bg-gray-100 text-red-600': record.isWeekend || record.isHoliday }">
               {{ formatDateDDMMYYYY(record.date) }}
             </td>
@@ -389,11 +407,20 @@ const btnMouseOver =
               :class="{ 'bg-gray-100': record.isWeekend || record.isHoliday }">
               <template v-for="(pair, idx) in formatBreakPairs(record.breaks)" :key="idx">
                 <span class="inline-block mr-2">
-                  [ {{ pair[0] }} | {{ pair[1] }} ]
+                  [
+                  <span :class="{
+                    'bg-red-200 text-red-700 px-1 rounded': pair[0] === '--'
+                  }">{{ pair[0] }}</span>
+                  |
+                  <span :class="{
+                    'bg-red-200 text-red-700 px-1 rounded': pair[1] === '--'
+                  }">{{ pair[1] }}</span>
+                  ]
                   <span v-if="idx < formatBreakPairs(record.breaks).length - 1">,</span>
                 </span>
               </template>
             </td>
+
             <td class="p-1 md:p-3 text-center" :class="{
               'bg-red-200 text-red-700': record.missingCheckOut,
               'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday,

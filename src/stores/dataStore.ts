@@ -21,7 +21,7 @@ import { getStaffList, getStaffById } from '@/services/dataProviders/staffListPr
 import { getAttendanceLogs } from '@/services/dataProviders/attendanceLogsProvider'
 import { getAttendanceCorrections } from '@/services/dataProviders/attendanceCorrectionsProvider'
 
-import { formatDateLocal } from '@/utils'
+import { formatDateLocal, mergeAttendanceLogs, mergeAttendanceCorrections } from '@/utils'
 
 export const useDataStore = defineStore(
   'data',
@@ -98,7 +98,13 @@ export const useDataStore = defineStore(
       // Step 4 – Always load full requested range from IndexedDB
       const finalLogs = await getAttendanceLogs(userId, startDate, endDate, false)
       console.log('Loaded from IndexedDB:', finalLogs.length, 'records') // (DEBUG)
-      attendanceLogs.value = finalLogs
+
+      // Step 5 – Append or overwrite
+      if (force) {
+        attendanceLogs.value = mergeAttendanceLogs(attendanceLogs.value, finalLogs)
+      } else {
+        attendanceLogs.value = finalLogs
+      }
     }
 
     async function loadAttendanceCorrections(
@@ -113,7 +119,11 @@ export const useDataStore = defineStore(
         new Date(end),
         force,
       )
-      attendanceCorrections.value = corrections
+
+      attendanceCorrections.value = mergeAttendanceCorrections(
+        attendanceCorrections.value,
+        corrections,
+      )
     }
 
     async function getUserList(): Promise<User[]> {

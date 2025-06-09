@@ -123,6 +123,8 @@ export const useDataStore = defineStore(
       attendanceCorrections.value = mergeAttendanceCorrections(
         attendanceCorrections.value,
         corrections,
+        start,
+        end,
       )
     }
 
@@ -155,6 +157,18 @@ export const useDataStore = defineStore(
       }
     }
 
+    function getAttendance(userId: string, start: string, end: string): DisplayAttendanceRecord[] {
+      return attendanceLogs.value.filter(
+        (log) => log.user_id === userId && log.date >= start && log.date <= end,
+      )
+    }
+
+    function getCorrections(userId: string, start: string, end: string): AttendanceCorrectionLog[] {
+      return attendanceCorrections.value.filter(
+        (log) => log.staffId === userId && log.date >= start && log.date <= end,
+      )
+    }
+
     return {
       // state
       attendanceSummaryRecords,
@@ -174,6 +188,8 @@ export const useDataStore = defineStore(
       loadStaffList,
       refreshStaffList,
       loadCurrentStaff,
+      getAttendance,
+      getCorrections,
     }
   },
   {

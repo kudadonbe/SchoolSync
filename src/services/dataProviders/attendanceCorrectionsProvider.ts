@@ -40,3 +40,13 @@ export const getAttendanceCorrections = async (
   // console.log(`[Firestore] Corrections fetched & stored for ${staffId} → ${freshLogs.length} entries`)
   return freshLogs
 }
+
+export async function updateCorrectionInIndexedDB(correction: AttendanceCorrectionLog) {
+  const db = await getDB()
+  await db.put(STORE_KEYS.attendanceCorrections, correction)
+}
+
+export async function deleteCorrectionFromIndexedDB(id: string) {
+  const db = await getDB()
+  await db.delete(STORE_KEYS.attendanceCorrections, id)
+}

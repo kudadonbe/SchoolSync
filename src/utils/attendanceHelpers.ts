@@ -608,22 +608,18 @@ export function mergeAttendanceLogs(
 export function mergeAttendanceCorrections(
   existing: AttendanceCorrectionLog[],
   incoming: AttendanceCorrectionLog[],
+  startDate: string,
+  endDate: string,
 ): AttendanceCorrectionLog[] {
-  const seenKeys = new Set(
-    existing.map((log) => `${log.staffId}-${log.date}-${log.correctionType}-${log.requestedTime}`),
-  )
+  // Keep only records outside the date range (those we didn't refresh)
+  const keepOld = existing.filter((item) => item.date < startDate || item.date > endDate)
 
-  const merged = [...existing]
-  for (const log of incoming) {
-    const key = `${log.staffId}-${log.date}-${log.correctionType}-${log.requestedTime}`
-    if (!seenKeys.has(key)) {
-      merged.push(log)
-    }
+  // Build new map from incoming (fresh within range)
+  const incomingMap = new Map<string, AttendanceCorrectionLog>()
+  for (const item of incoming) {
+    if (item.id) incomingMap.set(item.id, item)
   }
 
-  return merged.sort((a, b) => {
-    const aKey = `${a.date}-${a.requestedTime}`
-    const bKey = `${b.date}-${b.requestedTime}`
-    return aKey.localeCompare(bKey)
-  })
+  // Merge and return
+  return [...keepOld, ...incomingMap.values()]
 }

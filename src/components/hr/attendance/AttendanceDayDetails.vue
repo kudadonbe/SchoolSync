@@ -19,7 +19,7 @@ const attendanceForDate = computed(() =>
 )
 
 const correctionsForDate = computed(() =>
-  dataStore.getAttendanceCorrections(props.selectedUserId!, selectedDate.value, selectedDate.value)
+  dataStore.getCorrections(props.selectedUserId!, selectedDate.value, selectedDate.value)
 )
 
 const combinedRecords = computed(() => {

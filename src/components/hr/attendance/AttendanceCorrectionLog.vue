@@ -1,18 +1,33 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue'
+// file: src/components/hr/attendance/AttendanceCorrectionLog.vue
+
+import debounce from 'lodash/debounce'
+
+import { computed, ref, watch } from 'vue'
+import type { AttendanceCorrectionLog } from '@/types'
+import { formatDateDDMMYYYY } from '@/utils'
+
+import { getDB, STORE_KEYS } from '@/services/indexeddb/indexedDBInit'
+import {
+  updateAttendanceCorrectionStatus,
+  deleteAttendanceCorrection,
+} from '@/services/firebaseServices'
+import {
+  updateCorrectionInIndexedDB,
+  deleteCorrectionFromIndexedDB,
+} from '@/services/dataProviders/attendanceCorrectionsProvider.ts'
+
 import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
-import type { AttendanceCorrectionLog } from '@/types'
-import { updateAttendanceCorrectionStatus, deleteAttendanceCorrection } from '@/services/firebaseServices'
 import { useAuthStore } from '@/stores/authStore'
+
 import CorrectionForm from '@/components/shared/CorrectionForm.vue'
-import { formatDateDDMMYYYY } from '@/utils'
 
 // Auth and privileges
 const authStore = useAuthStore()
 const userRole = computed(() => authStore.currentUser?.role ?? '')
 const isPrivileged = computed(() =>
-  ['developer', 'hr', 'leading_teacher', 'principal'].includes(userRole.value)
+  ['developer', 'hr', 'leading_teacher', 'principal'].includes(userRole.value),
 )
 
 // Props
@@ -20,53 +35,55 @@ const props = defineProps<{ selectedUserId: string | null; startDate: string; en
 
 // Data store
 const dataStore = useDataStore()
-const { attendanceCorrectionCache } = storeToRefs(dataStore)
+const { attendanceCorrections } = storeToRefs(dataStore)
 
 // Form modal state
 const showForm = ref(false)
 const editingCorrection = ref<AttendanceCorrectionLog | undefined>(undefined)
 
-// Open the form for new or edit
 function openForm(correction?: AttendanceCorrectionLog) {
   editingCorrection.value = correction
   showForm.value = true
 }
-
-// Close the form and reset
 function closeForm() {
   showForm.value = false
   editingCorrection.value = undefined
 }
 
-// Delete a correction (user)
+async function logIndexedDBCorrections(staffId: string) {
+  const db = await getDB()
+  const tx = db.transaction(STORE_KEYS.attendanceCorrections)
+  const store = tx.store
+  const index = store.index('staffId')
+  const results = await index.getAll(staffId)
 
+  console.log(`🔍 Corrections in IndexedDB for staffId=${staffId}:`, results)
+}
 
 async function onDelete(log: AttendanceCorrectionLog) {
-  if (!log.id) return;
-  if (!confirm('Are you sure you want to delete this correction?')) return;
+  if (!log.id) return
+  if (!confirm('Are you sure you want to delete this correction?')) return
   try {
-    await deleteAttendanceCorrection(log.id);
-    // remove from Pinia cache (instant UI update)
-    dataStore.removeAttendanceCorrection(
-      props.selectedUserId!,
-      props.startDate,
-      props.endDate,
-      log.id
-    );
-    alert('Correction deleted successfully.');
+    await deleteAttendanceCorrection(log.id)
+    await deleteCorrectionFromIndexedDB(log.id)
+    await load()
+    alert('Correction deleted successfully.')
   } catch (err) {
-    console.error('Deletion error:', err);
-    alert('Failed to delete correction.');
+    console.error('Deletion error:', err)
+    alert('Failed to delete correction.')
   }
 }
 
-
-
-// Approve correction (privileged)
 async function approve(log: AttendanceCorrectionLog) {
   if (!log.id) return
   try {
-    await updateAttendanceCorrectionStatus(log.id, 'approved', authStore.currentUser!.displayName)
+    const reviewer = authStore.currentUser!.displayName
+    await updateAttendanceCorrectionStatus(log.id, 'approved', reviewer)
+    await updateCorrectionInIndexedDB({
+      ...log,
+      status: 'approved',
+      reviewedBy: reviewer,
+    })
     await load()
     alert('Correction approved successfully.')
   } catch (err) {
@@ -75,11 +92,16 @@ async function approve(log: AttendanceCorrectionLog) {
   }
 }
 
-// Reject correction (privileged)
 async function reject(log: AttendanceCorrectionLog) {
   if (!log.id) return
   try {
-    await updateAttendanceCorrectionStatus(log.id, 'rejected', authStore.currentUser!.uid)
+    const reviewer = authStore.currentUser!.uid
+    await updateAttendanceCorrectionStatus(log.id, 'rejected', reviewer)
+    await updateCorrectionInIndexedDB({
+      ...log,
+      status: 'rejected',
+      reviewedBy: reviewer,
+    })
     await load()
     alert('Correction rejected successfully.')
   } catch (err) {
@@ -88,44 +110,66 @@ async function reject(log: AttendanceCorrectionLog) {
   }
 }
 
-// Load corrections from store/Firestore
-async function load() {
+async function load(force = false) {
   if (!props.selectedUserId) return
   await dataStore.loadAttendanceCorrections(
     props.selectedUserId,
     props.startDate,
-    props.endDate
+    props.endDate,
+    force,
   )
+  await logIndexedDBCorrections(props.selectedUserId)
 }
 
-onMounted(load)
-watch([() => props.selectedUserId, () => props.startDate, () => props.endDate], load)
+const debouncedLoad = debounce(load, 300)
 
-// Helpers for display
-const getWeekday = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' })
+watch(
+  [() => props.selectedUserId, () => props.startDate, () => props.endDate],
+  () => {
+    if (props.selectedUserId) debouncedLoad()
+  },
+  { immediate: true },
+)
+watch(
+  () => attendanceCorrections.value,
+  (val) => {
+    console.log('✅ attendanceCorrections updated:', val.length)
+  },
+)
+
+const getWeekday = (dateStr: string) =>
+  new Date(dateStr).toLocaleDateString('en-US', { weekday: 'long' })
+
 const uniqueCorrections = computed(() => {
   const seen = new Set<string>()
-  return Object.values(attendanceCorrectionCache.value)
-    .flat()
-    .filter(c => {
-      const key = `${c.staffId}-${c.date}-${c.correctionType}-${c.requestedTime}-${c.status}`
-      if (seen.has(key)) return false
-      seen.add(key)
-      return true
-    })
+  return attendanceCorrections.value.filter((c) => {
+    const key = `${c.staffId}-${c.date}-${c.correctionType}-${c.requestedTime}-${c.status}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 })
+
 const correctionsForUser = computed(() => {
   if (!props.selectedUserId) return []
   const start = new Date(props.startDate)
   const end = new Date(props.endDate)
-  return uniqueCorrections.value.filter(c => {
+  return uniqueCorrections.value.filter((c) => {
     const d = new Date(c.date)
     return c.staffId === props.selectedUserId && d >= start && d <= end
   })
 })
-const pending = computed(() => correctionsForUser.value.filter(c => c.status === 'pending'))
-const reviewed = computed(() => correctionsForUser.value.filter(c => ['approved', 'rejected'].includes(c.status)))
+
+const pending = computed(() =>
+  correctionsForUser.value.filter((c) => c.status === 'pending'),
+)
+const reviewed = computed(() =>
+  correctionsForUser.value.filter((c) =>
+    ['approved', 'rejected'].includes(c.status),
+  ),
+)
 </script>
+
 
 <template>
   <div class="space-y-8">
@@ -207,7 +251,7 @@ const reviewed = computed(() => correctionsForUser.value.filter(c => ['approved'
 
     <!-- Correction Form Modal -->
     <CorrectionForm :show="showForm" :staffId="props.selectedUserId" :startDate="props.startDate"
-      :endDate="props.endDate" :date="editingCorrection?.date || ''" :correction="editingCorrection" @submitted="load()"
+      :endDate="props.endDate" :date="editingCorrection?.date || ''" :correction="editingCorrection" @submitted="load"
       @update:show="closeForm" />
   </div>
 </template>

@@ -2,17 +2,12 @@
 // src/views/admin/AttendanceIssuesView.vue
 import { ref, computed } from "vue";
 import { useAuthStore } from '@/stores/authStore';
-import AttendanceIssues from '@/components/hr/attendance/AttendanceIssues.vue'
+import { formatDateLocal, getCurrentWeek, getCurrentMonth, getCurrentYear, getPayablePeriod, getPaidPeriod, } from '@/utils'
+
+
 import StaffInfo from '@/components/StaffInfo.vue';
+import AttendanceIssues from '@/components/hr/attendance/AttendanceIssues.vue'
 import AttendanceCorrectionLog from "@/components/hr/attendance/AttendanceCorrectionLog.vue";
-import {
-  formatDateLocal,
-  getCurrentWeek,
-  getCurrentMonth,
-  getCurrentYear,
-  getPayablePeriod,
-  getPaidPeriod,
-} from '@/utils'
 import { useDataStore } from '@/stores/dataStore'
 
 const authStore = useAuthStore()
@@ -92,12 +87,16 @@ const btnMouseOver =
 
     <!-- 🔘 Date Controls -->
     <div class="flex flex-wrap gap-2 mt-6">
-      <button @click="setToday" :class="btnMouseOver">Today</button>
-      <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
-      <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
-      <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>
-      <button @click="setPayablePeriod" :class="btnMouseOver">Payable</button>
-      <button @click="setCurrentYear" :class="btnMouseOver">Year</button>
+      <!-- Hidden on mobile, visible on md+ -->
+      <div class="hidden md:flex gap-2">
+        <button @click="setToday" :class="btnMouseOver">Today</button>
+        <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
+        <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
+        <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>
+        <button @click="setPayablePeriod" :class="btnMouseOver">Payable</button>
+        <button @click="setCurrentYear" :class="btnMouseOver">Year</button>
+      </div>
+
       <div class="flex items-center gap-2">
         <label class="text-sm font-medium">From:</label>
         <input type="date" v-model="startDate" class="input" />

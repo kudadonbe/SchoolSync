@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, toRefs, watch, computed } from 'vue'
 import { submitAttendanceCorrection, updateAttendanceCorrection, deleteAttendanceCorrection } from '@/services/firebaseServices'
+import { updateCorrectionInIndexedDB, deleteCorrectionFromIndexedDB } from '@/services/dataProviders/attendanceCorrectionsProvider'
 import { useDataStore } from '@/stores/dataStore'
 import type { AttendanceCorrectionLog } from '@/types'
 
@@ -67,6 +68,14 @@ async function onSave() {
           reason: correctionReason.value,
         },
       })
+      // we need to update ui right
+      await updateCorrectionInIndexedDB({
+        ...correction.value,
+        correctionType: correctionType.value,
+        requestedTime: correctionTime.value,
+        reason: correctionReason.value,
+        date: selectedDate.value,
+      })
     } else {
       await submitAttendanceCorrection({
         staffId: staffId.value!,
@@ -95,6 +104,7 @@ async function onDelete() {
   if (!confirmDelete) return
   try {
     await deleteAttendanceCorrection(correction.value.id)
+    await deleteCorrectionFromIndexedDB(correction.value.id)
     await dataStore.loadAttendanceCorrections(
       staffId.value!,
       startDate.value,
@@ -115,7 +125,8 @@ function onCancel() {
 
 <template>
   <transition name="fade">
-    <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog" aria-modal="true">
+    <div v-if="show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50" role="dialog"
+      aria-modal="true">
       <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
         <h3 class="text-lg font-bold mb-4">
           {{ isEditing ? 'Edit Correction' : 'Apply for Correction' }}
@@ -124,24 +135,10 @@ function onCancel() {
           <div>
             <label class="block text-sm font-medium">Date</label>
             <div class="flex items-center gap-2">
-              <input
-                v-if="editableDate"
-                type="date"
-                v-model="selectedDate"
-                class="border rounded px-2 py-1 w-full"
-              />
-              <input
-                v-else
-                type="text"
-                :value="selectedDate"
-                disabled
-                class="border rounded px-2 py-1 w-full bg-gray-100"
-              />
-              <button
-                type="button"
-                @click="editableDate = !editableDate"
-                class="text-xs text-blue-600 underline"
-              >
+              <input v-if="editableDate" type="date" v-model="selectedDate" class="border rounded px-2 py-1 w-full" />
+              <input v-else type="text" :value="selectedDate" disabled
+                class="border rounded px-2 py-1 w-full bg-gray-100" />
+              <button type="button" @click="editableDate = !editableDate" class="text-xs text-blue-600 underline">
                 {{ editableDate ? 'Use original date' : 'Edit date' }}
               </button>
             </div>
@@ -168,10 +165,12 @@ function onCancel() {
             <button type="button" @click="onCancel" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
               Cancel
             </button>
-            <button v-if="isEditing" type="button" @click="onDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+            <button v-if="isEditing" type="button" @click="onDelete"
+              class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
               Delete
             </button>
-            <button type="submit" :disabled="!isValid" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" :disabled="!isValid"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50">
               {{ isEditing ? 'Update' : 'Submit' }}
             </button>
           </div>

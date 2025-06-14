@@ -61,6 +61,7 @@ export const useAttendanceStore = defineStore(
         loading.value = false
         return
       }
+
       logs.value = local
       loading.value = false
     }

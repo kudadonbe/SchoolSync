@@ -30,7 +30,7 @@ export interface AttendanceAPI {
     id: string,
     update: Partial<AttendanceCorrectionLog>,
   ): Promise<AttendanceCorrectionLog>
-  deleteCorrection(id: string): Promise<void>
+  deleteCorrection(id: string): Promise<{ success: boolean; deleted?: AttendanceCorrectionLog }>
 }
 
 export interface BackendAPI {

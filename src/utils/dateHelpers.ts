@@ -1,4 +1,5 @@
-import type { DateRange } from '@/types'
+import type { DateRange, AttendanceCorrectionLog } from '@/types'
+import { toDateSafe } from '@/utils'
 
 export function formatDate(date: Date): string {
   // ISO date to yyyy-mm-dd
@@ -99,23 +100,20 @@ export function getPaidPeriod(): DateRange {
   return { start, end }
 }
 
-
 export function formatTimeHHMMSS(time: string): string {
   // Accepts: "07:55" or "07:55:30"
-  const [h = "00", m = "00", s = "00"] = time.split(":");
-  return `${h.padStart(2, "0")}:${m.padStart(2, "0")}:${s.padStart(2, "0")}`;
+  const [h = '00', m = '00', s = '00'] = time.split(':')
+  return `${h.padStart(2, '0')}:${m.padStart(2, '0')}:${s.padStart(2, '0')}`
 }
 
 export function extractHHMM(time: string): string {
-  return time.split(':').slice(0, 2).join(':');
+  return time.split(':').slice(0, 2).join(':')
 }
 
 export function formatDateDDMMYYYY(dateStr: string): string {
   const [yyyy, mm, dd] = dateStr.split('-')
   return `${dd}-${mm}-${yyyy}`
 }
-
-
 
 /**
  * Format a Date object into "HH:mm:ss" in **UTC**
@@ -134,6 +132,22 @@ export function formatDateUTC(date: Date): string {
   return `${year}-${month}-${day}`
 }
 
+export function normalizeCorrectionDates(
+  correction: AttendanceCorrectionLog,
+): AttendanceCorrectionLog {
+  const obj: AttendanceCorrectionLog = { ...correction }
 
+  if (obj.reviewedAt) {
+    obj.reviewedAt = toDateSafe(obj.reviewedAt)
+  } else {
+    delete obj.reviewedAt
+  }
 
+  if (obj.createdAt) {
+    obj.createdAt = toDateSafe(obj.createdAt)
+  } else {
+    delete obj.createdAt
+  }
 
+  return obj
+}

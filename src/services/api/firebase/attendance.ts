@@ -61,7 +61,7 @@ export const attendance: AttendanceAPI = {
       reason: data.reason,
       status: 'pending',
     })
-    console.log(`Created attendance correction for user: ${data.staffId} on ${data.date}`)
+    console.log(`[API] Created attendance correction for user: ${data.staffId} on ${data.date}`)
     return {
       id: docRef.id,
       staffId: data.staffId,
@@ -94,7 +94,7 @@ export const attendance: AttendanceAPI = {
         ...doc.data(),
       } as AttendanceCorrectionLog)
     })
-    console.log(`Fetched ${corrections.length} attendance corrections for user: ${staffId}`)
+    console.log(`[API] Fetched ${corrections.length} attendance corrections for user: ${staffId}`)
     return corrections
   },
 
@@ -108,7 +108,7 @@ export const attendance: AttendanceAPI = {
     await updateDoc(ref, update)
     const snap = await getDoc(ref)
     if (!snap.exists()) {
-      throw new Error(`Correction not found after update: ${id}`)
+      throw new Error(`[API] Correction not found after update: ${id}`)
     }
 
     return {
@@ -117,10 +117,15 @@ export const attendance: AttendanceAPI = {
     } as AttendanceCorrectionLog
   },
 
-  async deleteCorrection(id: string) {
+  async deleteCorrection(
+    id: string,
+  ): Promise<{ success: boolean; deleted?: AttendanceCorrectionLog }> {
     // TODO: Delete correction document by ID
     // Firebase API usage:
     const ref = doc(correctionRef, id)
+    const snapshot = await getDoc(ref)
+    const deleted = snapshot.exists() ? (snapshot.data() as AttendanceCorrectionLog) : undefined
     await deleteDoc(ref)
+    return { success: true, deleted }
   },
 }

@@ -4,16 +4,22 @@
 
     <div class="">
       <!-- Attendance Data testing area -->
-      <div class="border rounded-md p-4">
-        <h2 class="text-lg font-semibold mb-2">Attendance Data Test</h2>
+      <!-- <div class="border rounded-md p-4">
         <AttendanceDataTest />
-      </div>
+      </div> -->
 
       <!-- Firestore collection uploader -->
       <!-- <div class="border rounded-md p-4">
         <h2 class="text-lg font-semibold mb-2">Firestore Uploader</h2>
         <UploadCollections />
       </div> -->
+
+      <div>
+        <!-- Attendance Correction Data testing area -->
+        <div class="border rounded-md p-4">
+          <AttendanceCorrectionDataTest />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -22,4 +28,5 @@
 // file: src/views/dev/DevTestView.vue
 // import UploadCollections from '@/dev/test/UploadCollections.vue'
 import AttendanceDataTest from '@/dev/test/AttendanceDataTest.vue'
+import AttendanceCorrectionDataTest from '../test/AttendanceCorrectionDataTest.vue';
 </script>

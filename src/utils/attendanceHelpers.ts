@@ -212,7 +212,7 @@ export function newAttendanceRecord(dateStr: string): ProcessedAttendance {
 
 export function convertToAttendanceRecords(logs: StaffAttendanceLog[]): AttendanceRecord[] {
   return logs.map((log) => {
-    const dateObj = toDateSafe(log.timestamp)
+    const dateObj = toDateSafe(log.timestamp)!
     const dateStr = formatDateLocal(dateObj)
     const timeStr = formatTimeUTC(dateObj)
 
@@ -243,7 +243,7 @@ export function convertToDisplayRecords(logs: StaffAttendanceLog[]): DisplayAtte
   }
 
   return logs.map((log) => {
-    const dateObj = toDateSafe(log.timestamp)
+    const dateObj = toDateSafe(log.timestamp)!
     // console.log('DEBUG:', dateObj, '→', dateObj.toISOString(), '→', formatTimeLocal(dateObj))
     return {
       id: log.id!,
@@ -261,7 +261,11 @@ export function convertToDisplayRecords(logs: StaffAttendanceLog[]): DisplayAtte
  * @param input - Timestamp (with .toDate()) or raw object { seconds }
  * @returns JavaScript Date object
  */
-export function toDateSafe(input: UnixTimestamp | Timestamp): Date {
+export function toDateSafe(input?: UnixTimestamp | Timestamp | Date): Date | undefined {
+  if (!input) return undefined
+
+  if (input instanceof Date) return input
+
   if (typeof input === 'object' && 'toDate' in input && typeof input.toDate === 'function') {
     return input.toDate()
   }
@@ -269,7 +273,9 @@ export function toDateSafe(input: UnixTimestamp | Timestamp): Date {
   if (typeof input === 'object' && 'seconds' in input && typeof input.seconds === 'number') {
     return new Date(input.seconds * 1000)
   }
-  throw new Error('Invalid timestamp format')
+
+  console.warn('❌ toDateSafe(): Unrecognized input', input)
+  return undefined
 }
 
 export function deduplicatePunches(

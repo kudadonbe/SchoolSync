@@ -246,6 +246,7 @@ export function convertToDisplayRecords(logs: StaffAttendanceLog[]): DisplayAtte
     const dateObj = toDateSafe(log.timestamp)
     // console.log('DEBUG:', dateObj, '→', dateObj.toISOString(), '→', formatTimeLocal(dateObj))
     return {
+      id: log.id!,
       user_id: log.staffId,
       date: formatDateLocal(dateObj),
       time: formatTimeUTC(dateObj),

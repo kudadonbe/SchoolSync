@@ -20,16 +20,17 @@ export interface AuthAPI {
 // === Attendance API ===
 export interface AttendanceAPI {
   getAttendanceLogs(userId: string, start: Date, end: Date): Promise<StaffAttendanceLog[]>
-  getAttendanceCorrections?(
+  getAttendanceCorrections(
     userId: string,
     start: string,
     end: string,
   ): Promise<AttendanceCorrectionLog[]>
-  createAttendanceCorrection?(data: AttendanceCorrectionLog): Promise<void>
-  approveCorrection?(id: string): Promise<void>
-  rejectCorrection?(id: string): Promise<void>
-  updateCorrection?(id: string, update: Partial<AttendanceCorrectionLog>): Promise<void>
-  deleteCorrection?(id: string): Promise<void>
+  createAttendanceCorrection(data: AttendanceCorrectionLog): Promise<AttendanceCorrectionLog>
+  updateCorrection(
+    id: string,
+    update: Partial<AttendanceCorrectionLog>,
+  ): Promise<AttendanceCorrectionLog>
+  deleteCorrection(id: string): Promise<void>
 }
 
 export interface BackendAPI {

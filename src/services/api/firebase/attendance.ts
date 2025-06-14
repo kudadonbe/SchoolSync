@@ -5,24 +5,24 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   Timestamp,
-  // doc,
-  // updateDoc,
-  // addDoc,
-  // deleteDoc,
+  doc,
+  updateDoc,
+  addDoc,
+  deleteDoc,
 } from 'firebase/firestore'
 
 import { db } from '@/firebase'
 
 import type { AttendanceAPI } from '@/types/api'
-import type { StaffAttendanceLog } from '@/types'
-// import type { StaffAttendanceLog, AttendanceCorrectionLog } from '@/types'
+import type { StaffAttendanceLog, AttendanceCorrectionLog } from '@/types'
 
 /**
  * Firestore collection references
  */
 const attendanceRef = collection(db, 'staffAttendanceLogs')
-// const correctionRef = collection(db, 'attendanceCorrectionLog')
+const correctionRef = collection(db, 'attendanceCorrectionLog')
 
 /**
  * Firebase-backed implementation of AttendanceAPI
@@ -39,58 +39,88 @@ export const attendance: AttendanceAPI = {
       where('timestamp', '<=', end),
     )
     const snapshot = await getDocs(q)
-    const logs: StaffAttendanceLog[] = []
-    snapshot.forEach((doc) => {
-      logs.push({
-        id: doc.id,
-        ...doc.data(),
-      } as StaffAttendanceLog)
-    })
+    const logs = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as StaffAttendanceLog[]
     return logs
   },
-  /*
-  async createAttendanceCorrection(data) {
-    // TODO: Add correction document to 'attendanceCorrectionLog'
-    // Firebase API usage:
-    // await addDoc(correctionRef, { ...data, status: 'pending', submittedAt: Timestamp.now() })
+
+  async createAttendanceCorrection(data: {
+    staffId: string
+    date: string
+    correctionType: string
+    requestedTime: string
+    reason: string
+  }): Promise<AttendanceCorrectionLog> {
+    const docRef = await addDoc(correctionRef, {
+      staffId: data.staffId,
+      date: data.date,
+      correctionType: data.correctionType,
+      requestedTime: data.requestedTime,
+      reason: data.reason,
+      status: 'pending',
+    })
+    console.log(`Created attendance correction for user: ${data.staffId} on ${data.date}`)
+    return {
+      id: docRef.id,
+      staffId: data.staffId,
+      date: data.date,
+      correctionType: data.correctionType,
+      requestedTime: data.requestedTime,
+      reason: data.reason,
+      status: 'pending',
+    }
   },
 
-  async getAttendanceCorrections(userId, start, end) {
+  async getAttendanceCorrections(
+    staffId: string,
+    start: string,
+    end: string,
+  ): Promise<AttendanceCorrectionLog[]> {
     // TODO: Query corrections by staffId and date range
     // Firebase API usage:
-    // const q = query(correctionRef, where('staffId', '==', userId), where('date', '>=', start), where('date', '<=', end))
-    // const snapshot = await getDocs(q)
-    // const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    return []
+    const q = query(
+      correctionRef,
+      where('staffId', '==', staffId),
+      where('date', '>=', start),
+      where('date', '<=', end),
+    )
+    const snapshot = await getDocs(q)
+    const corrections: AttendanceCorrectionLog[] = []
+    snapshot.forEach((doc) => {
+      corrections.push({
+        id: doc.id,
+        ...doc.data(),
+      } as AttendanceCorrectionLog)
+    })
+    console.log(`Fetched ${corrections.length} attendance corrections for user: ${staffId}`)
+    return corrections
   },
 
-  async approveCorrection(id) {
-    // TODO: Update correction status to 'approved'
-    // Firebase API usage:
-    // const ref = doc(correctionRef, id)
-    // await updateDoc(ref, { status: 'approved', reviewedAt: Timestamp.now() })
-  },
-
-  async rejectCorrection(id) {
-    // TODO: Update correction status to 'rejected'
-    // Firebase API usage:
-    // const ref = doc(correctionRef, id)
-    // await updateDoc(ref, { status: 'rejected', reviewedAt: Timestamp.now() })
-  },
-
-  async updateCorrection(id, update) {
+  async updateCorrection(
+    id: string,
+    update: Partial<AttendanceCorrectionLog>,
+  ): Promise<AttendanceCorrectionLog> {
     // TODO: Update correction fields
     // Firebase API usage:
-    // const ref = doc(correctionRef, id)
-    // await updateDoc(ref, update)
+    const ref = doc(correctionRef, id)
+    await updateDoc(ref, update)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) {
+      throw new Error(`Correction not found after update: ${id}`)
+    }
+
+    return {
+      id: snap.id,
+      ...snap.data(),
+    } as AttendanceCorrectionLog
   },
 
-  async deleteCorrection(id) {
+  async deleteCorrection(id: string) {
     // TODO: Delete correction document by ID
     // Firebase API usage:
-    // const ref = doc(correctionRef, id)
-    // await deleteDoc(ref)
+    const ref = doc(correctionRef, id)
+    await deleteDoc(ref)
   },
-
-  // */
 }

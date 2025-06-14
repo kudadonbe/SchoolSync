@@ -7,14 +7,24 @@ import { getCurrentWeek, sortPunchRecords, newAttendanceRecord, formatDateLocal,
 import { getCurrentYear, getPayablePeriod, getPaidPeriod, formatTimeHHMMSS, extractHHMM, cleanDisplayAttendanceLogs } from '@/utils'
 import { formatDateDDMMYYYY, formatBreakPairs } from '@/utils'
 
+
 import { useDataStore } from '@/stores/dataStore'
+import { useAttendanceStore } from '@/stores/data/attendance';
+import { useAttendanceCorrectionsStore } from '@/stores/data/attendanceCorrections';
 import { storeToRefs } from 'pinia'
 
 const props = defineProps<{ selectedUserId: string | null }>()
 const today = new Date()
 
 const dataStore = useDataStore()
-const { staffList, dutyRoster, attendancePolicies, attendanceCorrections, attendanceLogs } = storeToRefs(dataStore)
+const attendanceDataStore = useAttendanceStore()
+const attendanceCorrectionDataStore = useAttendanceCorrectionsStore()
+
+const { staffList, dutyRoster, attendancePolicies } = storeToRefs(dataStore)
+const { logs: attendanceLogs } = storeToRefs(attendanceDataStore)
+const { corrections: attendanceCorrections } = storeToRefs(attendanceCorrectionDataStore)
+
+
 
 
 const correctionsMap = computed(() => {
@@ -62,9 +72,9 @@ const setPaidPeriod = () => {
 
 const load = async () => {
   if (!props.selectedUserId) return
-  await dataStore.loadAttendance(props.selectedUserId as string, startDate.value, endDate.value)
-  // console.log('[Debug] Loaded Logs:', dataStore.attendanceLogs)
-  await dataStore.loadAttendanceCorrections(props.selectedUserId as string, startDate.value, endDate.value)
+  await attendanceDataStore.loadAttendanceLogs(props.selectedUserId as string, startDate.value, endDate.value)
+  console.log('[Debug] Loaded Logs:', attendanceDataStore.logs)
+  await attendanceCorrectionDataStore.loadCorrections(props.selectedUserId as string, startDate.value, endDate.value)
 
 }
 let hasLogged = true
@@ -86,13 +96,13 @@ watch(
 
 const dataRefersh = async () => {
   if (!props.selectedUserId) return
-  await dataStore.loadAttendance(
+  await attendanceDataStore.loadAttendanceLogs(
     props.selectedUserId,
     startDate.value,
     endDate.value,
     true
   )
-  await dataStore.loadAttendanceCorrections(
+  await attendanceCorrectionDataStore.loadCorrections(
     props.selectedUserId,
     startDate.value,
     endDate.value,
@@ -103,14 +113,14 @@ const dataRefersh = async () => {
 
 const refeshDayRecords = async (day: string) => {
   if (!props.selectedUserId) return
-  await dataStore.loadAttendance(
+  await attendanceDataStore.loadAttendanceLogs(
     props.selectedUserId,
     day,
     day,
     true
   )
   console.log('Attendance records refreshed')
-  await dataStore.loadAttendanceCorrections(
+  await attendanceCorrectionDataStore.loadCorrections(
     props.selectedUserId,
     day,
     day,

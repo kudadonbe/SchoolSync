@@ -4,10 +4,25 @@
 import AttendanceSummary from "@/components/hr/attendance/AttendanceSummary.vue";
 import StaffInfo from "@/components/StaffInfo.vue";
 import AttendanceSheet from "@/components/hr/attendance/AttendanceSheet.vue";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 
 
 import { useAuthStore } from '@/stores/authStore'
+
+const isMobilePortrait = ref(false)
+
+const checkWidth = () => {
+  isMobilePortrait.value = window.innerWidth <= 412
+}
+
+onMounted(() => {
+  checkWidth()
+  window.addEventListener('resize', checkWidth)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkWidth)
+})
 
 const authStore = useAuthStore()
 
@@ -26,7 +41,7 @@ const updateUser = (userId: string) => {
 </script>
 
 <template>
-  <div class="p-6 max-w-6xl mx-auto">
+  <div :class="[isMobilePortrait ? 'p-0 m-0 w-full' : 'p-6 max-w-6xl mx-auto', 'transition-all duration-200']">
     <h1 class="text-3xl font-semibold text-green-700 mb-6">Staff Attendance Overview</h1>
 
     <!-- Two-column layout -->

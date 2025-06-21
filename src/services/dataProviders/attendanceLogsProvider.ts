@@ -33,7 +33,8 @@ export async function getAttendanceLogs(
   const store = tx.objectStore(STORE_KEYS.attendanceLogs)
   for (const log of convertedLogs) {
     if (!log.user_id) continue
-    const id = `${log.user_id}_${log.date}_${log.time}_${log.status}`
+    if (!log.id) continue
+    const id = log.id
     await store.put({
       id,
       user_id: log.user_id,

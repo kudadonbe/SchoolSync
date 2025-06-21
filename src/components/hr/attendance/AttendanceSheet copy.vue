@@ -37,21 +37,25 @@ const setCurrentWeek = () => {
   startDate.value = formatDateLocal(start)
   endDate.value = formatDateLocal(end)
 }
+
 const setCurrentMonth = () => {
   const { start, end } = getCurrentMonth()
   startDate.value = formatDateLocal(start)
   endDate.value = formatDateLocal(end)
 }
+
 const setCurrentYear = () => {
   const { start, end } = getCurrentYear()
   startDate.value = formatDateLocal(start)
   endDate.value = formatDateLocal(end)
 }
+
 const setPayablePeriod = () => {
   const { start, end } = getPayablePeriod()
   startDate.value = formatDateLocal(start)
   endDate.value = formatDateLocal(end)
 }
+
 const setPaidPeriod = () => {
   const { start, end } = getPaidPeriod()
   startDate.value = formatDateLocal(start)
@@ -80,8 +84,6 @@ watch(
     load() // if you want to re-fetch too (optional, already handled elsewhere)
   }
 )
-
-
 
 
 const dataRefersh = async () => {

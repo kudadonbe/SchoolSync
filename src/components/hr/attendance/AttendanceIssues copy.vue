@@ -2,9 +2,7 @@
 // src/components/AttendanceIssues.vue
 import { computed, onMounted, watch, ref } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useAttendanceStore } from '@/stores/data/attendance';
-import { useAttendanceCorrectionsStore } from '@/stores/data/attendanceCorrections';
-
+import { useDataStore } from '@/stores/dataStore'
 import type { DisplayAttendanceRecord } from '@/types'
 import { formatDateDDMMYYYY, cleanDisplayAttendanceLogs, sortPunchRecords } from '@/utils'
 import CorrectionForm from '@/components/shared/CorrectionForm.vue'
@@ -26,12 +24,9 @@ interface DaySummary {
 const showForm = ref(false)
 const formDate = ref('')
 
-const attendanceDataStore = useAttendanceStore()
-const attendanceCorrectionDataStore = useAttendanceCorrectionsStore()
 
-const { logs: attendanceLogs } = storeToRefs(attendanceDataStore)
-const { corrections: attendanceCorrections } = storeToRefs(attendanceCorrectionDataStore)
-
+const dataStore = useDataStore()
+const { attendanceLogs, attendanceCorrections } = storeToRefs(dataStore)
 
 const allCorrections = computed(() =>
   Object.values(attendanceCorrections.value).flat()
@@ -39,11 +34,8 @@ const allCorrections = computed(() =>
 
 async function load() {
   if (!selectedUserId) return
-  // await dataStore.loadAttendance(selectedUserId, startDate, endDate)
-  // await dataStore.loadAttendanceCorrections(selectedUserId, startDate, endDate)
-  await attendanceDataStore.loadAttendanceLogs(selectedUserId as string, startDate, endDate)
-  // console.log('[Debug] Loaded Logs:', attendanceDataStore.logs)
-  await attendanceCorrectionDataStore.loadCorrections(selectedUserId as string, startDate, endDate)
+  await dataStore.loadAttendance(selectedUserId, startDate, endDate)
+  await dataStore.loadAttendanceCorrections(selectedUserId, startDate, endDate)
 }
 
 onMounted(load)

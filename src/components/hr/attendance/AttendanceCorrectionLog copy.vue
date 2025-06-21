@@ -7,9 +7,18 @@ import { computed, ref, watch } from 'vue'
 import type { AttendanceCorrectionLog } from '@/types'
 import { formatDateDDMMYYYY } from '@/utils'
 
+import { getDB, STORE_KEYS } from '@/services/indexeddb/indexedDBInit'
+import {
+  updateAttendanceCorrectionStatus,
+  deleteAttendanceCorrection,
+} from '@/services/firebaseServices'
+import {
+  updateCorrectionInIndexedDB,
+  deleteCorrectionFromIndexedDB,
+} from '@/services/dataProviders/attendanceCorrectionsProvider.ts'
+
 import { storeToRefs } from 'pinia'
-// import { useDataStore } from '@/stores/dataStore'
-import { useAttendanceCorrectionsStore } from '@/stores/data/attendanceCorrections';
+import { useDataStore } from '@/stores/dataStore'
 import { useAuthStore } from '@/stores/authStore'
 
 import CorrectionForm from '@/components/shared/CorrectionForm.vue'
@@ -25,11 +34,9 @@ const isPrivileged = computed(() =>
 const props = defineProps<{ selectedUserId: string | null; startDate: string; endDate: string }>()
 
 // Data store
-// const dataStore = useDataStore()
-const attendanceCorrectionDataStore = useAttendanceCorrectionsStore()
+const dataStore = useDataStore()
 
-// const { attendanceCorrections } = storeToRefs(dataStore)
-const { corrections: attendanceCorrections } = storeToRefs(attendanceCorrectionDataStore)
+const { attendanceCorrections } = storeToRefs(dataStore)
 
 // Form modal state
 const showForm = ref(false)
@@ -44,20 +51,22 @@ function closeForm() {
   editingCorrection.value = undefined
 }
 
+async function logIndexedDBCorrections(staffId: string) {
+  const db = await getDB()
+  const tx = db.transaction(STORE_KEYS.attendanceCorrections)
+  const store = tx.store
+  const index = store.index('staffId')
+  const results = await index.getAll(staffId)
+
+  console.log(`🔍 Corrections in IndexedDB for staffId=${staffId}:`, results)
+}
 
 async function onDelete(log: AttendanceCorrectionLog) {
   if (!log.id) return
   if (!confirm('Are you sure you want to delete this correction?')) return
   try {
-    const { success, deleted } = await attendanceCorrectionDataStore.deleteCorrection(log.id)
-    if (success) {
-      console.log(`Deleted correction: ${log.id}`, deleted)
-    } else {
-      console.error(`❌ Failed to delete correction: ${log.id}`, deleted)
-      alert('Failed to delete correction. It may not exist or has already been deleted.')
-      return
-    }
-
+    await deleteAttendanceCorrection(log.id)
+    await deleteCorrectionFromIndexedDB(log.id)
     await load()
     alert('Correction deleted successfully.')
   } catch (err) {
@@ -70,15 +79,12 @@ async function approve(log: AttendanceCorrectionLog) {
   if (!log.id) return
   try {
     const reviewer = authStore.currentUser!.displayName
-
-    const approved = {
+    await updateAttendanceCorrectionStatus(log.id, 'approved', reviewer)
+    await updateCorrectionInIndexedDB({
       ...log,
       status: 'approved',
       reviewedBy: reviewer,
-      reviewedAt: new Date(),
-    }
-
-    await attendanceCorrectionDataStore.updateCorrection(approved)
+    })
     await load()
     alert('Correction approved successfully.')
   } catch (err) {
@@ -90,16 +96,13 @@ async function approve(log: AttendanceCorrectionLog) {
 async function reject(log: AttendanceCorrectionLog) {
   if (!log.id) return
   try {
-    const reviewer = authStore.currentUser!.displayName
-    const rejected = {
+    const reviewer = authStore.currentUser!.uid
+    await updateAttendanceCorrectionStatus(log.id, 'rejected', reviewer)
+    await updateCorrectionInIndexedDB({
       ...log,
       status: 'rejected',
       reviewedBy: reviewer,
-      reviewedAt: new Date(),
-    }
-    const rejectedCorection = await attendanceCorrectionDataStore.updateCorrection(rejected)
-    console.log(`Rejected correction: ${log.id}`, rejectedCorection);
-
+    })
     await load()
     alert('Correction rejected successfully.')
   } catch (err) {
@@ -110,13 +113,13 @@ async function reject(log: AttendanceCorrectionLog) {
 
 async function load(force = false) {
   if (!props.selectedUserId) return
-  await attendanceCorrectionDataStore.loadCorrections(
+  await dataStore.loadAttendanceCorrections(
     props.selectedUserId,
     props.startDate,
     props.endDate,
     force,
   )
-  // await logIndexedDBCorrections(props.selectedUserId)
+  await logIndexedDBCorrections(props.selectedUserId)
 }
 
 const debouncedLoad = debounce(load, 300)
@@ -159,14 +162,12 @@ const correctionsForUser = computed(() => {
 })
 
 const pending = computed(() =>
-  correctionsForUser.value
-    .filter((c) => c.status === 'pending')
-    .sort((a, b) => a.date.localeCompare(b.date))
+  correctionsForUser.value.filter((c) => c.status === 'pending'),
 )
 const reviewed = computed(() =>
-  correctionsForUser.value
-    .filter((c) => ['approved', 'rejected'].includes(c.status))
-    .sort((a, b) => a.date.localeCompare(b.date))
+  correctionsForUser.value.filter((c) =>
+    ['approved', 'rejected'].includes(c.status),
+  ),
 )
 </script>
 
@@ -239,7 +240,7 @@ const reviewed = computed(() =>
               :class="{ 'text-green-600': log.status === 'approved', 'text-red-600': log.status === 'rejected' }">{{
                 log.status }}</td>
             <td class="p-2 border">{{ log.reviewedBy ?? '-' }}</td>
-            <td class="p-2 border">{{ log.reviewedAt ?? '-' }}
+            <td class="p-2 border">{{ log.reviewedAt ? new Date(log.reviewedAt.seconds * 1000).toLocaleString() : '-' }}
             </td>
           </tr>
           <tr v-if="reviewed.length === 0">

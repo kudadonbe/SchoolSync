@@ -21,8 +21,10 @@ export const useAttendanceCorrectionsStore = defineStore(
       loading.value = true
 
       const today = new Date()
+      const from = new Date(start)
+      const to = new Date(end)
       // Step 1: Cap future endDate to today
-      const cappedEnd = new Date(end) > today ? today : new Date(end)
+      const cappedEnd = to > today ? today : to
       const lastFetchedStr = lastFetched.value[staffId] || ''
       const lastFetchedDate = lastFetchedStr ? new Date(lastFetchedStr) : null
       const shouldFetch = force || !lastFetchedDate || cappedEnd > lastFetchedDate
@@ -31,34 +33,34 @@ export const useAttendanceCorrectionsStore = defineStore(
       console.log('Loaded from IndexedDB:', local.length, 'corrections') // (DEBUG)
 
       if (shouldFetch) {
-        let fetchStartDate = lastFetchedDate
-          ? new Date(lastFetchedDate.getTime() - 86400000)
-          : new Date(start)
-        if (force) fetchStartDate = new Date(start)
+        let fetchStartDate = lastFetchedDate ? new Date(lastFetchedDate.getTime() - 86400000) : from
+        if (force) fetchStartDate = from
 
-        const forcedFetchedCorrectionLogs = await attendanceCache.getAttendanceCorrections(
+        const freshData = await attendanceCache.getAttendanceCorrections(
           staffId,
           formatDateLocal(fetchStartDate),
           formatDateLocal(cappedEnd),
-          shouldFetch,
+          shouldFetch, // this flag allows fallback to API
         )
 
-        console.log(
-          'Force fetched from IndexedDB:',
-          forcedFetchedCorrectionLogs.length,
-          'corrections',
-        ) // (DEBUG)
-        corrections.value = mergeAttendanceCorrections(
-          local,
-          forcedFetchedCorrectionLogs,
-          start,
-          end,
-        )
+        if (force) {
+          corrections.value = freshData.filter((c) => c.date >= start && c.date <= end)
+        } else {
+          const filteredLocal = local.filter(
+            (c) => c.date < formatDateLocal(fetchStartDate) || c.date > formatDateLocal(cappedEnd),
+          )
+          const mergedData = mergeAttendanceCorrections(filteredLocal, freshData, start, end)
+          console.log('Merged corrections:', mergedData.length) // (DEBUG)
+          corrections.value = mergedData
+        }
+
         lastFetched.value[staffId] = formatDateLocal(cappedEnd)
-        console.log('Last fetched date updated:', lastFetched.value[staffId]) // (DEBUG)
       } else {
-        corrections.value = local
+        corrections.value = local.filter(
+          (c) => c.date >= formatDateLocal(from) && c.date <= formatDateLocal(cappedEnd),
+        )
       }
+
       loading.value = false
       return
     }

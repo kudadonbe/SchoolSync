@@ -18,7 +18,6 @@
       "from": "2025-03-01",
       "to": "2025-04-06"
     }
-    
   ],
   "publicHolidays": [
     { "name": "New Year's Day", "date": "2025-01-01" },
@@ -33,11 +32,11 @@
     { "name": "Eid al-Adha - Day 4", "date": "2025-06-09" },
     { "name": "Independence Day", "date": "2025-07-26" },
     { "name": "On the Ocation of Independence Day", "date": "2025-07-27" }
-
   ],
   "specialHolidays": [
     { "name": "School Anniversary", "date": "2025-01-01" },
     { "name": "Presidents Special Offer", "date": "2025-01-02" },
+    { "name": "Presidents Special Offer", "date": "2025-03-02" },
     { "name": "Last 20 Days of Ramadhaan", "date": "2025-03-20" },
     { "name": "Last 23 Days of Ramadhaan", "date": "2025-03-23" },
     { "name": "Last 24 Days of Ramadhaan", "date": "2025-03-24" },

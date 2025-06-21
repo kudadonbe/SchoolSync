@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, toRefs, watch, computed } from 'vue'
-import { useAttendanceCorrectionsStore } from '@/stores/data/attendanceCorrections'
+import { submitAttendanceCorrection, updateAttendanceCorrection, deleteAttendanceCorrection } from '@/services/firebaseServices'
+import { updateCorrectionInIndexedDB, deleteCorrectionFromIndexedDB } from '@/services/dataProviders/attendanceCorrectionsProvider'
+import { useDataStore } from '@/stores/dataStore'
 import type { AttendanceCorrectionLog } from '@/types'
 
 const props = defineProps<{
@@ -12,7 +14,7 @@ const props = defineProps<{
   correction?: AttendanceCorrectionLog
 }>()
 
-const { show, staffId, date, correction } = toRefs(props)
+const { show, staffId, startDate, endDate, date, correction } = toRefs(props)
 
 const editableDate = ref(false)
 const selectedDate = ref(date.value)
@@ -25,8 +27,7 @@ const correctionType = ref('')
 const correctionTime = ref('')
 const correctionReason = ref('')
 
-const dataStore = useAttendanceCorrectionsStore()
-
+const dataStore = useDataStore()
 const emit = defineEmits<{
   (e: 'update:show', v: boolean): void
   (e: 'submitted'): void
@@ -59,8 +60,16 @@ async function onSave() {
   if (!isValid.value) return
   try {
     if (isEditing.value && correction.value?.id) {
-      // Update
-      await dataStore.updateCorrection({
+      await updateAttendanceCorrection({
+        id: correction.value.id,
+        data: {
+          correctionType: correctionType.value,
+          requestedTime: correctionTime.value,
+          reason: correctionReason.value,
+        },
+      })
+      // we need to update ui right
+      await updateCorrectionInIndexedDB({
         ...correction.value,
         correctionType: correctionType.value,
         requestedTime: correctionTime.value,
@@ -68,20 +77,19 @@ async function onSave() {
         date: selectedDate.value,
       })
     } else {
-      // Create
-      const newCorrection: AttendanceCorrectionLog = {
+      await submitAttendanceCorrection({
         staffId: staffId.value!,
+        date: selectedDate.value,
         correctionType: correctionType.value,
         requestedTime: correctionTime.value,
         reason: correctionReason.value,
-        date: selectedDate.value,
-        status: 'pending',
-      }
-      const result = await dataStore.createCorrection(newCorrection)
-      console.log(result);
-
-
+      })
     }
+    await dataStore.loadAttendanceCorrections(
+      staffId.value!,
+      startDate.value,
+      endDate.value
+    )
     emit('submitted')
     emit('update:show', false)
   } catch (err) {
@@ -95,10 +103,13 @@ async function onDelete() {
   const confirmDelete = confirm('Are you sure you want to delete this correction?')
   if (!confirmDelete) return
   try {
-    const result = await dataStore.deleteCorrection(correction.value.id)
-    console.log(result);
-
-
+    await deleteAttendanceCorrection(correction.value.id)
+    await deleteCorrectionFromIndexedDB(correction.value.id)
+    await dataStore.loadAttendanceCorrections(
+      staffId.value!,
+      startDate.value,
+      endDate.value
+    )
     emit('submitted')
     emit('update:show', false)
   } catch (err) {
@@ -118,7 +129,7 @@ function onCancel() {
       aria-modal="true">
       <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
         <h3 class="text-lg font-bold mb-4">
-          {{ isEditing ? `Edit Correction for ${staffId}` : `Apply for Correction ${staffId}` }}
+          {{ isEditing ? 'Edit Correction' : 'Apply for Correction' }}
         </h3>
         <form @submit.prevent="onSave" class="space-y-4">
           <div>
@@ -132,7 +143,6 @@ function onCancel() {
               </button>
             </div>
           </div>
-
           <div>
             <label class="block text-sm font-medium">Correction Type</label>
             <select v-model="correctionType" class="border rounded px-2 py-1 w-full" required>
@@ -143,17 +153,14 @@ function onCancel() {
               <option value="breakOut">Break-Out</option>
             </select>
           </div>
-
           <div>
             <label class="block text-sm font-medium">Correct Time</label>
             <input type="time" step="1" v-model="correctionTime" class="border rounded px-2 py-1 w-full" required />
           </div>
-
           <div>
             <label class="block text-sm font-medium">Reason</label>
             <textarea v-model="correctionReason" rows="2" class="border rounded px-2 py-1 w-full" required></textarea>
           </div>
-
           <div class="flex justify-end gap-2">
             <button type="button" @click="onCancel" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
               Cancel

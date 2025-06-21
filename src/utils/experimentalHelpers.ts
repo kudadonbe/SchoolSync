@@ -84,3 +84,52 @@ export function resolvePunchSequenceForDate(
 function isNearTime(punchTime: string, refTime: string, threshold: number): boolean {
   return Math.abs(toSeconds(punchTime) - toSeconds(refTime)) <= threshold
 }
+
+// experimental functions for attendance range generation
+import type { ProcessedAttendance } from '@/types'
+import { formatDateLocal, newAttendanceRecord } from '@/utils'
+
+/**
+ * Generate a continuous list of ProcessedAttendance records for a date range.
+ * If partial data is provided, it will fill missing days with default attendance records.
+ *
+ * @param startDate - Start of the range (string or Date)
+ * @param endDate - End of the range (string or Date)
+ * @param data - Optional list of ProcessedAttendance (can be partial)
+ * @returns Complete list of ProcessedAttendance for the range
+ */
+export function generateAttendanceRange(
+  startDate: string | Date,
+  endDate: string | Date,
+  data?: ProcessedAttendance[],
+): ProcessedAttendance[] {
+  const map = new Map<string, ProcessedAttendance>()
+
+  if (data) {
+    for (const item of data) {
+      map.set(item.date, item)
+    }
+  }
+
+  const range: ProcessedAttendance[] = []
+
+  const from = new Date(startDate)
+  const to = new Date(endDate)
+
+  while (from <= to) {
+    const dateStr = formatDateLocal(from)
+    const day = from.toLocaleString('en-us', { weekday: 'long', timeZone: 'Indian/Maldives' })
+    const record = map.get(dateStr) || newAttendanceRecord(dateStr)
+
+    range.push({
+      ...record,
+      date: dateStr,
+      day,
+      isWeekend: day === 'Friday' || day === 'Saturday',
+    })
+
+    from.setDate(from.getDate() + 1)
+  }
+
+  return range
+}

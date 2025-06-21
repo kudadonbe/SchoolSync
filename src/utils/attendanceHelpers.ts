@@ -618,15 +618,17 @@ export function mergeAttendanceCorrections(
   startDate: string,
   endDate: string,
 ): AttendanceCorrectionLog[] {
-  // Keep only records outside the date range (those we didn't refresh)
+  // 1. Keep only corrections outside the fetched range
   const keepOld = existing.filter((item) => item.date < startDate || item.date > endDate)
 
-  // Build new map from incoming (fresh within range)
+  // 2. Use a Map to deduplicate incoming records by ID
   const incomingMap = new Map<string, AttendanceCorrectionLog>()
   for (const item of incoming) {
-    if (item.id) incomingMap.set(item.id, item)
+    if (item.id) {
+      incomingMap.set(item.id, item)
+    }
   }
 
-  // Merge and return
+  // 3. Merge → keep all outside-range records + overwrite in-range ones
   return [...keepOld, ...incomingMap.values()]
 }

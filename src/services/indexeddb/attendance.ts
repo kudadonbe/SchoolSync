@@ -2,7 +2,7 @@
 
 import { getDB, STORE_KEYS } from './indexedDBInit'
 import type { DisplayAttendanceRecord, AttendanceCorrectionLog } from '@/types'
-import { formatDateUTC, convertToDisplayRecords, normalizeCorrectionDates } from '@/utils'
+import { formatDateLocal, convertToDisplayRecords, normalizeCorrectionDates } from '@/utils'
 import { api } from '@/services/api'
 /**
  * IndexedDB-backed attendance caching helpers
@@ -26,8 +26,8 @@ export const attendanceCache = {
     // TODO: Fetch logs by staffId and timestamp range from IndexedDB
     // IndexedDB API usage:
     const db = await getDB()
-    const start = formatDateUTC(from)
-    const end = formatDateUTC(to)
+    const start = formatDateLocal(from)
+    const end = formatDateLocal(to)
 
     if (!force) {
       const index = db.transaction(STORE_KEYS.attendanceLogs).store.index('user_id')
@@ -79,6 +79,12 @@ export const attendanceCache = {
       try {
         const index = db.transaction(STORE_KEYS.attendanceCorrections).store.index('staffId')
         const cached = await index.getAll(staffId)
+        console.log('[IndexedDB] getAttendanceCorrections debug →', {
+          staffId,
+          start,
+          end,
+          cachedDates: cached.map((c) => c.date),
+        })
 
         if (cached.length > 0) {
           const filtered = cached.filter((log) => log.date >= start && log.date <= end)

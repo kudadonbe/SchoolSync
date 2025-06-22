@@ -399,16 +399,15 @@ const btnMouseOver =
         </thead>
         <tbody>
           <tr v-for="(record, index) in filteredRecords" :key="index"
-            class="border-b border-gray-200 text-[10px] md:text-sm">
+            class="border-b border-gray-200 text-[10px] md:text-sm"
+            :class="record.isWeekend || record.isHoliday ? 'bg-gray-100 text-red-600' : ''">
             <!-- DATE -->
-            <td @click="refeshDayRecords(record.date)" class="p-1 text-center"
-              :class="record.isWeekend || record.isHoliday ? 'bg-gray-100 text-red-600' : ''">
+            <td @click="refeshDayRecords(record.date)" class="p-1 text-center">
               {{ formatDateDDMMYYYY(record.date) }}
             </td>
 
             <!-- DAY -->
-            <td class="p-1 text-center hidden md:table-cell"
-              :class="record.isWeekend || record.isHoliday ? 'bg-gray-100 text-red-600' : ''">
+            <td class="p-1 text-center hidden md:table-cell">
               {{ record.day }}
             </td>
 
@@ -444,10 +443,7 @@ const btnMouseOver =
 
 
             <!-- CHECK OUT -->
-            <td class="p-1 text-center" :class="{
-              'bg-red-200 text-red-700': record.missingCheckOut,
-              'bg-gray-100 text-gray-700': record.isWeekend || record.isHoliday
-            }">
+            <td class="p-1 text-center" :class="{'bg-red-200 text-red-700': record.missingCheckOut}">
               <span :class="record.correctedCheckOut ? 'text-yellow-600 font-semibold' : ''">
                 {{ record.lastCheckOut || '--' }}
               </span>

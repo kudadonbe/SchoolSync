@@ -5,8 +5,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { getScheduledInTime, getScheduledOutTime, normalizePunchStatus, calculateLateMinutes, isHoliday } from '@/utils'
 import { getCurrentWeek, sortPunchRecords, newAttendanceRecord, formatDateLocal, getCurrentMonth } from '@/utils'
 import { getCurrentYear, getPayablePeriod, getPaidPeriod, formatTimeHHMMSS, extractHHMM, cleanDisplayAttendanceLogs } from '@/utils'
-import { formatDateDDMMYYYY, formatBreakPairs } from '@/utils'
-
+import { formatDateDDMMYYYY, formatBreakPairs, useDateRange } from '@/utils'
 
 import { useDataStore } from '@/stores/dataStore'
 import { useAttendanceStore } from '@/stores/data/attendance';
@@ -14,7 +13,9 @@ import { useAttendanceCorrectionsStore } from '@/stores/data/attendanceCorrectio
 import { storeToRefs } from 'pinia'
 
 const props = defineProps<{ selectedUserId: string | null }>()
-const today = new Date()
+const { from, to } = useDateRange()
+const startDate = ref(from)
+const endDate = ref(to)
 
 const dataStore = useDataStore()
 const attendanceDataStore = useAttendanceStore()
@@ -39,8 +40,6 @@ const correctionsMap = computed(() => {
   return map
 })
 
-const startDate = ref(formatDateLocal(today))
-const endDate = ref(formatDateLocal(today))
 
 const setCurrentWeek = () => {
   const { start, end } = getCurrentWeek()
@@ -79,7 +78,6 @@ const load = async () => {
 }
 let hasLogged = true
 onMounted(() => {
-  setCurrentWeek()
   if (props.selectedUserId) load()
 })
 
@@ -102,6 +100,8 @@ const dataRefersh = async () => {
     endDate.value,
     true
   )
+  console.log('Attendance records refreshed');
+
   await attendanceCorrectionDataStore.loadCorrections(
     props.selectedUserId,
     startDate.value,
@@ -433,10 +433,10 @@ const btnMouseOver =
               <template v-for="(pair, idx) in formatBreakPairs(record.breaks)" :key="idx">
                 <span class="inline-block">
                   <span class="px-1 rounded" :class="pair[0] === '--' ? 'bg-red-200 text-red-700' : ''">{{ pair[0]
-                    }}</span>
+                  }}</span>
                   |
                   <span class="px-1 rounded" :class="pair[1] === '--' ? 'bg-red-200 text-red-700' : ''">{{ pair[1]
-                    }}</span>
+                  }}</span>
                 </span>
                 <span v-if="idx < formatBreakPairs(record.breaks).length - 1">,</span>
               </template>

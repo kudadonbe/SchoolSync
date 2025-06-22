@@ -151,3 +151,17 @@ export function normalizeCorrectionDates(
 
   return obj
 }
+
+/**
+ * Create a start and end date range ending at today.
+ * @param daysBack Number of days to go back from today (default: 6)
+ */
+export function useDateRange(daysBack = 6) {
+  const today = new Date()
+  const start = new Date(today.getTime() - daysBack * 86400000)
+
+  const from = formatDateLocal(start)
+  const to = formatDateLocal(today)
+
+  return { from, to }
+}

@@ -3,15 +3,22 @@
 import { ref, computed } from "vue";
 import { useAuthStore } from '@/stores/authStore';
 import { formatDateLocal, getCurrentWeek, getCurrentMonth, getCurrentYear, getPayablePeriod, getPaidPeriod, } from '@/utils'
+import { useDateRange } from '@/utils'
 
 
 import StaffInfo from '@/components/StaffInfo.vue';
 import AttendanceIssues from '@/components/hr/attendance/AttendanceIssues.vue'
 import AttendanceCorrectionLog from "@/components/hr/attendance/AttendanceCorrectionLog.vue";
-import { useDataStore } from '@/stores/dataStore'
+// import { useDataStore } from '@/stores/dataStore'
 
+import { useAttendanceStore } from '@/stores/data/attendance';
+import { useAttendanceCorrectionsStore } from '@/stores/data/attendanceCorrections';
+
+
+const attendanceCorrectionDataStore = useAttendanceCorrectionsStore()
+const attendanceDataStore = useAttendanceStore()
 const authStore = useAuthStore()
-const dataStore = useDataStore()
+// const dataStore = useDataStore()
 
 const staffId = computed(() => authStore.currentUser?.staffId ?? null)
 const selectedUserId = ref(staffId.value)
@@ -22,16 +29,12 @@ const updateUser = (userId: string) => {
 }
 
 // Default to current week
-const { start, end } = getCurrentWeek()
-const startDate = ref(formatDateLocal(start))
-const endDate = ref(formatDateLocal(end))
+const { from, to } = useDateRange()
+const startDate = ref(from)
+const endDate = ref(to)
 
 // Date range control functions
-const today = new Date()
-const setToday = () => {
-  startDate.value = formatDateLocal(today)
-  endDate.value = formatDateLocal(today)
-}
+
 const setCurrentWeek = () => {
   const { start, end } = getCurrentWeek()
   startDate.value = formatDateLocal(start)
@@ -61,13 +64,20 @@ const setPaidPeriod = () => {
 // Manual data refresh
 const refreshCorrections = async () => {
   if (!selectedUserId.value) return
-  await dataStore.loadAttendanceCorrections(
+  await attendanceCorrectionDataStore.loadCorrections(
     selectedUserId.value,
     startDate.value,
     endDate.value,
     true
   )
   console.log('✅ Corrections refreshed')
+  await attendanceDataStore.loadAttendanceLogs(
+    selectedUserId.value,
+    startDate.value,
+    endDate.value,
+    true
+  )
+  console.log('✅ Attendance logs refreshed')
 }
 
 const btnMouseOver =
@@ -89,7 +99,6 @@ const btnMouseOver =
     <div class="flex flex-wrap gap-2 mt-6">
       <!-- Hidden on mobile, visible on md+ -->
       <div class="hidden md:flex gap-2">
-        <button @click="setToday" :class="btnMouseOver">Today</button>
         <button @click="setCurrentWeek" :class="btnMouseOver">Week</button>
         <button @click="setCurrentMonth" :class="btnMouseOver">Month</button>
         <button @click="setPaidPeriod" :class="btnMouseOver">Paid</button>

@@ -170,83 +170,125 @@ const reviewed = computed(() =>
 )
 </script>
 
-
 <template>
   <div class="space-y-8">
     <!-- Pending Corrections -->
     <div>
-      <h2 class="text-lg font-semibold text-yellow-700 mb-2">Pending Corrections</h2>
-      <button v-if="props.selectedUserId" @click="openForm()" class="mb-2 px-3 py-1 bg-blue-600 text-white rounded">+
-        Add Correction</button>
-      <table class="w-full table-auto border text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2 border">Date</th>
-            <th class="p-2 border">Day</th>
-            <th class="p-2 border">Correction</th>
-            <th class="p-2 border">Reason</th>
-            <th class="p-2 border">Status</th>
-            <th class="p-2 border">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="log in pending" :key="log.id" class="border-t">
-            <td class="p-2 border">{{ formatDateDDMMYYYY(log.date) }}</td>
-            <td class="p-2 border">{{ getWeekday(log.date) }}</td>
-            <td class="p-2 border">{{ log.requestedTime }} – {{ log.correctionType }}</td>
-            <td class="p-2 border">{{ log.reason }}</td>
-            <td class="p-2 border text-yellow-700 capitalize">{{ log.status }}</td>
-            <td class="p-2 border space-x-2">
-              <button v-if="isPrivileged" @click="approve(log)"
-                class="px-2 py-1 bg-green-600 text-white rounded">Approve</button>
-              <button v-if="isPrivileged" @click="reject(log)"
-                class="px-2 py-1 bg-red-600 text-white rounded">Reject</button>
-              <button v-if="!isPrivileged && log.staffId === props.selectedUserId" @click="openForm(log)"
-                class="px-2 py-1 bg-indigo-500 text-white rounded">Edit</button>
-              <button v-if="!isPrivileged && log.staffId === props.selectedUserId" @click="onDelete(log)"
-                class="px-2 py-1 bg-red-500 text-white rounded">Delete</button>
-            </td>
-          </tr>
-          <tr v-if="pending.length === 0">
-            <td colspan="6" class="p-2 border text-center text-gray-500">No pending corrections.</td>
-          </tr>
-        </tbody>
-      </table>
+      <h2 class="text-xs md:text-lg font-semibold text-yellow-700 mb-2">Pending Corrections</h2>
+      <button v-if="props.selectedUserId" @click="openForm()"
+        class="mb-2 px-3 py-1 text-xs md:text-sm bg-blue-600 text-white rounded">
+        + Add Correction
+      </button>
+
+      <div class="overflow-x-auto relative">
+        <table class="w-full table-fixed border text-[10px] md:text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-1 md:p-2 border border-gray-300 text-center min-w-[100px] sticky left-0 bg-gray-100 z-10">
+                Date</th>
+              <th class="p-1 md:p-2 border border-gray-300 hidden md:table-cell">Day</th>
+              <th class="p-1 md:p-2 border border-gray-300">Correction</th>
+              <th class="p-1 md:p-2 border border-gray-300">Reason</th>
+              <th class="p-1 md:p-2 border border-gray-300">Status</th>
+              <th class="p-1 md:p-2 border border-gray-300 text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="log in pending" :key="log.id" class="border-t">
+              <td class="p-1 md:p-2 border border-gray-300 text-center min-w-[100px] sticky left-0 bg-white z-0">
+                {{ formatDateDDMMYYYY(log.date) }}
+              </td>
+              <td class="p-1 md:p-2 border border-gray-300 hidden md:table-cell">{{ getWeekday(log.date) }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 break-words">{{ log.requestedTime }} – {{ log.correctionType
+              }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 break-words">{{ log.reason }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 text-yellow-700 capitalize">{{ log.status }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 text-center">
+                <div class="flex flex-wrap justify-center gap-1">
+                  <!-- Approve -->
+                  <button v-if="isPrivileged" @click="approve(log)"
+                    class="px-2 py-1 text-green-600 border border-green-600 text-xs rounded hover:bg-green-600 hover:text-white transition">
+                    <span class="md:hidden">✅</span>
+                    <span class="hidden md:inline">Approve</span>
+                  </button>
+
+                  <!-- Reject -->
+                  <button v-if="isPrivileged" @click="reject(log)"
+                    class="px-2 py-1 text-red-600 border border-red-600 text-xs rounded hover:bg-red-600 hover:text-white transition">
+                    <span class="md:hidden">❌</span>
+                    <span class="hidden md:inline">Reject</span>
+                  </button>
+
+                  <!-- Edit -->
+                  <button v-if="!isPrivileged && log.staffId === props.selectedUserId" @click="openForm(log)"
+                    class="px-2 py-1 text-indigo-600 border border-indigo-600 text-xs rounded hover:bg-indigo-600 hover:text-white transition">
+                    <span class="md:hidden">✏️</span>
+                    <span class="hidden md:inline">Edit</span>
+                  </button>
+
+                  <!-- Delete -->
+                  <button v-if="!isPrivileged && log.staffId === props.selectedUserId" @click="onDelete(log)"
+                    class="px-2 py-1 text-red-500 border border-red-500 text-xs rounded hover:bg-red-500 hover:text-white transition">
+                    <span class="md:hidden">🗑️</span>
+                    <span class="hidden md:inline">Delete</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="pending.length === 0">
+              <td colspan="6" class="p-1 md:p-2 border border-gray-300 text-center text-gray-500">
+                No pending corrections.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Reviewed Corrections -->
     <div>
-      <h2 class="text-lg font-semibold text-gray-700 mb-2">Reviewed Corrections</h2>
-      <table class="w-full table-auto border text-sm">
-        <thead class="bg-gray-100">
-          <tr>
-            <th class="p-2 border">Date</th>
-            <th class="p-2 border">Day</th>
-            <th class="p-2 border">Correction</th>
-            <th class="p-2 border">Reason</th>
-            <th class="p-2 border">Status</th>
-            <th class="p-2 border">Reviewed By</th>
-            <th class="p-2 border">Reviewed At</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="log in reviewed" :key="log.id" class="border-t">
-            <td class="p-2 border">{{ formatDateDDMMYYYY(log.date) }}</td>
-            <td class="p-2 border">{{ getWeekday(log.date) }}</td>
-            <td class="p-2 border">{{ log.requestedTime }} – {{ log.correctionType }}</td>
-            <td class="p-2 border">{{ log.reason }}</td>
-            <td class="p-2 border capitalize font-semibold"
-              :class="{ 'text-green-600': log.status === 'approved', 'text-red-600': log.status === 'rejected' }">{{
-                log.status }}</td>
-            <td class="p-2 border">{{ log.reviewedBy ?? '-' }}</td>
-            <td class="p-2 border">{{ log.reviewedAt ?? '-' }}
-            </td>
-          </tr>
-          <tr v-if="reviewed.length === 0">
-            <td colspan="7" class="p-2 border text-center text-gray-500">No reviewed corrections yet.</td>
-          </tr>
-        </tbody>
-      </table>
+      <h2 class="text-xs md:text-lg font-semibold text-gray-700 mb-2">Reviewed Corrections</h2>
+      <div class="overflow-x-auto">
+        <table class="w-full table-fixed border text-[10px] md:text-sm">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="p-1 md:p-2 border border-gray-300 text-center min-w-[100px] sticky left-0 bg-gray-100 z-10">
+                Date</th>
+              <th class="p-1 md:p-2 border border-gray-300 hidden md:table-cell">Day</th>
+              <th class="p-1 md:p-2 border border-gray-300">Correction</th>
+              <th class="p-1 md:p-2 border border-gray-300">Reason</th>
+              <th class="p-1 md:p-2 border border-gray-300">Status</th>
+              <th class="p-1 md:p-2 border border-gray-300">Reviewed By</th>
+              <th class="p-1 md:p-2 border border-gray-300 hidden md:table-cell">Reviewed At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="log in reviewed" :key="log.id" class="border-t">
+              <td class="p-1 md:p-2 border border-gray-300 text-center min-w-[100px] sticky left-0 bg-white z-0">
+                {{ formatDateDDMMYYYY(log.date) }}
+              </td>
+              <td class="p-1 md:p-2 border border-gray-300 hidden md:table-cell">{{ getWeekday(log.date) }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 break-words">{{ log.requestedTime }} – {{ log.correctionType
+              }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 break-words">{{ log.reason }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 capitalize font-semibold" :class="{
+                'text-green-600': log.status === 'approved',
+                'text-red-600': log.status === 'rejected'
+              }">
+                {{ log.status }}
+              </td>
+              <td class="p-1 md:p-2 border border-gray-300 break-words">{{ log.reviewedBy ?? '-' }}</td>
+              <td class="p-1 md:p-2 border border-gray-300 break-words hidden md:table-cell">{{ log.reviewedAt ?? '-' }}
+              </td>
+            </tr>
+            <tr v-if="reviewed.length === 0">
+              <td colspan="7" class="p-1 md:p-2 border border-gray-300 text-center text-gray-500">
+                No reviewed corrections yet.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Correction Form Modal -->

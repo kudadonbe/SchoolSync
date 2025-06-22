@@ -140,44 +140,50 @@ const groupedByDate = computed<DaySummary[]>(() => {
 </script>
 
 <template>
-  <div>
-    <h2 class="text-xl font-bold mb-4">📅 Attendance Issues</h2>
-    <table class="table-auto w-full text-sm">
-      <thead>
-        <tr class="bg-gray-100">
-          <th class="border px-2 py-1">Date</th>
-          <th class="border px-2 py-1">Day</th>
-          <th class="border px-2 py-1">Records</th>
-          <th class="border px-2 py-1">Issues</th>
-          <th class="border px-2 py-1">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in groupedByDate" :key="item.date">
-          <td class="border px-2 py-1 align-top">{{ formatDateDDMMYYYY(item.date) }}</td>
-          <td class="border px-2 py-1 align-top">{{ item.weekday }}</td>
-          <td class="border px-2 py-1 align-top">
-            <ul>
-              <li v-for="r in item.records" :key="r">{{ r }}</li>
-            </ul>
-          </td>
-          <td class="border px-2 py-1 align-top text-red-600">
-            <ul>
-              <li v-for="i in item.issues" :key="i">{{ i }}</li>
-            </ul>
-          </td>
-          <td class="border px-2 py-1 align-top">
-            <ul>
-              <li v-for="i in item.issues" :key="i">
-                <button @click="openCorrectionForm(item.date)" class="text-blue-600 underline hover:text-blue-800">
-                  Apply
-                </button>
-              </li>
-            </ul>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="bg-white p-4 md:p-6 shadow-md rounded-lg mt-6">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+      <h2 class="text-xs md:text-lg font-semibold text-green-700">ATTENDANCE ISSUES</h2>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full table-auto border border-gray-300 text-[10px] md:text-sm">
+        <thead class="bg-green-600 text-white">
+          <tr>
+            <th class="p-2 text-center w-20 md:w-24">DATE</th>
+            <th class="p-2 text-center hidden md:table-cell w-24">DAY</th>
+            <th class="p-2 text-center w-32 md:w-auto">RECORDS</th>
+            <th class="p-2 text-center w-32 md:w-auto">ISSUES</th>
+            <th class="p-2 text-center w-20">ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in groupedByDate" :key="item.date" class="border-b border-gray-200">
+            <td class="p-1 text-center font-semibold">
+              {{ formatDateDDMMYYYY(item.date) }}
+            </td>
+            <td class="p-1 text-center hidden md:table-cell">
+              {{ item.weekday }}
+            </td>
+            <td class="p-1 text-left">
+              <ul>
+                <li v-for="r in item.records" :key="r">{{ r }}</li>
+              </ul>
+            </td>
+            <td class="p-1 text-left text-red-600">
+              <ul class="list-disc ml-4">
+                <li v-for="i in item.issues" :key="i">{{ i }}</li>
+              </ul>
+            </td>
+            <td class="p-1 text-center">
+              <button @click="openCorrectionForm(item.date)" class="mb-2 px-3 py-1 bg-blue-600 text-white rounded">
+                Apply
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <CorrectionForm v-model:show="showForm" :staffId="selectedUserId" :startDate="startDate" :endDate="endDate"
       :date="formDate" />
   </div>

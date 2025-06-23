@@ -400,14 +400,15 @@ const btnMouseOver =
         <tbody>
           <tr v-for="(record, index) in filteredRecords" :key="index"
             class="border-b border-gray-200 text-[10px] md:text-sm"
-            :class="record.isWeekend || record.isHoliday ? 'bg-gray-100 text-red-600' : ''">
+            :class="{'bg-gray-100 text-gray-700' : record.isWeekend || record.isHoliday}">
             <!-- DATE -->
-            <td @click="refeshDayRecords(record.date)" class="p-1 text-center">
+            <td @click="refeshDayRecords(record.date)" class="p-1 text-center" :class="record.isWeekend || record.isHoliday ? 'text-red-600' : ''">
               {{ formatDateDDMMYYYY(record.date) }}
             </td>
 
             <!-- DAY -->
-            <td class="p-1 text-center hidden md:table-cell">
+            <td class="p-1 text-center hidden md:table-cell"
+            :class="{ 'text-red-600' : record.isWeekend || record.isHoliday}">
               {{ record.day }}
             </td>
 

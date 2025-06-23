@@ -18,7 +18,7 @@ import CorrectionForm from '@/components/shared/CorrectionForm.vue'
 const authStore = useAuthStore()
 const userRole = computed(() => authStore.currentUser?.role ?? '')
 const isPrivileged = computed(() =>
-  ['developer', 'hr', 'leading_teacher', 'principal'].includes(userRole.value),
+  ['developer', 'hr', 'leading_teacher', 'principal', 'administrator'].includes(userRole.value),
 )
 
 // Props

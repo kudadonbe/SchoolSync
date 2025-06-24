@@ -43,15 +43,19 @@ export const useAttendanceCorrectionsStore = defineStore(
           shouldFetch, // this flag allows fallback to API
         )
 
-        if (force) {
-          corrections.value = freshData.filter((c) => c.date >= start && c.date <= end)
+        if (start === end) {
+          // Special case: force-refresh for a single day
+          const targetDate = start
+          const other = corrections.value.filter((r) => r.date !== targetDate)
+          corrections.value = [...other, ...freshData]
+          console.log(`Patched corrections for ${targetDate}`)
         } else {
           const filteredLocal = local.filter(
             (c) => c.date < formatDateLocal(fetchStartDate) || c.date > formatDateLocal(cappedEnd),
           )
           const mergedData = mergeAttendanceCorrections(filteredLocal, freshData, start, end)
-          console.log('Merged corrections:', mergedData.length) // (DEBUG)
           corrections.value = mergedData
+          console.log('Merged corrections:', mergedData.length)
         }
 
         lastFetched.value[staffId] = formatDateLocal(cappedEnd)
